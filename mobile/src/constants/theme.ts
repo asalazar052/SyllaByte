@@ -63,3 +63,27 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// Figma foundations shared by the first SyllaByte screens.
+export const SyllaColors = {
+  background: '#F7F5F0',
+  surface: '#FFFEFB',
+  navy: '#203B57',
+  blue: '#315F85',
+  muted: '#75808A',
+  border: '#E3E4DE',
+  paleBlue: '#E9EFF4',
+  green: '#DCECCF',
+  purple: '#E9E6F1',
+  peach: '#F6E7D6',
+  brown: '#91623B',
+  white: '#FFFFFF',
+} as const;
+
+export const SyllaFonts = {
+  regular: 'Inter-Regular',
+  medium: 'Inter-Medium',
+  semibold: 'Inter-SemiBold',
+} as const;
+
+export const Radii = { small: 10, card: 16, pill: 100 } as const;
