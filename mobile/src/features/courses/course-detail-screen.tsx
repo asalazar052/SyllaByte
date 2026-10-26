@@ -1,15 +1,16 @@
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { AppCard } from '@/components/ui/app-card';
-import { AppIcon } from '@/components/ui/app-icon';
 import { Screen } from '@/components/ui/screen';
-import { courses } from '@/data/courses';
+import { courseQuery } from '@/db/queries';
+import { CourseInformation } from './course-information';
 import { SyllaColors } from '@/constants/theme';
 
 export function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const course = courses.find((item) => item.id === id);
+  const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
   function back() {
     if (router.canGoBack()) router.back();
     else router.replace('/courses');
@@ -21,7 +22,7 @@ export function CourseDetailScreen() {
           ← Back to courses
         </AppText>
       </Pressable>
-      {!course ? (
+      {updatedAt === undefined ? null : !course ? (
         <AppCard>
           <AppText variant="heading">Course not found</AppText>
           <AppText>This course is not part of your mock semester.</AppText>
@@ -34,14 +35,7 @@ export function CourseDetailScreen() {
           <AppText variant="title" accessibilityRole="header">
             {course.title}
           </AppText>
-          <AppCard>
-            <View style={styles.row}>
-              <AppIcon name={course.icon} />
-              <AppText variant="heading">Course information</AppText>
-            </View>
-            <AppText>{course.schedule}</AppText>
-            <AppText color={SyllaColors.muted}>{course.credits} credits · Fall 2026</AppText>
-          </AppCard>
+          <CourseInformation course={course} />
           {course.reviewFields.length > 0 && (
             <AppCard style={styles.review}>
               <AppText variant="heading">
@@ -71,7 +65,6 @@ export function CourseDetailScreen() {
 }
 const styles = StyleSheet.create({
   back: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   review: { backgroundColor: SyllaColors.peach, borderColor: SyllaColors.peach },
   field: { padding: 12, borderRadius: 10, backgroundColor: SyllaColors.surface, gap: 4 },
 });

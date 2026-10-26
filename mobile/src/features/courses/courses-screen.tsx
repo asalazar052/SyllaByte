@@ -1,4 +1,5 @@
 import { useRef, useState, type ComponentRef } from 'react';
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AppButton } from '@/components/ui/app-button';
@@ -7,21 +8,23 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { Radii, SyllaColors, SyllaFonts } from '@/constants/theme';
-import { courses, filterCourses, semester } from '@/data/courses';
+import { currentSemesterQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
 import { CourseCard } from './course-card';
 
 export function CoursesScreen() {
+  const { data: semester } = useLiveQuery(currentSemesterQuery());
+  const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [reviewOnly, setReviewOnly] = useState(false);
   const input = useRef<ComponentRef<typeof TextInput>>(null);
-  const visible = filterCourses(query, reviewOnly);
+  const visible = filterCourses(courses, query, reviewOnly);
   const reviewCourses = courses.filter((course) => course.reviewFields.length > 0);
   const reviewCount = reviewCourses.reduce(
     (count, course) => count + course.reviewFields.length,
     0,
   );
-  const credits = courses.reduce((total, course) => total + course.credits, 0);
+  const credits = courses.reduce((total, course) => total + (course.credits ?? 0), 0);
   const filtered = reviewOnly || query.trim().length > 0;
 
   function toggleSearch() {
@@ -38,7 +41,7 @@ export function CoursesScreen() {
       <View style={styles.heading}>
         <View style={styles.context}>
           <AppText variant="eyebrow" color={SyllaColors.blue}>
-            {semester.name.toUpperCase()} / COURSES
+            {(semester?.name ?? '').toUpperCase()} / COURSES
           </AppText>
           <Pressable
             accessibilityRole="button"
@@ -108,7 +111,7 @@ export function CoursesScreen() {
       <View style={styles.list}>
         <View style={styles.section}>
           <AppText variant="section" accessibilityRole="header">
-            {semester.name}
+            {semester?.name}
           </AppText>
           <AppText variant="action" color={SyllaColors.blue}>
             {courses.length} courses · {credits} credits

@@ -15,6 +15,9 @@ const icons = {
   courses: require('@/assets/icons/courses.svg'),
   materials: require('@/assets/icons/materials.svg'),
   settings: require('@/assets/icons/settings.svg'),
+  pencil: require('@/assets/icons/pencil.svg'),
+  user: require('@/assets/icons/user.svg'),
+  clock: require('@/assets/icons/clock.svg'),
 };
 export type AppIconName = keyof typeof icons;
 

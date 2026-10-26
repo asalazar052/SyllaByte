@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { type Course } from '@/data/courses';
+import { type Course } from '@/db/queries';
+import { formatTimeRange, joinParts } from '@/lib/format';
 import { Radii, SyllaColors } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
@@ -30,7 +31,11 @@ export function CourseCard({ course }: { course: Course }) {
         </View>
         <AppText variant="heading">{course.title}</AppText>
         <AppText variant="micro" color={SyllaColors.muted}>
-          {course.schedule} · {course.credits} credits
+          {joinParts(
+            course.days,
+            formatTimeRange(course.startTime, course.endTime),
+            course.credits !== null && `${course.credits} credits`,
+          )}
         </AppText>
       </View>
       <AppIcon name="chevron" size={15} />
