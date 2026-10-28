@@ -7,13 +7,12 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { SyllaColors } from '@/constants/theme';
 
 export default function Upload() {
 	const insets = useSafeAreaInsets();
 	return (
 		<Screen>
-			<AppText variant="eyebrow" color={SyllaColors.blue}>
+			<AppText variant="eyebrow" className="text-sylla-blue">
 				SYLLABYTE / UPLOAD
 			</AppText>
 			<AppText variant="title" accessibilityRole="header">
@@ -22,11 +21,11 @@ export default function Upload() {
 			<AppCard>
 				<AppIcon name="scan" size={22} />
 				<AppText variant="heading">Upload a syllabus</AppText>
-				<AppText color={SyllaColors.muted}>
+				<AppText className="text-sylla-muted">
 					Next, you’ll choose a syllabus, watch it process, and check extracted course
 					details and dates.
 				</AppText>
-				<AppText variant="caption" color={SyllaColors.brown}>
+				<AppText variant="caption" className="text-sylla-brown">
 					Mock upload preview · File selection and processing are coming in the next
 					milestone. No file is uploaded here.
 				</AppText>

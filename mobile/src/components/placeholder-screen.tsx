@@ -19,7 +19,7 @@ export function PlaceholderScreen({
 }) {
 	return (
 		<Screen>
-			<AppText variant="eyebrow" color={SyllaColors.blue}>
+			<AppText variant="eyebrow" className="text-sylla-blue">
 				SYLLABYTE / {title.toUpperCase()}
 			</AppText>
 			<AppText variant="title" accessibilityRole="header">
@@ -28,8 +28,8 @@ export function PlaceholderScreen({
 			<AppCard>
 				<AppIcon name={icon} size={23} tintColor={SyllaColors.blue} />
 				<AppText variant="heading">A little more ahead.</AppText>
-				<AppText color={SyllaColors.muted}>{description}</AppText>
-				<AppText variant="caption" color={SyllaColors.muted}>
+				<AppText className="text-sylla-muted">{description}</AppText>
+				<AppText variant="caption" className="text-sylla-muted">
 					Coming in a later milestone. Your mock courses are ready to explore.
 				</AppText>
 			</AppCard>

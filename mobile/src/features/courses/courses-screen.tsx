@@ -1,29 +1,32 @@
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 
 import { AppButton } from '@/components/ui/app-button';
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { Radii, SyllaColors, SyllaFonts } from '@/constants/theme';
-import { courses, filterCourses, semester } from '@/data/courses';
+import { SyllaColors } from '@/constants/theme';
+import { currentSemesterQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
 
 import { CourseCard } from './course-card';
 
 export function CoursesScreen() {
+	const { data: semester } = useLiveQuery(currentSemesterQuery());
+	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [query, setQuery] = useState('');
 	const [reviewOnly, setReviewOnly] = useState(false);
 	const input = useRef<ComponentRef<typeof TextInput>>(null);
-	const visible = filterCourses(query, reviewOnly);
+	const visible = filterCourses(courses, query, reviewOnly);
 	const reviewCourses = courses.filter((course) => course.reviewFields.length > 0);
 	const reviewCount = reviewCourses.reduce(
 		(count, course) => count + course.reviewFields.length,
 		0,
 	);
-	const credits = courses.reduce((total, course) => total + course.credits, 0);
+	const credits = courses.reduce((total, course) => total + (course.credits ?? 0), 0);
 	const filtered = reviewOnly || query.trim().length > 0;
 
 	function toggleSearch() {
@@ -37,10 +40,10 @@ export function CoursesScreen() {
 
 	return (
 		<Screen>
-			<View style={styles.heading}>
-				<View style={styles.context}>
-					<AppText variant="eyebrow" color={SyllaColors.blue}>
-						{semester.name.toUpperCase()} / COURSES
+			<View className="gap-4">
+				<View className="min-h-5 flex-row items-center justify-between">
+					<AppText variant="eyebrow" className="text-sylla-blue">
+						{(semester?.name ?? '').toUpperCase()} / COURSES
 					</AppText>
 					<Pressable
 						accessibilityRole="button"
@@ -48,7 +51,7 @@ export function CoursesScreen() {
 						aria-expanded={searchOpen}
 						onPress={toggleSearch}
 						hitSlop={12}
-						style={styles.searchButton}
+						className="h-5 w-6 items-center justify-center"
 					>
 						<AppIcon name="search" size={21} />
 					</Pressable>
@@ -59,7 +62,7 @@ export function CoursesScreen() {
 			</View>
 
 			{searchOpen && (
-				<View style={styles.searchRow}>
+				<View className="flex-row items-center rounded-small border border-sylla-border bg-sylla-surface">
 					<TextInput
 						ref={input}
 						autoFocus
@@ -71,7 +74,7 @@ export function CoursesScreen() {
 						autoCapitalize="none"
 						autoCorrect={false}
 						returnKeyType="search"
-						style={styles.input}
+						className="min-h-12 min-w-0 flex-1 p-3 font-inter text-sm text-sylla-navy"
 					/>
 					{query.length > 0 && (
 						<Pressable
@@ -80,9 +83,9 @@ export function CoursesScreen() {
 								setQuery('');
 								input.current?.focus();
 							}}
-							style={styles.clear}
+							className="min-h-11 justify-center px-2"
 						>
-							<AppText variant="action" color={SyllaColors.blue}>
+							<AppText variant="action" className="text-sylla-blue">
 								Clear
 							</AppText>
 						</Pressable>
@@ -95,33 +98,32 @@ export function CoursesScreen() {
 				accessibilityLabel={`Review ${reviewCount} details in ${reviewCourses.length} courses`}
 				aria-pressed={reviewOnly}
 				onPress={() => setReviewOnly((value) => !value)}
-				style={({ pressed }) => [styles.notice, pressed && styles.pressed]}
+				className="flex-row items-center gap-3 rounded-2xl bg-sylla-peach p-4 active:opacity-75"
 			>
 				<AppIcon name="scan" size={22} />
-				<View style={styles.noticeCopy}>
+				<View className="flex-1 gap-1.5">
 					<AppText variant="label">{reviewCount} details could use your eyes</AppText>
-					<AppText variant="caption" color={SyllaColors.brown}>
+					<AppText variant="caption" className="text-sylla-brown">
 						Check highlighted fields in {reviewCourses.length} courses.
 					</AppText>
 				</View>
 				<AppIcon name="arrow" size={18} />
 			</Pressable>
 
-			<View style={styles.list}>
-				<View style={styles.section}>
+			<View className="gap-3">
+				<View className="flex-row flex-wrap items-center justify-between gap-2">
 					<AppText variant="section" accessibilityRole="header">
-						{semester.name}
+						{semester?.name}
 					</AppText>
-					<AppText variant="action" color={SyllaColors.blue}>
+					<AppText variant="action" className="text-sylla-blue">
 						{courses.length} courses · {credits} credits
 					</AppText>
 				</View>
 				{filtered && (
-					<View style={styles.filterRow}>
+					<View className="flex-row items-center gap-2">
 						<AppText
 							variant="caption"
-							color={SyllaColors.brown}
-							style={styles.flex}
+							className="flex-1 text-sylla-brown"
 							accessibilityLiveRegion="polite"
 						>
 							{reviewOnly ? 'Needs review · ' : ''}
@@ -133,9 +135,9 @@ export function CoursesScreen() {
 								setReviewOnly(false);
 								setQuery('');
 							}}
-							style={styles.clear}
+							className="min-h-11 justify-center px-2"
 						>
-							<AppText variant="action" color={SyllaColors.blue}>
+							<AppText variant="action" className="text-sylla-blue">
 								Show all courses
 							</AppText>
 						</Pressable>
@@ -147,7 +149,7 @@ export function CoursesScreen() {
 				{visible.length === 0 && (
 					<AppCard>
 						<AppText variant="heading">No courses found</AppText>
-						<AppText color={SyllaColors.muted}>
+						<AppText className="text-sylla-muted">
 							Try another course code or title, or clear your filters.
 						</AppText>
 					</AppCard>
@@ -161,51 +163,3 @@ export function CoursesScreen() {
 		</Screen>
 	);
 }
-const styles = StyleSheet.create({
-	heading: { gap: 15 },
-	context: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		minHeight: 21,
-	},
-	searchButton: { width: 24, height: 21, alignItems: 'center', justifyContent: 'center' },
-	notice: {
-		backgroundColor: SyllaColors.peach,
-		borderRadius: Radii.card,
-		padding: 15,
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 12,
-	},
-	noticeCopy: { flex: 1, gap: 5 },
-	list: { gap: 12 },
-	section: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		flexWrap: 'wrap',
-		gap: 8,
-	},
-	searchRow: {
-		backgroundColor: SyllaColors.surface,
-		borderColor: SyllaColors.border,
-		borderWidth: 1,
-		borderRadius: Radii.small,
-		flexDirection: 'row',
-		alignItems: 'center',
-	},
-	input: {
-		flex: 1,
-		minWidth: 0,
-		minHeight: 48,
-		padding: 12,
-		fontFamily: SyllaFonts.regular,
-		fontSize: 14,
-		color: SyllaColors.navy,
-	},
-	clear: { minHeight: 44, paddingHorizontal: 8, justifyContent: 'center' },
-	filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-	flex: { flex: 1 },
-	pressed: { opacity: 0.75 },
-});

@@ -23,18 +23,22 @@ function TabButton({
 	return (
 		<Pressable
 			{...props}
+			// TabTrigger injects a row layout as `style`, which would win over the className below.
+			style={undefined}
 			accessibilityRole="tab"
 			aria-selected={focused}
-			style={({ pressed }) => [styles.tab, pressed && { opacity: 0.6 }]}
+			className="min-h-11 flex-1 items-center gap-1 active:opacity-60"
 		>
-			<View style={[styles.indicator, focused && styles.selected]}>
+			<View
+				className={`h-7 w-12 items-center justify-center rounded-full ${focused ? 'bg-sylla-paleBlue' : ''}`}
+			>
 				<AppIcon
 					name={icon}
 					size={19}
 					tintColor={focused ? SyllaColors.blue : SyllaColors.muted}
 				/>
 			</View>
-			<AppText variant="micro" color={focused ? SyllaColors.navy : SyllaColors.muted}>
+			<AppText variant="micro" className={focused ? undefined : 'text-sylla-muted'}>
 				{children}
 			</AppText>
 		</Pressable>
@@ -44,8 +48,11 @@ function TabButton({
 export default function AppTabs() {
 	const insets = useSafeAreaInsets();
 	return (
+		// Tabs, TabSlot and TabList keep `style` on purpose: expo-router/ui finds the tab list and triggers by
+		// comparing element types, and NativeWind's className support swaps in a wrapper type, so no tabs are found.
+		// Insets are runtime values, and NativeWind's safe-area utilities don't exist on web.
 		<Tabs style={styles.root}>
-			<View style={styles.content}>
+			<View className="min-h-0 flex-1 overflow-hidden">
 				<TabSlot style={styles.slot} />
 			</View>
 			<TabList
@@ -79,7 +86,6 @@ export default function AppTabs() {
 }
 const styles = StyleSheet.create({
 	root: { flex: 1, minHeight: 0, backgroundColor: SyllaColors.background },
-	content: { flex: 1, minHeight: 0, overflow: 'hidden' },
 	slot: { flex: 1, minHeight: 0 },
 	list: {
 		flexShrink: 0,
@@ -87,16 +93,7 @@ const styles = StyleSheet.create({
 		backgroundColor: SyllaColors.surface,
 		borderTopColor: SyllaColors.border,
 		borderTopWidth: 1,
-		paddingTop: 9,
-		gap: 3,
+		paddingTop: 10,
+		gap: 4,
 	},
-	tab: { flex: 1, minHeight: 45, alignItems: 'center', gap: 4 },
-	indicator: {
-		width: 48,
-		height: 29,
-		borderRadius: 100,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	selected: { backgroundColor: SyllaColors.paleBlue },
 });

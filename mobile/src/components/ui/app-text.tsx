@@ -1,23 +1,27 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 
-import { SyllaColors, SyllaFonts } from '@/constants/theme';
+const variants = {
+	body: 'text-sm',
+	title: 'text-3xl',
+	section: 'text-lg',
+	heading: 'font-inter-semibold text-base leading-4',
+	label: 'font-inter-semibold text-sm',
+	action: 'font-inter-semibold text-xs',
+	caption: 'text-xs',
+	eyebrow: 'font-inter-semibold text-xs',
+	code: 'font-inter-semibold text-xs',
+	micro: 'text-xs',
+};
 
-type Props = TextProps & { variant?: keyof typeof styles; color?: string };
+type Props = TextProps & { variant?: keyof typeof variants };
 
-export function AppText({ variant = 'body', color = SyllaColors.navy, style, ...props }: Props) {
-	return <Text {...props} style={[styles.base, styles[variant], { color }, style]} />;
+// A className overrides the variant's matching utilities, e.g. className="text-sylla-blue" changes the color.
+export function AppText({ variant = 'body', className, ...props }: Props) {
+	return (
+		<Text
+			{...props}
+			className={twMerge('font-inter text-sylla-navy', variants[variant], className)}
+		/>
+	);
 }
-
-const styles = StyleSheet.create({
-	base: { fontFamily: SyllaFonts.regular, color: SyllaColors.navy },
-	body: { fontSize: 14, lineHeight: 21 },
-	title: { fontSize: 30, lineHeight: 36 },
-	section: { fontSize: 17, lineHeight: 22 },
-	heading: { fontFamily: SyllaFonts.semibold, fontSize: 16, lineHeight: 20 },
-	label: { fontFamily: SyllaFonts.semibold, fontSize: 13, lineHeight: 16 },
-	action: { fontFamily: SyllaFonts.semibold, fontSize: 12, lineHeight: 16 },
-	caption: { fontSize: 11, lineHeight: 14 },
-	eyebrow: { fontFamily: SyllaFonts.semibold, fontSize: 11, lineHeight: 14 },
-	code: { fontFamily: SyllaFonts.semibold, fontSize: 10, lineHeight: 12 },
-	micro: { fontSize: 10, lineHeight: 12 },
-});
