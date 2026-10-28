@@ -7,11 +7,13 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
+import { ExtractionPreview } from '@/features/upload/extraction-preview';
 import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 
 export default function Upload() {
 	const insets = useSafeAreaInsets();
-	const { file, error, picking, pick, clear } = useSyllabusPicker();
+	const { file, error, picking, pick, clear, processing, extraction, startExtraction } =
+		useSyllabusPicker();
 	return (
 		<Screen>
 			<AppText variant="eyebrow" className="text-sylla-blue">
@@ -22,9 +24,17 @@ export default function Upload() {
 			</AppText>
 			<AppCard>
 				<AppIcon name="scan" size={22} />
-				<AppText variant="heading">{file ? 'PDF selected' : 'Upload a syllabus'}</AppText>
+				<AppText variant="heading">
+					{file && extraction.phase === 'idle'
+						? 'Ready to extract'
+						: file
+							? 'PDF selected'
+							: 'Upload a syllabus'}
+				</AppText>
 				<AppText className="text-sylla-muted">
-					Choose a PDF syllabus from your files to get started.
+					{file
+						? 'Extract course information, important dates, and materials from your syllabus.'
+						: 'Choose a PDF syllabus from your files to get started.'}
 				</AppText>
 				{file && (
 					<View className="gap-2" accessibilityLiveRegion="polite">
@@ -32,44 +42,72 @@ export default function Upload() {
 						<AppText variant="caption" className="text-sylla-muted">
 							PDF{file.size !== undefined ? ` · ${formatFileSize(file.size)}` : ''}
 						</AppText>
+					</View>
+				)}
+				{file && extraction.phase === 'idle' && (
+					<AppButton
+						label="Extract course details"
+						disabled={picking}
+						onPress={startExtraction}
+					/>
+				)}
+				{file ? (
+					<View className="flex-row flex-wrap items-center gap-x-5">
+						<Pressable
+							accessibilityRole="button"
+							disabled={picking || processing}
+							onPress={() => {
+								void pick();
+							}}
+							className="min-h-11 justify-center"
+						>
+							<AppText variant="action" className="text-sylla-blue">
+								{picking ? 'Opening files…' : 'Change PDF'}
+							</AppText>
+						</Pressable>
 						<Pressable
 							accessibilityRole="button"
 							onPress={clear}
-							disabled={picking}
-							className="min-h-11 justify-center self-start"
+							disabled={picking || processing}
+							className="min-h-11 justify-center"
 						>
-							<AppText variant="action" className="text-sylla-blue">
+							<AppText variant="action" className="text-sylla-muted">
 								Remove PDF
 							</AppText>
 						</Pressable>
 					</View>
+				) : (
+					<AppButton
+						label={picking ? 'Opening files…' : 'Choose PDF'}
+						disabled={picking || processing}
+						onPress={() => {
+							void pick();
+						}}
+					/>
 				)}
-				<AppButton
-					label={
-						picking ? 'Opening files…' : file ? 'Choose a different PDF' : 'Choose PDF'
-					}
-					disabled={picking}
-					onPress={() => {
-						void pick();
-					}}
-				/>
 				{error && (
 					<AppText accessibilityRole="alert" className="text-sylla-brown">
 						{error}
 					</AppText>
 				)}
 				<AppText variant="caption" className="text-sylla-brown">
-					{file ? 'Your PDF is selected for this session. ' : ''}
-					Uploading and extracting course details are coming next.
+					Demo workflow · Uploading and extraction are simulated. Your PDF stays on your
+					device and the results use sample data.
 				</AppText>
 			</AppCard>
-			<AppButton
-				label="Back to courses"
+			{file && <ExtractionPreview />}
+			<Pressable
+				accessibilityRole="button"
+				className="min-h-11 items-center justify-center"
 				onPress={() => {
 					if (router.canGoBack()) router.back();
 					else router.replace('/courses');
 				}}
-			/>
+			>
+				<AppText variant="action" className="text-sylla-muted">
+					Back to courses
+				</AppText>
+			</Pressable>
 			<View style={{ height: insets.bottom }} />
 		</Screen>
 	);

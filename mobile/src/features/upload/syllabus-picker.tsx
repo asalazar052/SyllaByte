@@ -1,6 +1,16 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { createContext, type ReactNode, useContext, useRef, useState } from 'react';
+import {
+	createContext,
+	type ReactNode,
+	useContext,
+	useEffect,
+	useReducer,
+	useRef,
+	useState,
+} from 'react';
 import { Platform } from 'react-native';
+
+import { extractionReducer, type ExtractionState, initialExtraction } from './mock-extraction';
 
 type SyllabusPicker = {
 	file: DocumentPicker.DocumentPickerAsset | null;
@@ -8,6 +18,10 @@ type SyllabusPicker = {
 	picking: boolean;
 	pick: () => Promise<boolean>;
 	clear: () => void;
+	extraction: ExtractionState;
+	processing: boolean;
+	startExtraction: () => void;
+	cancelExtraction: () => void;
 };
 
 const SyllabusPickerContext = createContext<SyllabusPicker | null>(null);
@@ -18,9 +32,17 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	const [error, setError] = useState<string | null>(null);
 	const [picking, setPicking] = useState(false);
 	const busy = useRef(false);
+	const [extraction, dispatch] = useReducer(extractionReducer, initialExtraction);
+	const processing = extraction.phase !== 'idle' && extraction.phase !== 'ready';
+
+	useEffect(() => {
+		if (!processing) return;
+		const timer = setInterval(() => dispatch({ type: 'advance', now: Date.now() }), 250);
+		return () => clearInterval(timer);
+	}, [processing]);
 
 	async function pick() {
-		if (busy.current) return false;
+		if (busy.current || processing) return false;
 		// Some browsers never resolve the picker promise on cancel. Allow retrying there.
 		busy.current = Platform.OS !== 'web';
 		setPicking(busy.current);
@@ -47,6 +69,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 				return false;
 			}
 			setFile(selected);
+			dispatch({ type: 'reset' });
 			return true;
 		} catch {
 			setError('We couldn’t open that file. Please try choosing the PDF again.');
@@ -58,12 +81,36 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	}
 
 	function clear() {
+		if (processing) return;
 		setFile(null);
 		setError(null);
+		dispatch({ type: 'reset' });
+	}
+
+	function startExtraction() {
+		if (!file || busy.current) return;
+		setError(null);
+		dispatch({ type: 'start', now: Date.now() });
+	}
+
+	function cancelExtraction() {
+		dispatch({ type: 'reset' });
 	}
 
 	return (
-		<SyllabusPickerContext.Provider value={{ file, error, picking, pick, clear }}>
+		<SyllabusPickerContext.Provider
+			value={{
+				file,
+				error,
+				picking,
+				pick,
+				clear,
+				extraction,
+				processing,
+				startExtraction,
+				cancelExtraction,
+			}}
+		>
 			{children}
 		</SyllabusPickerContext.Provider>
 	);

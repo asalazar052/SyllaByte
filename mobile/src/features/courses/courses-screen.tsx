@@ -15,7 +15,7 @@ import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 import { CourseCard } from './course-card';
 
 export function CoursesScreen() {
-	const { error: uploadError, picking, pick } = useSyllabusPicker();
+	const { error: uploadError, picking, pick, file, extraction, processing } = useSyllabusPicker();
 	const { data: semester } = useLiveQuery(currentSemesterQuery());
 	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const [searchOpen, setSearchOpen] = useState(false);
@@ -157,10 +157,25 @@ export function CoursesScreen() {
 					</AppCard>
 				)}
 			</View>
+			{extraction.phase !== 'idle' && file && (
+				<AppCard>
+					<AppText variant="heading">
+						{processing ? 'Syllabus processing' : 'Sample extraction ready'}
+					</AppText>
+					<AppText className="text-sylla-muted">{file.name}</AppText>
+					<AppText variant="caption" className="text-sylla-brown">
+						Demo · Sample data
+					</AppText>
+					<AppButton
+						label={processing ? 'View progress' : 'View extracted details'}
+						onPress={() => router.push('/upload')}
+					/>
+				</AppCard>
+			)}
 			<AppButton
 				label={picking ? 'Opening files…' : 'Upload a syllabus'}
 				icon="plus"
-				disabled={picking}
+				disabled={picking || processing}
 				onPress={async () => {
 					if (await pick()) router.push('/upload');
 				}}
