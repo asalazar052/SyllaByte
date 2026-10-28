@@ -1,8 +1,7 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 
-import { Radii, SyllaColors } from '@/constants/theme';
 import { dateToMinutes, formatTime, minutesToDate } from '@/lib/format';
 
 import { AppText } from './app-text';
@@ -18,7 +17,7 @@ function TimeField({
 }) {
 	const [open, setOpen] = useState(false);
 	return (
-		<View style={styles.time}>
+		<View className="min-h-11 flex-row items-center justify-between">
 			<AppText variant="label">{label}</AppText>
 			{Platform.OS === 'android' ? (
 				// The Android picker is a dialog that opens as soon as it renders.
@@ -27,7 +26,7 @@ function TimeField({
 						accessibilityRole="button"
 						accessibilityLabel={`${label} time, ${formatTime(minutes)}`}
 						onPress={() => setOpen(true)}
-						style={styles.button}
+						className="min-h-9 justify-center rounded-small bg-sylla-paleBlue px-3.5"
 					>
 						<AppText variant="label">{formatTime(minutes)}</AppText>
 					</Pressable>
@@ -71,9 +70,9 @@ export function TimeRangeField({
 	onChange: (start: number | null, end: number | null) => void;
 }) {
 	return (
-		<View style={styles.field}>
-			<View style={styles.header}>
-				<AppText variant="caption" color={SyllaColors.muted}>
+		<View className="gap-1">
+			<View className="flex-row items-center justify-between">
+				<AppText variant="caption" className="text-sylla-muted">
 					{label}
 				</AppText>
 				{start !== null && end !== null && (
@@ -83,7 +82,7 @@ export function TimeRangeField({
 						onPress={() => onChange(null, null)}
 						hitSlop={8}
 					>
-						<AppText variant="action" color={SyllaColors.blue}>
+						<AppText variant="action" className="text-sylla-blue">
 							Clear
 						</AppText>
 					</Pressable>
@@ -94,9 +93,9 @@ export function TimeRangeField({
 					accessibilityRole="button"
 					accessibilityLabel={`Add ${label.toLowerCase()}`}
 					onPress={() => onChange(DEFAULT_START, DEFAULT_END)}
-					style={styles.add}
+					className="min-h-11 self-start justify-center"
 				>
-					<AppText variant="label" color={SyllaColors.blue}>
+					<AppText variant="label" className="text-sylla-blue">
 						Add time
 					</AppText>
 				</Pressable>
@@ -117,21 +116,3 @@ export function TimeRangeField({
 		</View>
 	);
 }
-const styles = StyleSheet.create({
-	field: { gap: 4 },
-	header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-	add: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
-	time: {
-		minHeight: 44,
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-	},
-	button: {
-		minHeight: 36,
-		paddingHorizontal: 14,
-		justifyContent: 'center',
-		borderRadius: Radii.small,
-		backgroundColor: SyllaColors.paleBlue,
-	},
-});

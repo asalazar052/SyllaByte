@@ -1,27 +1,20 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View, type ViewProps } from 'react-native';
-
-import { Radii, SyllaColors } from '@/constants/theme';
+import { View, type ViewProps } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 
 type AppCardProps = ViewProps & {
 	rightCornerIcon?: ReactNode;
 };
 
-export function AppCard({ style, rightCornerIcon, children, ...props }: AppCardProps) {
+export const cardClassName = 'rounded-2xl border border-sylla-border bg-sylla-surface';
+
+export function AppCard({ className, rightCornerIcon, children, ...props }: AppCardProps) {
 	return (
-		<View {...props} style={[styles.card, style]}>
+		<View {...props} className={twMerge(cardClassName, 'gap-3 p-4', className)}>
 			{children}
-			{rightCornerIcon ? <View style={styles.rightCornerIcon}>{rightCornerIcon}</View> : null}
+			{rightCornerIcon ? (
+				<View className="absolute right-4 top-4">{rightCornerIcon}</View>
+			) : null}
 		</View>
 	);
 }
-export const cardStyle = {
-	backgroundColor: SyllaColors.surface,
-	borderColor: SyllaColors.border,
-	borderWidth: 1,
-	borderRadius: Radii.card,
-};
-const styles = StyleSheet.create({
-	card: { ...cardStyle, padding: 16, gap: 12 },
-	rightCornerIcon: { position: 'absolute', top: 16, right: 16 },
-});

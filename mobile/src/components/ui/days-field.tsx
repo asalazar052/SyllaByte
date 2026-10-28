@@ -1,6 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { Radii, SyllaColors } from '@/constants/theme';
 import { type DayCode, DAYS, formatDays, parseDays } from '@/lib/format';
 
 import { AppText } from './app-text';
@@ -22,11 +21,11 @@ export function DaysField({
 		onChange(formatDays(selected));
 	}
 	return (
-		<View style={styles.field}>
-			<AppText variant="caption" color={SyllaColors.muted}>
+		<View className="gap-1">
+			<AppText variant="caption" className="text-sylla-muted">
 				{label}
 			</AppText>
-			<View style={styles.row}>
+			<View className="flex-row gap-1.5">
 				{DAYS.map(({ code, name }) => {
 					const on = selected.has(code);
 					return (
@@ -36,12 +35,13 @@ export function DaysField({
 							accessibilityLabel={name}
 							accessibilityState={{ checked: on }}
 							onPress={() => toggle(code)}
-							style={[styles.chip, on && styles.chipOn]}
+							className={`min-h-11 flex-1 items-center justify-center rounded-small border ${
+								on
+									? 'border-sylla-navy bg-sylla-navy'
+									: 'border-sylla-border bg-sylla-background'
+							}`}
 						>
-							<AppText
-								variant="action"
-								color={on ? SyllaColors.white : SyllaColors.navy}
-							>
+							<AppText variant="action" className={on ? 'text-white' : undefined}>
 								{code}
 							</AppText>
 						</Pressable>
@@ -51,18 +51,3 @@ export function DaysField({
 		</View>
 	);
 }
-const styles = StyleSheet.create({
-	field: { gap: 4 },
-	row: { flexDirection: 'row', gap: 6 },
-	chip: {
-		flex: 1,
-		minHeight: 44,
-		alignItems: 'center',
-		justifyContent: 'center',
-		borderWidth: 1,
-		borderColor: SyllaColors.border,
-		borderRadius: Radii.small,
-		backgroundColor: SyllaColors.background,
-	},
-	chipOn: { backgroundColor: SyllaColors.navy, borderColor: SyllaColors.navy },
-});

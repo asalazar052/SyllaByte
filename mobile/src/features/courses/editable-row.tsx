@@ -1,9 +1,8 @@
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { SyllaColors } from '@/constants/theme';
 
 type Props<T> = {
 	icon?: AppIconName;
@@ -53,18 +52,18 @@ export function EditableRow<T>({
 	if (!editing) {
 		const [primary, secondary] = [title, subtitle].filter(Boolean);
 		return (
-			<View style={styles.row}>
+			<View className="min-h-11 flex-row items-center gap-3">
 				{icon && <AppIcon name={icon} size={19} />}
-				<View style={styles.copy}>
+				<View className="flex-1 gap-[3px]">
 					{primary ? (
 						<AppText variant="label">{primary}</AppText>
 					) : (
-						<AppText variant="label" color={SyllaColors.muted}>
+						<AppText variant="label" className="text-sylla-muted">
 							{placeholder}
 						</AppText>
 					)}
 					{secondary ? (
-						<AppText variant="caption" color={SyllaColors.muted}>
+						<AppText variant="caption" className="text-sylla-muted">
 							{secondary}
 						</AppText>
 					) : null}
@@ -74,7 +73,7 @@ export function EditableRow<T>({
 					accessibilityLabel={editLabel}
 					onPress={startEditing}
 					hitSlop={12}
-					style={styles.pencil}
+					className="h-7 w-7 items-center justify-center"
 				>
 					<AppIcon name="pencil" size={16} />
 				</Pressable>
@@ -83,29 +82,33 @@ export function EditableRow<T>({
 	}
 
 	return (
-		<View style={styles.editor}>
+		<View className="gap-2.5">
 			{children(draft, update)}
 			{error ? (
 				<AppText
 					variant="caption"
-					color={SyllaColors.brown}
+					className="text-sylla-brown"
 					accessibilityLiveRegion="polite"
 				>
 					{error}
 				</AppText>
 			) : null}
-			<View style={styles.actions}>
+			<View className="flex-row justify-end gap-2">
 				<Pressable
 					accessibilityRole="button"
 					onPress={() => setEditing(false)}
-					style={styles.action}
+					className="min-h-11 justify-center px-2"
 				>
-					<AppText variant="action" color={SyllaColors.muted}>
+					<AppText variant="action" className="text-sylla-muted">
 						Cancel
 					</AppText>
 				</Pressable>
-				<Pressable accessibilityRole="button" onPress={save} style={styles.action}>
-					<AppText variant="action" color={SyllaColors.blue}>
+				<Pressable
+					accessibilityRole="button"
+					onPress={save}
+					className="min-h-11 justify-center px-2"
+				>
+					<AppText variant="action" className="text-sylla-blue">
 						Save
 					</AppText>
 				</Pressable>
@@ -113,11 +116,3 @@ export function EditableRow<T>({
 		</View>
 	);
 }
-const styles = StyleSheet.create({
-	row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
-	copy: { flex: 1, gap: 3 },
-	pencil: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-	editor: { gap: 10 },
-	actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
-	action: { minHeight: 44, paddingHorizontal: 8, justifyContent: 'center' },
-});

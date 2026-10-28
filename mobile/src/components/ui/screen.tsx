@@ -1,28 +1,16 @@
 import { type ReactNode } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { SyllaColors } from '@/constants/theme';
 
 export function Screen({ children }: { children: ReactNode }) {
 	return (
-		<SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+		<SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-sylla-background">
+			<ScrollView
+				keyboardShouldPersistTaps="handled"
+				contentContainerClassName="w-full max-w-[600px] grow gap-[22px] self-center px-6 pb-8 pt-3"
+			>
 				{children}
 			</ScrollView>
 		</SafeAreaView>
 	);
 }
-const styles = StyleSheet.create({
-	safe: { flex: 1, backgroundColor: SyllaColors.background },
-	content: {
-		paddingTop: 12,
-		paddingHorizontal: 24,
-		paddingBottom: 32,
-		gap: 22,
-		width: '100%',
-		maxWidth: 600,
-		alignSelf: 'center',
-		flexGrow: 1,
-	},
-});

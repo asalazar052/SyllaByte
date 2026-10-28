@@ -1,6 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native';
-
-import { Radii, SyllaColors } from '@/constants/theme';
+import { Pressable } from 'react-native';
 
 import { AppIcon, type AppIconName } from './app-icon';
 import { AppText } from './app-text';
@@ -18,26 +16,12 @@ export function AppButton({
 		<Pressable
 			accessibilityRole="button"
 			onPress={onPress}
-			style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+			className="min-h-12 flex-row items-center justify-center gap-2.5 rounded-small bg-sylla-navy p-3.5 active:opacity-75"
 		>
 			{icon && <AppIcon name={icon} size={18} />}
-			<AppText variant="label" color={SyllaColors.white} style={styles.label}>
+			<AppText variant="label" className="text-sm text-white">
 				{label}
 			</AppText>
 		</Pressable>
 	);
 }
-const styles = StyleSheet.create({
-	button: {
-		backgroundColor: SyllaColors.navy,
-		borderRadius: Radii.small,
-		minHeight: 48,
-		padding: 14,
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'center',
-		gap: 10,
-	},
-	label: { fontSize: 14, lineHeight: 20 },
-	pressed: { opacity: 0.75 },
-});

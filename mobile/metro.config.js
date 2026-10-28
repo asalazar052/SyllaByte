@@ -2,6 +2,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -25,4 +26,5 @@ if (fs.existsSync(migrationsDir)) {
 }
 config.cacheVersion = migrationsHash.digest('hex');
 
-module.exports = config;
+// NativeWind defaults to 14px per rem on native; 16 matches Tailwind's docs and the web build.
+module.exports = withNativeWind(config, { input: './src/global.css', inlineRem: 16 });

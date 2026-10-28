@@ -1,35 +1,23 @@
-import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
-
-import { Radii, SyllaColors, SyllaFonts } from '@/constants/theme';
+import { TextInput, type TextInputProps, View } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 
 import { AppText } from './app-text';
 
-export function TextField({ label, ...props }: TextInputProps & { label: string }) {
+export function TextField({ label, className, ...props }: TextInputProps & { label: string }) {
 	return (
-		<View style={styles.field}>
-			<AppText variant="caption" color={SyllaColors.muted}>
+		<View className="gap-1">
+			<AppText variant="caption" className="text-sylla-muted">
 				{label}
 			</AppText>
 			<TextInput
 				accessibilityLabel={label}
 				autoCorrect={false}
 				{...props}
-				style={[styles.input, props.style]}
+				className={twMerge(
+					'min-h-11 rounded-small border border-sylla-border bg-sylla-background px-3 font-inter text-[14px] text-sylla-navy',
+					className,
+				)}
 			/>
 		</View>
 	);
 }
-const styles = StyleSheet.create({
-	field: { gap: 4 },
-	input: {
-		minHeight: 44,
-		paddingHorizontal: 12,
-		borderWidth: 1,
-		borderColor: SyllaColors.border,
-		borderRadius: Radii.small,
-		backgroundColor: SyllaColors.background,
-		fontFamily: SyllaFonts.regular,
-		fontSize: 14,
-		color: SyllaColors.navy,
-	},
-});

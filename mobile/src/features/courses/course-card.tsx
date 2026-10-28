@@ -1,10 +1,9 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { cardStyle } from '@/components/ui/app-card';
+import { cardClassName } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { Radii, SyllaColors } from '@/constants/theme';
 import { type Course } from '@/db/queries';
 import { formatTimeRange, joinParts } from '@/lib/format';
 
@@ -14,24 +13,28 @@ export function CourseCard({ course }: { course: Course }) {
 			accessibilityRole="button"
 			accessibilityLabel={`${course.code}, ${course.title}${course.reviewFields.length ? ', needs review' : ''}`}
 			onPress={() => router.push({ pathname: '/courses/[id]', params: { id: course.id } })}
-			style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+			className={`${cardClassName} min-h-20 flex-row items-center gap-3 p-3.5 active:opacity-70`}
 		>
-			<View style={[styles.icon, { backgroundColor: course.iconBackground }]}>
+			{/* The color is stored with the course in the database, so it can't be a static class. */}
+			<View
+				className="h-[47px] w-[43px] items-center justify-center rounded-small"
+				style={{ backgroundColor: course.iconBackground }}
+			>
 				<AppIcon name={course.icon} />
 			</View>
-			<View style={styles.copy}>
-				<View style={styles.identifier}>
-					<AppText variant="code" color={SyllaColors.blue}>
+			<View className="flex-1 gap-[5px]">
+				<View className="flex-row flex-wrap items-center gap-2">
+					<AppText variant="code" className="text-sylla-blue">
 						{course.code}
 					</AppText>
 					{course.reviewFields.length > 0 && (
-						<AppText variant="code" color={SyllaColors.brown} style={styles.review}>
+						<AppText variant="code" className="text-[9px]/3 text-sylla-brown">
 							• Review
 						</AppText>
 					)}
 				</View>
 				<AppText variant="heading">{course.title}</AppText>
-				<AppText variant="micro" color={SyllaColors.muted}>
+				<AppText variant="micro" className="text-sylla-muted">
 					{joinParts(
 						course.days,
 						formatTimeRange(course.startTime, course.endTime),
@@ -43,24 +46,3 @@ export function CourseCard({ course }: { course: Course }) {
 		</Pressable>
 	);
 }
-const styles = StyleSheet.create({
-	card: {
-		...cardStyle,
-		padding: 14,
-		minHeight: 80,
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 12,
-	},
-	icon: {
-		width: 43,
-		height: 47,
-		borderRadius: Radii.small,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	copy: { flex: 1, gap: 5 },
-	identifier: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
-	review: { fontSize: 9 },
-	pressed: { opacity: 0.7 },
-});
