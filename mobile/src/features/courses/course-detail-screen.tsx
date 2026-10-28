@@ -7,6 +7,7 @@ import { Screen } from '@/components/ui/screen';
 import { courseQuery } from '@/db/queries';
 import { CourseInformation } from './course-information';
 import { SyllaColors } from '@/constants/theme';
+import { AppIcon } from '@/components/ui/app-icon';
 
 export function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,7 +38,7 @@ export function CourseDetailScreen() {
           </AppText>
           <CourseInformation course={course} />
           {course.reviewFields.length > 0 && (
-            <AppCard style={styles.review}>
+            <AppCard style={styles.review} rightCornerIcon={<AppIcon name="scan" size={22} />}>
               <AppText variant="heading">
                 {course.reviewFields.length}{' '}
                 {course.reviewFields.length === 1 ? 'detail needs' : 'details need'} a closer look
