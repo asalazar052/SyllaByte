@@ -10,10 +10,12 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { currentSemesterQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
+import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 
 import { CourseCard } from './course-card';
 
 export function CoursesScreen() {
+	const { error: uploadError, picking, pick } = useSyllabusPicker();
 	const { data: semester } = useLiveQuery(currentSemesterQuery());
 	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const [searchOpen, setSearchOpen] = useState(false);
@@ -156,10 +158,18 @@ export function CoursesScreen() {
 				)}
 			</View>
 			<AppButton
-				label="Upload a syllabus"
+				label={picking ? 'Opening files…' : 'Upload a syllabus'}
 				icon="plus"
-				onPress={() => router.push('/upload')}
+				disabled={picking}
+				onPress={async () => {
+					if (await pick()) router.push('/upload');
+				}}
 			/>
+			{uploadError && (
+				<AppText accessibilityRole="alert" className="text-sylla-brown">
+					{uploadError}
+				</AppText>
+			)}
 		</Screen>
 	);
 }
