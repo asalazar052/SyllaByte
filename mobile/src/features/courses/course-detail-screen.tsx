@@ -1,77 +1,81 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText } from '@/components/ui/app-text';
+
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
+import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { courses } from '@/data/courses';
 import { SyllaColors } from '@/constants/theme';
+import { courses } from '@/data/courses';
 
 export function CourseDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const course = courses.find((item) => item.id === id);
-  function back() {
-    if (router.canGoBack()) router.back();
-    else router.replace('/courses');
-  }
-  return (
-    <Screen>
-      <Pressable accessibilityRole="button" onPress={back} style={styles.back}>
-        <AppText variant="action" color={SyllaColors.blue}>
-          ← Back to courses
-        </AppText>
-      </Pressable>
-      {!course ? (
-        <AppCard>
-          <AppText variant="heading">Course not found</AppText>
-          <AppText>This course is not part of your mock semester.</AppText>
-        </AppCard>
-      ) : (
-        <>
-          <AppText variant="eyebrow" color={SyllaColors.blue}>
-            COURSES / {course.code}
-          </AppText>
-          <AppText variant="title" accessibilityRole="header">
-            {course.title}
-          </AppText>
-          <AppCard>
-            <View style={styles.row}>
-              <AppIcon name={course.icon} />
-              <AppText variant="heading">Course information</AppText>
-            </View>
-            <AppText>{course.schedule}</AppText>
-            <AppText color={SyllaColors.muted}>{course.credits} credits · Fall 2026</AppText>
-          </AppCard>
-          {course.reviewFields.length > 0 && (
-            <AppCard style={styles.review}>
-              <AppText variant="heading">
-                {course.reviewFields.length}{' '}
-                {course.reviewFields.length === 1 ? 'detail needs' : 'details need'} a closer look
-              </AppText>
-              <AppText color={SyllaColors.brown}>
-                These mock fields are flagged for review. Compare them with your syllabus before
-                relying on them.
-              </AppText>
-              {course.reviewFields.map((field) => (
-                <View key={field.label} style={styles.field}>
-                  <AppText variant="label">{field.label}</AppText>
-                  <AppText>{field.value}</AppText>
-                </View>
-              ))}
-            </AppCard>
-          )}
-          <AppText variant="caption" color={SyllaColors.muted}>
-            Course details preview · Editing, confirmation, and syllabus viewing will arrive with
-            the review milestone.
-          </AppText>
-        </>
-      )}
-    </Screen>
-  );
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const course = courses.find((item) => item.id === id);
+	function back() {
+		if (router.canGoBack()) router.back();
+		else router.replace('/courses');
+	}
+	return (
+		<Screen>
+			<Pressable accessibilityRole="button" onPress={back} style={styles.back}>
+				<AppText variant="action" color={SyllaColors.blue}>
+					← Back to courses
+				</AppText>
+			</Pressable>
+			{!course ? (
+				<AppCard>
+					<AppText variant="heading">Course not found</AppText>
+					<AppText>This course is not part of your mock semester.</AppText>
+				</AppCard>
+			) : (
+				<>
+					<AppText variant="eyebrow" color={SyllaColors.blue}>
+						COURSES / {course.code}
+					</AppText>
+					<AppText variant="title" accessibilityRole="header">
+						{course.title}
+					</AppText>
+					<AppCard>
+						<View style={styles.row}>
+							<AppIcon name={course.icon} />
+							<AppText variant="heading">Course information</AppText>
+						</View>
+						<AppText>{course.schedule}</AppText>
+						<AppText color={SyllaColors.muted}>
+							{course.credits} credits · Fall 2026
+						</AppText>
+					</AppCard>
+					{course.reviewFields.length > 0 && (
+						<AppCard style={styles.review}>
+							<AppText variant="heading">
+								{course.reviewFields.length}{' '}
+								{course.reviewFields.length === 1 ? 'detail needs' : 'details need'}{' '}
+								a closer look
+							</AppText>
+							<AppText color={SyllaColors.brown}>
+								These mock fields are flagged for review. Compare them with your
+								syllabus before relying on them.
+							</AppText>
+							{course.reviewFields.map((field) => (
+								<View key={field.label} style={styles.field}>
+									<AppText variant="label">{field.label}</AppText>
+									<AppText>{field.value}</AppText>
+								</View>
+							))}
+						</AppCard>
+					)}
+					<AppText variant="caption" color={SyllaColors.muted}>
+						Course details preview · Editing, confirmation, and syllabus viewing will
+						arrive with the review milestone.
+					</AppText>
+				</>
+			)}
+		</Screen>
+	);
 }
 const styles = StyleSheet.create({
-  back: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  review: { backgroundColor: SyllaColors.peach, borderColor: SyllaColors.peach },
-  field: { padding: 12, borderRadius: 10, backgroundColor: SyllaColors.surface, gap: 4 },
+	back: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
+	row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+	review: { backgroundColor: SyllaColors.peach, borderColor: SyllaColors.peach },
+	field: { padding: 12, borderRadius: 10, backgroundColor: SyllaColors.surface, gap: 4 },
 });
