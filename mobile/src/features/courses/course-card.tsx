@@ -34,6 +34,11 @@ export function CourseCard({ course }: { course: Course }) {
 					)}
 				</View>
 				<AppText variant="heading">{course.title}</AppText>
+				{course.isSample && (
+					<AppText variant="caption" className="text-sylla-brown">
+						Sample data
+					</AppText>
+				)}
 				<AppText variant="micro" className="text-sylla-muted">
 					{joinParts(
 						course.days,

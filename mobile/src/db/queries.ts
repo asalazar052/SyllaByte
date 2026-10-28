@@ -1,11 +1,35 @@
 import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from './client';
-import { courses, officeHours, professors, semesters } from './schema';
+import {
+	courseDates,
+	courseMaterials,
+	courses,
+	officeHours,
+	professors,
+	semesters,
+} from './schema';
+
+export const savedDatesQuery = (courseId?: string) =>
+	db
+		.select({ item: courseDates, course: courses })
+		.from(courseDates)
+		.innerJoin(courses, eq(courseDates.courseId, courses.id))
+		.where(courseId ? eq(courseDates.courseId, courseId) : undefined)
+		.orderBy(courseDates.date, courseDates.time);
+export const savedMaterialsQuery = (courseId?: string) =>
+	db
+		.select({ item: courseMaterials, course: courses })
+		.from(courseMaterials)
+		.innerJoin(courses, eq(courseMaterials.courseId, courses.id))
+		.where(courseId ? eq(courseMaterials.courseId, courseId) : undefined)
+		.orderBy(courses.code, courseMaterials.title);
 
 // The most recently added semester is treated as the current one.
 export const currentSemesterQuery = () =>
 	db.query.semesters.findFirst({ orderBy: desc(semesters.id) });
+
+export const allSemestersQuery = () => db.select().from(semesters).orderBy(desc(semesters.id));
 
 // useLiveQuery only watches the root table, so each table a screen shows gets its own query.
 export const semesterCoursesQuery = (semesterId: number) =>

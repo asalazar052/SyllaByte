@@ -10,7 +10,11 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
+import { saveReviewedCourse } from '@/db/save-course';
+
 import { extractionReducer, type ExtractionState, initialExtraction } from './mock-extraction';
+import { type CourseDraft, validateDraft } from './review-draft';
+import { removeSyllabus, retainSyllabus } from './syllabus-storage';
 
 type SyllabusPicker = {
 	file: DocumentPicker.DocumentPickerAsset | null;
@@ -22,6 +26,10 @@ type SyllabusPicker = {
 	processing: boolean;
 	startExtraction: () => void;
 	cancelExtraction: () => void;
+	updateDraft: (draft: CourseDraft) => void;
+	save: () => Promise<boolean>;
+	saving: boolean;
+	savedCourseId: string | null;
 };
 
 const SyllabusPickerContext = createContext<SyllabusPicker | null>(null);
@@ -32,6 +40,9 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	const [error, setError] = useState<string | null>(null);
 	const [picking, setPicking] = useState(false);
 	const busy = useRef(false);
+	const savingRef = useRef(false);
+	const [saving, setSaving] = useState(false);
+	const [savedCourseId, setSavedCourseId] = useState<string | null>(null);
 	const [extraction, dispatch] = useReducer(extractionReducer, initialExtraction);
 	const processing = extraction.phase !== 'idle' && extraction.phase !== 'ready';
 
@@ -42,7 +53,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	}, [processing]);
 
 	async function pick() {
-		if (busy.current || processing) return false;
+		if (busy.current || processing || savingRef.current) return false;
 		// Some browsers never resolve the picker promise on cancel. Allow retrying there.
 		busy.current = Platform.OS !== 'web';
 		setPicking(busy.current);
@@ -69,6 +80,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 				return false;
 			}
 			setFile(selected);
+			setSavedCourseId(null);
 			dispatch({ type: 'reset' });
 			return true;
 		} catch {
@@ -81,9 +93,10 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	}
 
 	function clear() {
-		if (processing) return;
+		if (processing || savingRef.current) return;
 		setFile(null);
 		setError(null);
+		setSavedCourseId(null);
 		dispatch({ type: 'reset' });
 	}
 
@@ -95,6 +108,50 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 
 	function cancelExtraction() {
 		dispatch({ type: 'reset' });
+	}
+
+	function updateDraft(draft: CourseDraft) {
+		if (savingRef.current || savedCourseId) return;
+		setError(null);
+		dispatch({ type: 'edit', draft });
+	}
+
+	async function save() {
+		if (savingRef.current || savedCourseId || !file || !extraction.result) return false;
+		const draft = extraction.result.draft;
+		const validation = validateDraft(draft);
+		if (validation) {
+			setError(validation);
+			return false;
+		}
+		savingRef.current = true;
+		setSaving(true);
+		setError(null);
+		let path: string | null = null;
+		try {
+			const id = `import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+			path = await retainSyllabus(file.uri, id);
+			saveReviewedCourse(id, draft, file.name, path);
+			setSavedCourseId(id);
+			return true;
+		} catch (cause) {
+			if (path) {
+				try {
+					removeSyllabus(path);
+				} catch {
+					/* Preserve the save error for retry. */
+				}
+			}
+			setError(
+				cause instanceof Error
+					? cause.message
+					: 'Could not save your course. Please try again.',
+			);
+			return false;
+		} finally {
+			savingRef.current = false;
+			setSaving(false);
+		}
 	}
 
 	return (
@@ -109,6 +166,10 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 				processing,
 				startExtraction,
 				cancelExtraction,
+				updateDraft,
+				save,
+				saving,
+				savedCourseId,
 			}}
 		>
 			{children}

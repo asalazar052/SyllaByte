@@ -12,7 +12,7 @@ import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 
 export default function Upload() {
 	const insets = useSafeAreaInsets();
-	const { file, error, picking, pick, clear, processing, extraction, startExtraction } =
+	const { file, error, picking, pick, clear, processing, extraction, startExtraction, saving } =
 		useSyllabusPicker();
 	return (
 		<Screen>
@@ -55,7 +55,7 @@ export default function Upload() {
 					<View className="flex-row flex-wrap items-center gap-x-5">
 						<Pressable
 							accessibilityRole="button"
-							disabled={picking || processing}
+							disabled={picking || processing || saving}
 							onPress={() => {
 								void pick();
 							}}
@@ -68,7 +68,7 @@ export default function Upload() {
 						<Pressable
 							accessibilityRole="button"
 							onPress={clear}
-							disabled={picking || processing}
+							disabled={picking || processing || saving}
 							className="min-h-11 justify-center"
 						>
 							<AppText variant="action" className="text-sylla-muted">
@@ -85,7 +85,7 @@ export default function Upload() {
 						}}
 					/>
 				)}
-				{error && (
+				{error && extraction.phase !== 'ready' && (
 					<AppText accessibilityRole="alert" className="text-sylla-brown">
 						{error}
 					</AppText>

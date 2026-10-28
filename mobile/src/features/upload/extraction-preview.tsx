@@ -5,6 +5,7 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 
 import { processingStages } from './mock-extraction';
+import { ReviewForm } from './review-form';
 import { useSyllabusPicker } from './syllabus-picker';
 
 export function ExtractionPreview() {
@@ -42,44 +43,5 @@ export function ExtractionPreview() {
 			</AppCard>
 		);
 	}
-	return (
-		<View className="gap-4">
-			<AppText variant="section" accessibilityRole="header" accessibilityLiveRegion="polite">
-				Sample extraction complete
-			</AppText>
-			<AppText className="text-sylla-muted">
-				Here’s a preview of the information you’ll review. All values below are sample data.
-			</AppText>
-			{extraction.result?.sections.map((section) => (
-				<AppCard key={section.title}>
-					<AppText variant="heading" accessibilityRole="header">
-						{section.title}
-					</AppText>
-					{section.fields.map((field) => (
-						<View
-							key={field.label}
-							className={
-								field.needsReview
-									? 'gap-1 rounded-small bg-sylla-peach p-3'
-									: 'gap-1'
-							}
-						>
-							<AppText variant="caption" className="text-sylla-muted">
-								{field.label}
-							</AppText>
-							<AppText variant="label">{field.value}</AppText>
-							{field.needsReview && (
-								<AppText variant="caption" className="text-sylla-brown">
-									Needs review
-								</AppText>
-							)}
-						</View>
-					))}
-				</AppCard>
-			))}
-			<AppText variant="caption" className="text-sylla-muted">
-				Preview only. Editing and saving these details to a course will come next.
-			</AppText>
-		</View>
-	);
+	return <ReviewForm />;
 }

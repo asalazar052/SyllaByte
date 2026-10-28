@@ -9,6 +9,8 @@ import { Screen } from '@/components/ui/screen';
 import { courseQuery } from '@/db/queries';
 
 import { CourseInformation } from './course-information';
+import { DeleteCourseAction } from './delete-course-action';
+import { SavedResources, SyllabusAttachment } from './saved-resources';
 
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,7 +33,7 @@ export function CourseDetailScreen() {
 			{updatedAt === undefined ? null : !course ? (
 				<AppCard>
 					<AppText variant="heading">Course not found</AppText>
-					<AppText>This course is not part of your mock semester.</AppText>
+					<AppText>This course could not be found.</AppText>
 				</AppCard>
 			) : (
 				<>
@@ -42,6 +44,23 @@ export function CourseDetailScreen() {
 						{course.title}
 					</AppText>
 					<CourseInformation course={course} />
+					{course.isSample && (
+						<AppText variant="caption" className="text-sylla-brown">
+							Demo course · Created from sample extraction data.
+						</AppText>
+					)}
+					{course.syllabusName && (
+						<>
+							<SyllabusAttachment
+								name={course.syllabusName}
+								path={course.syllabusPath}
+							/>
+							<AppText variant="section">Important dates</AppText>
+							<SavedResources kind="dates" courseId={course.id} />
+							<AppText variant="section">Materials</AppText>
+							<SavedResources kind="materials" courseId={course.id} />
+						</>
+					)}
 					{course.reviewFields.length > 0 && (
 						<AppCard
 							className="border-sylla-peach bg-sylla-peach"
@@ -67,10 +86,11 @@ export function CourseDetailScreen() {
 							))}
 						</AppCard>
 					)}
-					<AppText variant="caption" className="text-sylla-muted">
-						Course details preview · Editing, confirmation, and syllabus viewing will
-						arrive with the review milestone.
-					</AppText>
+					<DeleteCourseAction
+						id={course.id}
+						code={course.code}
+						onDeleted={() => router.replace('/courses')}
+					/>
 				</>
 			)}
 		</Screen>
