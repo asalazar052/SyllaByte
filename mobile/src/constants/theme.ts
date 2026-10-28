@@ -8,57 +8,57 @@ import '@/global.css';
 import { Platform } from 'react-native';
 
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+	light: {
+		text: '#000000',
+		background: '#ffffff',
+		backgroundElement: '#F0F0F3',
+		backgroundSelected: '#E0E1E6',
+		textSecondary: '#60646C',
+	},
+	dark: {
+		text: '#ffffff',
+		background: '#000000',
+		backgroundElement: '#212225',
+		backgroundSelected: '#2E3135',
+		textSecondary: '#B0B4BA',
+	},
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
+	ios: {
+		/** iOS `UIFontDescriptorSystemDesignDefault` */
+		sans: 'system-ui',
+		/** iOS `UIFontDescriptorSystemDesignSerif` */
+		serif: 'ui-serif',
+		/** iOS `UIFontDescriptorSystemDesignRounded` */
+		rounded: 'ui-rounded',
+		/** iOS `UIFontDescriptorSystemDesignMonospaced` */
+		mono: 'ui-monospace',
+	},
+	default: {
+		sans: 'normal',
+		serif: 'serif',
+		rounded: 'normal',
+		mono: 'monospace',
+	},
+	web: {
+		sans: 'var(--font-display)',
+		serif: 'var(--font-serif)',
+		rounded: 'var(--font-rounded)',
+		mono: 'var(--font-mono)',
+	},
 });
 
 export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
+	half: 2,
+	one: 4,
+	two: 8,
+	three: 16,
+	four: 24,
+	five: 32,
+	six: 64,
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
@@ -66,24 +66,24 @@ export const MaxContentWidth = 800;
 
 // Figma foundations shared by the first SyllaByte screens.
 export const SyllaColors = {
-  background: '#F7F5F0',
-  surface: '#FFFEFB',
-  navy: '#203B57',
-  blue: '#315F85',
-  muted: '#75808A',
-  border: '#E3E4DE',
-  paleBlue: '#E9EFF4',
-  green: '#DCECCF',
-  purple: '#E9E6F1',
-  peach: '#F6E7D6',
-  brown: '#91623B',
-  white: '#FFFFFF',
+	background: '#F7F5F0',
+	surface: '#FFFEFB',
+	navy: '#203B57',
+	blue: '#315F85',
+	muted: '#75808A',
+	border: '#E3E4DE',
+	paleBlue: '#E9EFF4',
+	green: '#DCECCF',
+	purple: '#E9E6F1',
+	peach: '#F6E7D6',
+	brown: '#91623B',
+	white: '#FFFFFF',
 } as const;
 
 export const SyllaFonts = {
-  regular: 'Inter-Regular',
-  medium: 'Inter-Medium',
-  semibold: 'Inter-SemiBold',
+	regular: 'Inter-Regular',
+	medium: 'Inter-Medium',
+	semibold: 'Inter-SemiBold',
 } as const;
 
 export const Radii = { small: 10, card: 16, pill: 100 } as const;

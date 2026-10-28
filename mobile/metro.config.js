@@ -16,9 +16,12 @@ config.resolver.assetExts.push('wasm');
 const migrationsDir = path.join(__dirname, 'drizzle');
 const migrationsHash = crypto.createHash('sha1');
 if (fs.existsSync(migrationsDir)) {
-  for (const file of fs.readdirSync(migrationsDir).filter((name) => name.endsWith('.sql')).sort()) {
-    migrationsHash.update(file).update(fs.readFileSync(path.join(migrationsDir, file)));
-  }
+	for (const file of fs
+		.readdirSync(migrationsDir)
+		.filter((name) => name.endsWith('.sql'))
+		.sort()) {
+		migrationsHash.update(file).update(fs.readFileSync(path.join(migrationsDir, file)));
+	}
 }
 config.cacheVersion = migrationsHash.digest('hex');
 
