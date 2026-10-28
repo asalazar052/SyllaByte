@@ -10,12 +10,16 @@ const SyllaColors = {
 	blue: '#315F85',
 	muted: '#75808A',
 	border: '#E3E4DE',
-	paleBlue: '#E9EFF4',
+	paleBlue: '#dbe6f0',
 	green: '#DCECCF',
 	purple: '#E9E6F1',
 	peach: '#F6E7D6',
 	brown: '#91623B',
 	white: '#FFFFFF',
+	softBlue: '#B6C9D9',
+	forest: '#406B4C',
+	violet: '#6F5A8F',
+	terracotta: '#B0603A',
 };
 
 module.exports = { SyllaColors };

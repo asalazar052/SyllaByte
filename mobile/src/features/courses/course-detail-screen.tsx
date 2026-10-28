@@ -8,11 +8,13 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { courseQuery } from '@/db/queries';
 
+import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
 
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
+	const courseId = Number.isInteger(Number(id)) ? Number(id) : 0;
+	const { data: course, updatedAt } = useLiveQuery(courseQuery(courseId), [courseId]);
 	function back() {
 		if (router.canGoBack()) router.back();
 		else router.replace('/courses');
@@ -22,7 +24,7 @@ export function CourseDetailScreen() {
 			<Pressable
 				accessibilityRole="button"
 				onPress={back}
-				className="min-h-11 justify-center self-start"
+				className="justify-center self-start"
 			>
 				<AppText variant="action" className="text-sylla-blue">
 					← Back to courses
@@ -35,12 +37,26 @@ export function CourseDetailScreen() {
 				</AppCard>
 			) : (
 				<>
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						COURSES / {course.code}
-					</AppText>
-					<AppText variant="title" accessibilityRole="header">
-						{course.title}
-					</AppText>
+					<View className="gap-3">
+						<AppText variant="eyebrow" className="text-sylla-blue">
+							COURSES / {course.code}
+						</AppText>
+						<View className="flex-row items-center justify-between gap-4">
+							<AppText
+								variant="title"
+								accessibilityRole="header"
+								className="min-w-0 flex-1"
+							>
+								{course.title}
+							</AppText>
+							<CourseIcon
+								icon={course.icon}
+								background={course.iconBackground}
+								width={80}
+								height={80}
+							/>
+						</View>
+					</View>
 					<CourseInformation course={course} />
 					{course.reviewFields.length > 0 && (
 						<AppCard

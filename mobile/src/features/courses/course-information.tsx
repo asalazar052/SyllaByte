@@ -168,7 +168,9 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 				</>
 			)}
 			<EditableRow
+				icon="graduationCap"
 				title={course.credits ? `${course.credits} credits` : undefined}
+				subtitle={course.semester.name}
 				placeholder="Add credits"
 				editLabel="Edit credits"
 				values={{ credits: course.credits === null ? '' : String(course.credits) }}
