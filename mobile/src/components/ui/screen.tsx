@@ -7,7 +7,7 @@ export function Screen({ children }: { children: ReactNode }) {
 		<SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-sylla-background">
 			<ScrollView
 				keyboardShouldPersistTaps="handled"
-				contentContainerClassName="w-full max-w-[600px] grow gap-[22px] self-center px-6 pb-8 pt-3"
+				contentContainerClassName="w-full max-w-xl grow gap-6 self-center px-6 pb-8 pt-3"
 			>
 				{children}
 			</ScrollView>

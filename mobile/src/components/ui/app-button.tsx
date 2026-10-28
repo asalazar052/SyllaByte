@@ -19,7 +19,7 @@ export function AppButton({
 			className="min-h-12 flex-row items-center justify-center gap-2.5 rounded-small bg-sylla-navy p-3.5 active:opacity-75"
 		>
 			{icon && <AppIcon name={icon} size={18} />}
-			<AppText variant="label" className="text-sm text-white">
+			<AppText variant="label" className="text-white">
 				{label}
 			</AppText>
 		</Pressable>

@@ -14,7 +14,7 @@ export function TextField({ label, className, ...props }: TextInputProps & { lab
 				autoCorrect={false}
 				{...props}
 				className={twMerge(
-					'min-h-11 rounded-small border border-sylla-border bg-sylla-background px-3 font-inter text-[14px] text-sylla-navy',
+					'min-h-11 rounded-small border border-sylla-border bg-sylla-background px-3 font-inter text-sm text-sylla-navy',
 					className,
 				)}
 			/>

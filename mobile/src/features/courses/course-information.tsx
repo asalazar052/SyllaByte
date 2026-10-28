@@ -168,10 +168,7 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 				</>
 			)}
 			<EditableRow
-				title={joinParts(
-					course.credits !== null && `${course.credits} credits`,
-					course.semester.name,
-				)}
+				title={course.credits ? `${course.credits} credits` : undefined}
 				placeholder="Add credits"
 				editLabel="Edit credits"
 				values={{ credits: course.credits === null ? '' : String(course.credits) }}

@@ -54,7 +54,7 @@ export function EditableRow<T>({
 		return (
 			<View className="min-h-11 flex-row items-center gap-3">
 				{icon && <AppIcon name={icon} size={19} />}
-				<View className="flex-1 gap-[3px]">
+				<View className="flex-1 gap-1">
 					{primary ? (
 						<AppText variant="label">{primary}</AppText>
 					) : (

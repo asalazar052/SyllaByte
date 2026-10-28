@@ -40,8 +40,8 @@ export function CoursesScreen() {
 
 	return (
 		<Screen>
-			<View className="gap-[15px]">
-				<View className="min-h-[21px] flex-row items-center justify-between">
+			<View className="gap-4">
+				<View className="min-h-5 flex-row items-center justify-between">
 					<AppText variant="eyebrow" className="text-sylla-blue">
 						{(semester?.name ?? '').toUpperCase()} / COURSES
 					</AppText>
@@ -51,7 +51,7 @@ export function CoursesScreen() {
 						aria-expanded={searchOpen}
 						onPress={toggleSearch}
 						hitSlop={12}
-						className="h-[21px] w-6 items-center justify-center"
+						className="h-5 w-6 items-center justify-center"
 					>
 						<AppIcon name="search" size={21} />
 					</Pressable>
@@ -74,7 +74,7 @@ export function CoursesScreen() {
 						autoCapitalize="none"
 						autoCorrect={false}
 						returnKeyType="search"
-						className="min-h-12 min-w-0 flex-1 p-3 font-inter text-[14px] text-sylla-navy"
+						className="min-h-12 min-w-0 flex-1 p-3 font-inter text-sm text-sylla-navy"
 					/>
 					{query.length > 0 && (
 						<Pressable
@@ -98,10 +98,10 @@ export function CoursesScreen() {
 				accessibilityLabel={`Review ${reviewCount} details in ${reviewCourses.length} courses`}
 				aria-pressed={reviewOnly}
 				onPress={() => setReviewOnly((value) => !value)}
-				className="flex-row items-center gap-3 rounded-2xl bg-sylla-peach p-[15px] active:opacity-75"
+				className="flex-row items-center gap-3 rounded-2xl bg-sylla-peach p-4 active:opacity-75"
 			>
 				<AppIcon name="scan" size={22} />
-				<View className="flex-1 gap-[5px]">
+				<View className="flex-1 gap-1.5">
 					<AppText variant="label">{reviewCount} details could use your eyes</AppText>
 					<AppText variant="caption" className="text-sylla-brown">
 						Check highlighted fields in {reviewCourses.length} courses.

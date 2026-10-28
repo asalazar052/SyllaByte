@@ -1,19 +1,13 @@
 import { usePathname } from 'expo-router';
 import { TabList, Tabs, TabSlot, TabTrigger, type TabTriggerSlotProps } from 'expo-router/ui';
-import { cssInterop } from 'nativewind';
 import type { ComponentRef, Ref } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SyllaColors } from '@/constants/theme';
 
 import { AppIcon, type AppIconName } from './ui/app-icon';
 import { AppText } from './ui/app-text';
-
-// NativeWind only knows React Native's own components; teach it to read className on the router's.
-cssInterop(Tabs, { className: 'style' });
-cssInterop(TabList, { className: 'style' });
-cssInterop(TabSlot, { className: 'style' });
 
 function TabButton({
 	icon,
@@ -33,10 +27,10 @@ function TabButton({
 			style={undefined}
 			accessibilityRole="tab"
 			aria-selected={focused}
-			className="min-h-[45px] flex-1 items-center gap-1 active:opacity-60"
+			className="min-h-11 flex-1 items-center gap-1 active:opacity-60"
 		>
 			<View
-				className={`h-[29px] w-12 items-center justify-center rounded-full ${focused ? 'bg-sylla-paleBlue' : ''}`}
+				className={`h-7 w-12 items-center justify-center rounded-full ${focused ? 'bg-sylla-paleBlue' : ''}`}
 			>
 				<AppIcon
 					name={icon}
@@ -54,18 +48,22 @@ function TabButton({
 export default function AppTabs() {
 	const insets = useSafeAreaInsets();
 	return (
-		<Tabs className="min-h-0 flex-1 bg-sylla-background">
+		// Tabs, TabSlot and TabList keep `style` on purpose: expo-router/ui finds the tab list and triggers by
+		// comparing element types, and NativeWind's className support swaps in a wrapper type, so no tabs are found.
+		// Insets are runtime values, and NativeWind's safe-area utilities don't exist on web.
+		<Tabs style={styles.root}>
 			<View className="min-h-0 flex-1 overflow-hidden">
-				<TabSlot className="min-h-0 flex-1" />
+				<TabSlot style={styles.slot} />
 			</View>
-			{/* Insets are runtime values, and NativeWind's safe-area utilities don't exist on web. */}
 			<TabList
-				className="shrink-0 flex-row gap-[3px] border-t border-sylla-border bg-sylla-surface pt-[9px]"
-				style={{
-					paddingBottom: Math.max(insets.bottom, 12),
-					paddingLeft: Math.max(insets.left, 14),
-					paddingRight: Math.max(insets.right, 14),
-				}}
+				style={[
+					styles.list,
+					{
+						paddingBottom: Math.max(insets.bottom, 12),
+						paddingLeft: Math.max(insets.left, 14),
+						paddingRight: Math.max(insets.right, 14),
+					},
+				]}
 			>
 				<TabTrigger name="home" href="/home" asChild>
 					<TabButton icon="home">Home</TabButton>
@@ -86,3 +84,16 @@ export default function AppTabs() {
 		</Tabs>
 	);
 }
+const styles = StyleSheet.create({
+	root: { flex: 1, minHeight: 0, backgroundColor: SyllaColors.background },
+	slot: { flex: 1, minHeight: 0 },
+	list: {
+		flexShrink: 0,
+		flexDirection: 'row',
+		backgroundColor: SyllaColors.surface,
+		borderTopColor: SyllaColors.border,
+		borderTopWidth: 1,
+		paddingTop: 10,
+		gap: 4,
+	},
+});

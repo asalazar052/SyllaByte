@@ -17,18 +17,18 @@ export function CourseCard({ course }: { course: Course }) {
 		>
 			{/* The color is stored with the course in the database, so it can't be a static class. */}
 			<View
-				className="h-[47px] w-[43px] items-center justify-center rounded-small"
+				className="h-12 w-11 items-center justify-center rounded-small"
 				style={{ backgroundColor: course.iconBackground }}
 			>
 				<AppIcon name={course.icon} />
 			</View>
-			<View className="flex-1 gap-[5px]">
+			<View className="flex-1 gap-1.5">
 				<View className="flex-row flex-wrap items-center gap-2">
 					<AppText variant="code" className="text-sylla-blue">
 						{course.code}
 					</AppText>
 					{course.reviewFields.length > 0 && (
-						<AppText variant="code" className="text-[9px]/3 text-sylla-brown">
+						<AppText variant="code" className="text-sylla-brown">
 							• Review
 						</AppText>
 					)}
