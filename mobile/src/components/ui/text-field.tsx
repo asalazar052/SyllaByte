@@ -3,10 +3,15 @@ import { twMerge } from 'tailwind-merge';
 
 import { AppText } from './app-text';
 
-export function TextField({ label, className, ...props }: TextInputProps & { label: string }) {
+export function TextField({
+	label,
+	labelClassName,
+	className,
+	...props
+}: TextInputProps & { label: string; labelClassName?: string }) {
 	return (
 		<View className="gap-1">
-			<AppText variant="caption" className="text-sylla-muted">
+			<AppText variant="caption" className={twMerge('text-sylla-muted', labelClassName)}>
 				{label}
 			</AppText>
 			<TextInput

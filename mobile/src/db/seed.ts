@@ -1,7 +1,15 @@
 import { SyllaColors } from '@/constants/theme';
 
 import { db } from './client';
-import { courseReviewFields, courses, events, officeHours, professors, semesters } from './schema';
+import {
+	courseReviewFields,
+	courses,
+	events,
+	files,
+	officeHours,
+	professors,
+	semesters,
+} from './schema';
 
 // Minutes after midnight.
 const at = (hour: number, minute = 0) => hour * 60 + minute;
@@ -32,6 +40,12 @@ const seedSemester = {
 					location: 'Science Hall 218',
 				},
 			},
+			syllabus: {
+				filename: 'MATH201_Syllabus.pdf',
+				pageCount: 8,
+				bytes: 1243518,
+				checksum: 'f269613b58bfe28f6e7b9887a2a12c67',
+			},
 			reviewFields: [
 				{ label: 'Midterm 1', value: 'Sep 28, 2026' },
 				{ label: 'Final exam', value: 'Dec 14, 2026' },
@@ -58,6 +72,12 @@ const seedSemester = {
 					location: 'Life Sciences 230',
 				},
 			},
+			syllabus: {
+				filename: 'BIO110_Syllabus.pdf',
+				pageCount: 6,
+				bytes: 861204,
+				checksum: 'ff1560ec4fbb0ec93ece991f4f887ca9',
+			},
 			reviewFields: [],
 		},
 		{
@@ -80,6 +100,12 @@ const seedSemester = {
 					endTime: at(16, 30),
 					location: 'Humanities 340',
 				},
+			},
+			syllabus: {
+				filename: 'ENG210_Syllabus.pdf',
+				pageCount: 5,
+				bytes: 738911,
+				checksum: '0316067873507fad9d3ec49c3cb99583',
 			},
 			reviewFields: [
 				{ label: 'Required textbook edition', value: '4th edition — check scan' },
@@ -105,6 +131,12 @@ const seedSemester = {
 					endTime: at(14),
 					location: 'Social Sciences 214',
 				},
+			},
+			syllabus: {
+				filename: 'PSY101_Syllabus.pdf',
+				pageCount: 7,
+				bytes: 982340,
+				checksum: '3e49f0997f9a49b400ea37abaa11036e',
 			},
 			reviewFields: [],
 		},
@@ -321,7 +353,7 @@ const seedEvents: (Omit<typeof events.$inferInsert, 'courseId'> & { course: stri
 	},
 ];
 
-// Inserts the mock semester and its events on first launch; does nothing once any semester exists.
+// Inserts the mock semester, its syllabi and its events on first launch; does nothing once any semester exists.
 export async function seedIfEmpty() {
 	db.transaction((tx) => {
 		if (tx.select({ id: semesters.id }).from(semesters).limit(1).get()) return;
@@ -335,7 +367,7 @@ export async function seedIfEmpty() {
 			.returning({ id: semesters.id })
 			.get();
 		const courseIds = new Map<string, number>();
-		for (const { reviewFields, professor, ...course } of seedSemester.courses) {
+		for (const { reviewFields, professor, syllabus, ...course } of seedSemester.courses) {
 			const { officeHours: hours, ...professorValues } = professor;
 			const { id: professorId } = tx
 				.insert(professors)
@@ -348,6 +380,9 @@ export async function seedIfEmpty() {
 				.returning({ id: courses.id })
 				.get();
 			courseIds.set(course.code, courseId);
+			tx.insert(files)
+				.values({ ...syllabus, semesterId, courseId, type: 'syllabus' })
+				.run();
 			tx.insert(officeHours)
 				.values({ ...hours, professorId, courseId })
 				.run();

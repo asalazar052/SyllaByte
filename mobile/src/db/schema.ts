@@ -18,6 +18,37 @@ import { SyllaColors } from '../constants/palette';
 const pairedRange = (start: AnySQLiteColumn, end: AnySQLiteColumn) =>
 	sql`(${start} is null) = (${end} is null) and (${end} is null or ${end} > ${start})`;
 
+// The only row's id; the table holds one set of settings, created by the migration that adds it.
+export const SETTINGS_ID = 1;
+
+export const settings = sqliteTable(
+	'settings',
+	{
+		id: integer('id').primaryKey(),
+		fullName: text('full_name'),
+		preferredName: text('preferred_name'),
+		email: text('email'),
+		institution: text('institution'),
+		reviewBeforeAdding: integer('review_before_adding', { mode: 'boolean' })
+			.notNull()
+			.default(true),
+		defaultRemindersEnabled: integer('default_reminders_enabled', { mode: 'boolean' })
+			.notNull()
+			.default(true),
+		// Whole days before an item's due date.
+		reminderDaysAhead: integer('reminder_days_ahead').notNull().default(3),
+		// Minutes after midnight, 9:00 AM by default.
+		reminderTime: integer('reminder_time')
+			.notNull()
+			.default(9 * 60),
+	},
+	(table) => [
+		check('settings_single_row', sql`${table.id} = ${sql.raw(String(SETTINGS_ID))}`),
+		check('settings_reminder_days_ahead', sql`${table.reminderDaysAhead} > 0`),
+		check('settings_reminder_time', sql`${table.reminderTime} between 0 and 1439`),
+	],
+);
+
 export const semesters = sqliteTable(
 	'semesters',
 	{
@@ -130,6 +161,39 @@ export const events = sqliteTable(
 	],
 );
 
+export const fileTypes = ['syllabus'] as const;
+export type FileType = (typeof fileTypes)[number];
+
+// Files the user has uploaded. Both links are optional, so a file can be kept before it is matched to a
+// course, and removing a semester or course removes the files that belong to it.
+export const files = sqliteTable(
+	'files',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		semesterId: integer('semester_id').references(() => semesters.id, { onDelete: 'cascade' }),
+		courseId: integer('course_id').references(() => courses.id, { onDelete: 'cascade' }),
+		type: text('type', { enum: fileTypes }).notNull(),
+		filename: text('filename').notNull(),
+		// Starts at 1 and goes up each time the file is uploaded again.
+		version: integer('version').notNull().default(1),
+		// Known for a PDF, and optional for any other kind of file.
+		pageCount: integer('page_count'),
+		// Size of the file in bytes.
+		bytes: integer('bytes').notNull(),
+		// MD5 of the file's contents, as 32 lowercase hex digits.
+		checksum: text('checksum').notNull(),
+	},
+	(table) => [
+		check('files_version', sql`${table.version} >= 1`),
+		check('files_page_count', sql`${table.pageCount} is null or ${table.pageCount} > 0`),
+		check('files_bytes', sql`${table.bytes} >= 0`),
+		check(
+			'files_checksum_format',
+			sql`length(${table.checksum}) = 32 and not ${table.checksum} glob '*[^0-9a-f]*'`,
+		),
+	],
+);
+
 export const courseReviewFields = sqliteTable('course_review_fields', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	courseId: integer('course_id')
@@ -141,6 +205,7 @@ export const courseReviewFields = sqliteTable('course_review_fields', {
 
 export const semestersRelations = relations(semesters, ({ many }) => ({
 	courses: many(courses),
+	files: many(files),
 }));
 
 export const professorsRelations = relations(professors, ({ many }) => ({
@@ -159,6 +224,12 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 	reviewFields: many(courseReviewFields),
 	officeHours: many(officeHours),
 	events: many(events),
+	files: many(files),
+}));
+
+export const filesRelations = relations(files, ({ one }) => ({
+	semester: one(semesters, { fields: [files.semesterId], references: [semesters.id] }),
+	course: one(courses, { fields: [files.courseId], references: [courses.id] }),
 }));
 
 export const eventsRelations = relations(events, ({ one }) => ({

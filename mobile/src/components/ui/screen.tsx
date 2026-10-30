@@ -15,6 +15,7 @@ export function Screen({
 			<ScrollView
 				ref={scrollRef}
 				keyboardShouldPersistTaps="handled"
+				automaticallyAdjustKeyboardInsets
 				contentContainerClassName="w-full max-w-xl grow gap-6 self-center px-6 pb-8 pt-3"
 			>
 				{children}

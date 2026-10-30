@@ -46,10 +46,39 @@ export function formatTime(minutes: number) {
 	return `${hour % 12 || 12}:${minute} ${hour >= 12 ? 'PM' : 'AM'}`;
 }
 
+export type LeadUnit = 'days' | 'weeks';
+export const DAYS_PER_UNIT: Record<LeadUnit, number> = { days: 1, weeks: 7 };
+
+// How far ahead of a due date is stored in days; whole weeks read as weeks ('2 weeks'), the rest as days.
+export function splitLeadTime(days: number): { amount: number; unit: LeadUnit } {
+	return days % DAYS_PER_UNIT.weeks === 0
+		? { amount: days / DAYS_PER_UNIT.weeks, unit: 'weeks' }
+		: { amount: days, unit: 'days' };
+}
+
+// '1 day', '3 days', '2 weeks'
+export function formatLeadTime(days: number) {
+	const { amount, unit } = splitLeadTime(days);
+	return `${amount} ${amount === 1 ? unit.slice(0, -1) : unit}`;
+}
+
 // '9:00–9:50 AM', or '11:00 AM–12:00 PM' when the range crosses noon; '' when either end is unset.
 export function formatTimeRange(start: number | null, end: number | null) {
 	if (start === null || end === null) return '';
 	const first = formatTime(start);
 	const sharesPeriod = start >= 720 === end >= 720;
 	return `${sharesPeriod ? first.slice(0, -3) : first}–${formatTime(end)}`;
+}
+
+// '860 KB', '1.2 MB'. File sizes count in thousands, as the iOS and Android file apps do.
+export function formatBytes(bytes: number) {
+	const units = ['B', 'KB', 'MB', 'GB'];
+	let value = bytes;
+	let unit = 0;
+	while (value >= 1000 && unit < units.length - 1) {
+		value /= 1000;
+		unit++;
+	}
+	// Whole bytes and kilobytes need no decimal; larger sizes keep one, without a trailing '.0'.
+	return `${unit < 2 ? Math.round(value) : Number(value.toFixed(1))} ${units[unit]}`;
 }
