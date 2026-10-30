@@ -46,6 +46,7 @@ function TimeField({
 				<DateTimePicker
 					mode="time"
 					display="compact"
+					themeVariant="light"
 					value={minutesToDate(minutes)}
 					onValueChange={(_, date) => onChange(dateToMinutes(date))}
 				/>
