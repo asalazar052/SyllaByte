@@ -8,14 +8,11 @@ import { TimeRangeField } from '@/components/ui/time-range-field';
 import { saveOfficeHours, updateCourse, updateProfessor } from '@/db/mutations';
 import { type CourseDetail, officeHoursQuery, professorQuery } from '@/db/queries';
 import { formatTimeRange, joinParts } from '@/lib/format';
+import { EMAIL, orNull } from '@/lib/input';
 
 import { EditableRow } from './editable-row';
 
-const EMAIL = /^\S+@\S+\.\S+$/;
 const TIME_ORDER = 'The end time must be after the start time.';
-
-// Every field can be cleared: an emptied field is stored as null.
-const orNull = (text: string) => text.trim() || null;
 
 export function CourseInformation({ course }: { course: CourseDetail }) {
 	const { data } = useLiveQuery(professorQuery(course.professorId ?? 0), [course.professorId]);

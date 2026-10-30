@@ -1,14 +1,19 @@
 import { and, eq } from 'drizzle-orm';
 
 import { db } from './client';
-import { courses, officeHours, professors } from './schema';
+import { courses, officeHours, professors, settings, SETTINGS_ID } from './schema';
 
 type CourseEdit = Pick<
 	typeof courses.$inferInsert,
 	'days' | 'startTime' | 'endTime' | 'location' | 'credits'
 >;
 type ProfessorEdit = Partial<Omit<typeof professors.$inferInsert, 'id'>>;
+type SettingsEdit = Partial<Omit<typeof settings.$inferInsert, 'id'>>;
 type OfficeHoursEdit = Omit<typeof officeHours.$inferInsert, 'id' | 'professorId' | 'courseId'>;
+
+export function updateSettings(values: SettingsEdit) {
+	db.update(settings).set(values).where(eq(settings.id, SETTINGS_ID)).run();
+}
 
 export function updateCourse(id: number, values: CourseEdit) {
 	db.update(courses).set(values).where(eq(courses.id, id)).run();

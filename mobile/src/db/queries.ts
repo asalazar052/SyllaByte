@@ -1,7 +1,20 @@
 import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
 
 import { db } from './client';
-import { courses, events, officeHours, professors, semesters } from './schema';
+import {
+	courses,
+	events,
+	files,
+	officeHours,
+	professors,
+	semesters,
+	settings,
+	SETTINGS_ID,
+} from './schema';
+
+// The one row of settings, which the migration that adds the table creates.
+export const settingsQuery = () =>
+	db.query.settings.findFirst({ where: eq(settings.id, SETTINGS_ID) });
 
 // The most recently added semester is treated as the current one.
 export const currentSemesterQuery = () =>
@@ -58,10 +71,19 @@ export const nextExamQuery = (from: string, courseId: number | null) =>
 export const allOfficeHoursQuery = () =>
 	db.query.officeHours.findMany({ with: { professor: true } });
 
+// Every uploaded file with the course it belongs to, newest semester first (files without one come last).
+export const filesQuery = () =>
+	db.query.files.findMany({
+		with: { semester: true, course: true },
+		orderBy: [desc(files.semesterId), asc(files.id)],
+	});
+
+export type Settings = NonNullable<Awaited<ReturnType<typeof settingsQuery>>>;
 export type Semester = Awaited<ReturnType<typeof semestersQuery>>[number];
 export type CourseCredits = Awaited<ReturnType<typeof courseCreditsQuery>>[number];
 export type Course = Awaited<ReturnType<typeof semesterCoursesQuery>>[number];
 export type CourseDetail = NonNullable<Awaited<ReturnType<typeof courseQuery>>>;
+export type UploadedFile = Awaited<ReturnType<typeof filesQuery>>[number];
 export type CalendarEvent = Awaited<ReturnType<typeof eventsBetweenQuery>>[number];
 export type Professor = Awaited<ReturnType<typeof professorQuery>>[number];
 export type OfficeHours = Awaited<ReturnType<typeof officeHoursQuery>>[number];

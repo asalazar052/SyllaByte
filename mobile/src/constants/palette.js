@@ -20,6 +20,7 @@ const SyllaColors = {
 	forest: '#406B4C',
 	violet: '#6F5A8F',
 	terracotta: '#B0603A',
+	danger: '#A34F47',
 };
 
 module.exports = { SyllaColors };
