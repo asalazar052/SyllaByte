@@ -1,26 +1,27 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import Constants from 'expo-constants';
-import { useState } from 'react';
+import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
+import { SyllaColors } from '@/constants/theme';
+import { updateSettings } from '@/db/mutations';
 import {
 	type CourseCredits,
 	courseCreditsQuery,
 	type Semester,
 	semestersQuery,
+	settingsQuery,
 } from '@/db/queries';
 import { formatDateRange } from '@/lib/dates';
-import { joinParts } from '@/lib/format';
+import { formatLeadTime, formatTime, joinParts } from '@/lib/format';
 
 import { SettingRow, SettingsGroup } from './setting-row';
 
-// Placeholders until accounts and saved preferences exist.
-const profile = { name: 'Student Name', email: 'student@school.edu' };
-const remindersSummary = '3 days before · 9:00 AM';
-const calendarSync = { account: 'Outlook Calendar', status: 'On' };
+// A placeholder until calendar sync exists.
+const calendarSync = { account: 'No account linked', status: 'Off' };
 
 function initials(name: string) {
 	return name
@@ -41,12 +42,12 @@ function semesterSummary(semester: Semester, courses: CourseCredits[]) {
 	);
 }
 
-// Edit, Help, Sign out and the rows with a chevron have no handler yet; each gets one when its feature lands.
+// Help, Sign out and the Calendar sync row have no handler yet; each gets one when its feature lands.
 export function SettingsScreen() {
+	const { data: settings } = useLiveQuery(settingsQuery());
 	const { data: semesters } = useLiveQuery(semestersQuery());
 	const { data: courses } = useLiveQuery(courseCreditsQuery());
-	const [reviewBeforeAdding, setReviewBeforeAdding] = useState(true);
-	const [remindersOn, setRemindersOn] = useState(true);
+	if (!settings) return null;
 
 	return (
 		<Screen>
@@ -66,21 +67,29 @@ export function SettingsScreen() {
 
 			<View className="flex-row items-center gap-3">
 				<View className="h-14 w-14 items-center justify-center rounded-full bg-sylla-paleBlue">
-					<AppText variant="section" className="font-inter-semibold text-sylla-blue">
-						{initials(profile.name)}
-					</AppText>
+					{settings.fullName ? (
+						<AppText variant="section" className="font-inter-semibold text-sylla-blue">
+							{initials(settings.fullName)}
+						</AppText>
+					) : (
+						<AppIcon name="user" size={22} tintColor={SyllaColors.blue} />
+					)}
 				</View>
 				<View className="min-w-0 flex-1 gap-1">
-					<AppText variant="section" className="font-inter-semibold">
-						{profile.name}
+					<AppText
+						variant="section"
+						className={settings.fullName ? 'font-inter-semibold' : 'text-sylla-muted'}
+					>
+						{settings.fullName ?? 'Add your name'}
 					</AppText>
 					<AppText variant="caption" className="text-sylla-muted">
-						{profile.email}
+						{settings.email ?? 'Add your email'}
 					</AppText>
 				</View>
 				<Pressable
 					accessibilityRole="button"
 					accessibilityLabel="Edit profile"
+					onPress={() => router.push('/settings/edit-profile')}
 					hitSlop={12}
 					className="active:opacity-70"
 				>
@@ -99,6 +108,7 @@ export function SettingsScreen() {
 							title={semester.name}
 							description={semesterSummary(semester, courses)}
 							chevron
+							onPress={() => router.push('/courses')}
 						/>
 					))}
 				</SettingsGroup>
@@ -109,13 +119,17 @@ export function SettingsScreen() {
 					icon="scan"
 					title="Review before adding"
 					description="Confirm uncertain dates and details"
-					toggle={{ value: reviewBeforeAdding, onValueChange: setReviewBeforeAdding }}
+					toggle={{
+						value: settings.reviewBeforeAdding,
+						onValueChange: (value) => updateSettings({ reviewBeforeAdding: value }),
+					}}
 				/>
 				<SettingRow
 					icon="shieldCheck"
 					title="Your data"
 					description="Manage files, export or delete data"
 					chevron
+					onPress={() => router.push('/settings/uploaded-files')}
 				/>
 			</SettingsGroup>
 
@@ -123,9 +137,17 @@ export function SettingsScreen() {
 				<SettingRow
 					icon="bell"
 					title="Default reminders"
-					description={remindersSummary}
-					toggle={{ value: remindersOn, onValueChange: setRemindersOn }}
+					description={joinParts(
+						`${formatLeadTime(settings.reminderDaysAhead)} before`,
+						formatTime(settings.reminderTime),
+					)}
+					toggle={{
+						value: settings.defaultRemindersEnabled,
+						onValueChange: (value) =>
+							updateSettings({ defaultRemindersEnabled: value }),
+					}}
 					chevron
+					onPress={() => router.push('/settings/reminders')}
 				/>
 				<SettingRow
 					icon="calendarCheck"
