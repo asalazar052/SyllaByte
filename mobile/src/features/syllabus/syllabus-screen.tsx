@@ -44,7 +44,9 @@ function SyllabusViewer({
 	const [retry, setRetry] = useState(0);
 	const [pages, setPages] = useState(0);
 	const [page, setPage] = useState(1);
+	const [pageRequest, setPageRequest] = useState({ page: 1, sequence: 0 });
 	const [scale, setScale] = useState(1);
+	const [zoomRequest, setZoomRequest] = useState({ scale: 1, sequence: 0 });
 	const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 	const [viewport, setViewport] = useState({ width: 0, height: 0 });
 	const [sharing, setSharing] = useState(false);
@@ -176,7 +178,9 @@ function SyllabusViewer({
 										setSource(null);
 										setPages(0);
 										setPage(1);
+										setPageRequest({ page: 1, sequence: 0 });
 										setScale(1);
+										setZoomRequest({ scale: 1, sequence: 0 });
 										setSize(null);
 										setRetry((value) => value + 1);
 									}}
@@ -195,8 +199,8 @@ function SyllabusViewer({
 							<PdfDocument
 								key={`${path}-${retry}`}
 								uri={source.uri}
-								page={page}
-								scale={scale}
+								pageRequest={pageRequest}
+								zoomRequest={zoomRequest}
 								onLoad={(count, dimensions) => {
 									if (count < 1) {
 										setError('This PDF has no readable pages.');
@@ -229,8 +233,21 @@ function SyllabusViewer({
 						page={page}
 						pages={pages}
 						scale={scale}
-						onPage={(value) => setPage(Math.max(1, Math.min(pages, value)))}
-						onScale={setScale}
+						onPage={(value) => {
+							const next = Math.max(1, Math.min(pages, value));
+							setPage(next);
+							setPageRequest((previous) => ({
+								page: next,
+								sequence: previous.sequence + 1,
+							}));
+						}}
+						onScale={(value) => {
+							setScale(value);
+							setZoomRequest((previous) => ({
+								scale: value,
+								sequence: previous.sequence + 1,
+							}));
+						}}
 					/>
 				)}
 			</View>

@@ -9,8 +9,8 @@ import type { PdfDocumentProps } from './pdf-document.types';
 
 export function PdfDocument({
 	uri,
-	page,
-	scale,
+	pageRequest,
+	zoomRequest,
 	onLoad,
 	onPageChange,
 	onScaleChange,
@@ -27,14 +27,13 @@ export function PdfDocument({
 			return null;
 		}
 	});
-	const pdf = useRef<PdfRef>(null);
-	const shownPage = useRef(1);
+	const pdf = useRef<PdfRef & { setNativeProps: (props: { scale: number }) => void }>(null);
 	useEffect(() => {
-		if (NativePdf && page !== shownPage.current) {
-			pdf.current?.setPage(page);
-			shownPage.current = page;
-		}
-	}, [NativePdf, page]);
+		if (pageRequest.sequence > 0) pdf.current?.setPage(pageRequest.page);
+	}, [pageRequest]);
+	useEffect(() => {
+		if (zoomRequest.sequence > 0) pdf.current?.setNativeProps({ scale: zoomRequest.scale });
+	}, [zoomRequest]);
 	if (!NativePdf)
 		return (
 			<View className="flex-1 justify-center gap-3 p-4">
@@ -49,8 +48,8 @@ export function PdfDocument({
 		<NativePdf
 			ref={pdf}
 			source={{ uri, cache: false }}
-			page={page}
-			scale={scale}
+			page={1}
+			scale={1}
 			minScale={1}
 			maxScale={3}
 			fitPolicy={2}
@@ -58,9 +57,8 @@ export function PdfDocument({
 			enablePaging
 			spacing={0}
 			onLoadComplete={(pages, _path, size) => onLoad(pages, size)}
-			onPageChanged={(value) => {
-				shownPage.current = value;
-				onPageChange(value);
+			onPageChanged={(value, count) => {
+				if (Number.isInteger(value) && value >= 1 && value <= count) onPageChange(value);
 			}}
 			onScaleChanged={onScaleChange}
 			onError={onError}
