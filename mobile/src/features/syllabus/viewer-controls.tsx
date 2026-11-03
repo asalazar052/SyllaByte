@@ -130,7 +130,7 @@ function Control({
 			className="min-h-11 w-9 items-center justify-center"
 			style={disabled ? { opacity: 0.35 } : undefined}
 		>
-			<AppIcon name={icon} size={17} />
+			<AppIcon name={icon} size={17} tintColor={icon === 'plus' ? '#315F85' : undefined} />
 		</Pressable>
 	);
 }
