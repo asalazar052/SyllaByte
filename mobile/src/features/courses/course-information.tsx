@@ -1,5 +1,4 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
@@ -9,14 +8,11 @@ import { TimeRangeField } from '@/components/ui/time-range-field';
 import { saveOfficeHours, updateCourse, updateProfessor } from '@/db/mutations';
 import { type CourseDetail, officeHoursQuery, professorQuery } from '@/db/queries';
 import { formatTimeRange, joinParts } from '@/lib/format';
+import { EMAIL, orNull } from '@/lib/input';
 
 import { EditableRow } from './editable-row';
 
-const EMAIL = /^\S+@\S+\.\S+$/;
 const TIME_ORDER = 'The end time must be after the start time.';
-
-// Every field can be cleared: an emptied field is stored as null.
-const orNull = (text: string) => text.trim() || null;
 
 export function CourseInformation({ course }: { course: CourseDetail }) {
 	const { data } = useLiveQuery(professorQuery(course.professorId ?? 0), [course.professorId]);
@@ -29,26 +25,11 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 
 	return (
 		<AppCard>
-			<View className="flex-row flex-wrap items-center justify-between gap-2">
-				<AppText variant="label">Course information</AppText>
-				<AppText
-					variant="action"
-					className="rounded-full bg-sylla-green px-2.5 py-1 text-sylla-blue"
-				>
-					{course.isSample
-						? 'Sample data'
-						: course.reviewFields.length
-							? 'Needs review'
-							: 'Saved'}
-				</AppText>
-			</View>
+			<AppText variant="heading">Course information</AppText>
 			<EditableRow
 				icon="calendar"
 				title={joinParts(course.days, formatTimeRange(course.startTime, course.endTime))}
-				subtitle={joinParts(
-					course.location,
-					course.credits !== null && `${course.credits} credits`,
-				)}
+				subtitle={course.location ?? undefined}
 				placeholder="Add schedule and location"
 				editLabel="Edit schedule and location"
 				values={{
@@ -56,24 +37,15 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 					startTime: course.startTime,
 					endTime: course.endTime,
 					location: course.location ?? '',
-					credits: course.credits === null ? '' : String(course.credits),
 				}}
-				onSave={({ days, startTime, endTime, location, credits }) => {
+				onSave={({ days, startTime, endTime, location }) => {
 					if (startTime !== null && endTime !== null && endTime <= startTime)
 						return TIME_ORDER;
-					if (
-						credits.trim() &&
-						(!/^\d+$/.test(credits.trim()) ||
-							Number(credits) === 0 ||
-							!Number.isSafeInteger(Number(credits)))
-					)
-						return 'Credits must be a whole number above 0.';
 					updateCourse(course.id, {
 						days: days || null,
 						startTime,
 						endTime,
 						location: orNull(location),
-						credits: credits.trim() ? Number(credits) : null,
 					});
 				}}
 			>
@@ -97,12 +69,6 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 							label="Location"
 							value={draft.location}
 							onChangeText={(text) => update('location', text)}
-						/>
-						<TextField
-							label="Credits"
-							value={draft.credits}
-							onChangeText={(text) => update('credits', text)}
-							keyboardType="number-pad"
 						/>
 					</>
 				)}
@@ -198,6 +164,32 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 					</EditableRow>
 				</>
 			)}
+			<EditableRow
+				icon="graduationCap"
+				title={course.credits ? `${course.credits} credits` : undefined}
+				subtitle={course.semester.name}
+				placeholder="Add credits"
+				editLabel="Edit credits"
+				values={{ credits: course.credits === null ? '' : String(course.credits) }}
+				onSave={({ credits }) => {
+					if (
+						credits.trim() &&
+						(!/^\d+$/.test(credits.trim()) || Number(credits) === 0)
+					) {
+						return 'Credits must be a whole number above 0.';
+					}
+					updateCourse(course.id, { credits: credits.trim() ? Number(credits) : null });
+				}}
+			>
+				{(draft, update) => (
+					<TextField
+						label="Credits"
+						value={draft.credits}
+						onChangeText={(text) => update('credits', text)}
+						keyboardType="number-pad"
+					/>
+				)}
+			</EditableRow>
 		</AppCard>
 	);
 }

@@ -12,15 +12,43 @@
     {
       "idx": 1,
       "version": "6",
-      "when": 1793161414287,
-      "tag": "0001_futuristic_ego",
+      "when": 1793164062468,
+      "tag": "0001_calendar_events",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "6",
-      "when": 1793163215280,
-      "tag": "0002_optimal_next_avengers",
+      "when": 1793165367259,
+      "tag": "0002_generic_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793229910703,
+      "tag": "0003_semester_dates",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793338435945,
+      "tag": "0004_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793340751232,
+      "tag": "0005_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793671261473,
+      "tag": "0006_shallow_ogun",
       "breakpoints": true
     }
   ]

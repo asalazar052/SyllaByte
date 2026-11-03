@@ -10,7 +10,8 @@ import { courseQuery } from '@/db/queries';
 import { SavedResources } from './saved-resources';
 
 function CourseResourcesScreen({ kind }: { kind: 'dates' | 'materials' }) {
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id: routeId } = useLocalSearchParams<{ id: string }>();
+	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
 	return (
 		<Screen>

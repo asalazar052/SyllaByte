@@ -1,120 +1,9 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b587a045-b826-4351-ab1e-224f6ea06aa4",
-  "prevId": "8156bade-8b74-4430-9a66-b97ff936fbcb",
+  "id": "4f89cb4a-a253-4b71-a84b-ac5585fcc67d",
+  "prevId": "9cab9e0a-2a8a-46a4-93c3-a43d3ebb7fd0",
   "tables": {
-    "course_dates": {
-      "name": "course_dates",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "course_id": {
-          "name": "course_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date": {
-          "name": "date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "time": {
-          "name": "time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "course_dates_course_id_courses_id_fk": {
-          "name": "course_dates_course_id_courses_id_fk",
-          "tableFrom": "course_dates",
-          "tableTo": "courses",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "course_materials": {
-      "name": "course_materials",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "course_id": {
-          "name": "course_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "details": {
-          "name": "details",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "course_materials_course_id_courses_id_fk": {
-          "name": "course_materials_course_id_courses_id_fk",
-          "tableFrom": "course_materials",
-          "tableTo": "courses",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "course_review_fields": {
       "name": "course_review_fields",
       "columns": {
@@ -127,7 +16,7 @@
         },
         "course_id": {
           "name": "course_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -172,10 +61,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "semester_id": {
           "name": "semester_id",
@@ -254,34 +143,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "syllabus_name": {
-          "name": "syllabus_name",
+        "accent_color": {
+          "name": "accent_color",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "syllabus_path": {
-          "name": "syllabus_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "syllabus_uploaded_at": {
-          "name": "syllabus_uploaded_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "is_sample": {
-          "name": "is_sample",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": false
+          "default": "'#315F85'"
         }
       },
       "indexes": {},
@@ -322,9 +190,120 @@
         }
       }
     },
+    "events": {
+      "name": "events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "events_date_idx": {
+          "name": "events_date_idx",
+          "columns": [
+            "date"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "events_course_id_courses_id_fk": {
+          "name": "events_course_id_courses_id_fk",
+          "tableFrom": "events",
+          "tableTo": "courses",
+          "columnsFrom": [
+            "course_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "events_date_format": {
+          "name": "events_date_format",
+          "value": "\"events\".\"date\" glob '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'"
+        },
+        "events_time_range": {
+          "name": "events_time_range",
+          "value": "\"events\".\"end_time\" is null or (\"events\".\"start_time\" is not null and \"events\".\"end_time\" > \"events\".\"start_time\")"
+        }
+      }
+    },
     "office_hours": {
       "name": "office_hours",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
         "professor_id": {
           "name": "professor_id",
           "type": "integer",
@@ -334,7 +313,7 @@
         },
         "course_id": {
           "name": "course_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -368,7 +347,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "office_hours_professor_id_course_id_unique": {
+          "name": "office_hours_professor_id_course_id_unique",
+          "columns": [
+            "professor_id",
+            "course_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "office_hours_professor_id_professors_id_fk": {
           "name": "office_hours_professor_id_professors_id_fk",
@@ -397,15 +385,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "office_hours_professor_id_course_id_pk": {
-          "columns": [
-            "professor_id",
-            "course_id"
-          ],
-          "name": "office_hours_professor_id_course_id_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
         "office_hours_time_range": {

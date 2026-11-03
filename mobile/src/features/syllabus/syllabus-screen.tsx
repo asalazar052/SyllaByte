@@ -15,7 +15,8 @@ import { PdfDocument } from './pdf-document';
 import { ViewerControls } from './viewer-controls';
 
 export function SyllabusScreen() {
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id: routeId } = useLocalSearchParams<{ id: string }>();
+	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
 	const currentCourse = course?.id === id ? course : undefined;
 	return (
@@ -33,7 +34,7 @@ function SyllabusViewer({
 	course,
 	queried,
 }: {
-	id: string;
+	id: number;
 	course: Awaited<ReturnType<typeof courseQuery>>;
 	queried: boolean;
 }) {

@@ -12,7 +12,7 @@ export function SavedResources({
 	courseId,
 }: {
 	kind: 'dates' | 'materials';
-	courseId?: string;
+	courseId?: number;
 }) {
 	const { data: dates } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
 	const { data: materials } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
@@ -71,7 +71,7 @@ export function SyllabusAttachment({
 	uploadedAt,
 }: {
 	name: string;
-	courseId: string;
+	courseId: number;
 	uploadedAt: number | null;
 }) {
 	return (

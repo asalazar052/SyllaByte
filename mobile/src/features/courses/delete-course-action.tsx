@@ -9,7 +9,7 @@ export function DeleteCourseAction({
 	code,
 	onDeleted,
 }: {
-	id: string;
+	id: number;
 	code: string;
 	onDeleted: () => void;
 }) {

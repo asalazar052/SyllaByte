@@ -16,7 +16,7 @@ export default function Upload() {
 		useSyllabusPicker();
 	return (
 		<Screen>
-			<AppText variant="eyebrow" className="text-sylla-blue">
+			<AppText variant="eyebrow" className="text-sylla-blue mt-3">
 				SYLLABYTE / UPLOAD
 			</AppText>
 			<AppText variant="title" accessibilityRole="header">

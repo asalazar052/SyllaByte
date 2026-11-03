@@ -29,7 +29,7 @@ type SyllabusPicker = {
 	updateDraft: (draft: CourseDraft) => void;
 	save: () => Promise<boolean>;
 	saving: boolean;
-	savedCourseId: string | null;
+	savedCourseId: number | null;
 };
 
 const SyllabusPickerContext = createContext<SyllabusPicker | null>(null);
@@ -43,7 +43,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	const busy = useRef(false);
 	const savingRef = useRef(false);
 	const [saving, setSaving] = useState(false);
-	const [savedCourseId, setSavedCourseId] = useState<string | null>(null);
+	const [savedCourseId, setSavedCourseId] = useState<number | null>(null);
 	const [extraction, dispatch] = useReducer(extractionReducer, initialExtraction);
 	const processing = extraction.phase !== 'idle' && extraction.phase !== 'ready';
 
@@ -134,8 +134,8 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 		try {
 			const id = `import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 			path = await retainSyllabus(file.uri, id);
-			saveReviewedCourse(id, draft, file.name, path, selectedAt);
-			setSavedCourseId(id);
+			const courseId = saveReviewedCourse(draft, file.name, path, selectedAt);
+			setSavedCourseId(courseId);
 			return true;
 		} catch (cause) {
 			if (path) {

@@ -6,7 +6,6 @@ const icons = {
 	ellipsis: require('@/assets/icons/ellipsis.svg'),
 
 	document: require('@/assets/icons/document.svg'),
-	share: require('@/assets/icons/share.svg'),
 	'arrow-left': require('@/assets/icons/arrow-left.svg'),
 	'chevron-left': require('@/assets/icons/chevron-left.svg'),
 	'chevron-down': require('@/assets/icons/chevron-down.svg'),
@@ -29,6 +28,18 @@ const icons = {
 	pencil: require('@/assets/icons/pencil.svg'),
 	user: require('@/assets/icons/user.svg'),
 	clock: require('@/assets/icons/clock.svg'),
+	graduationCap: require('@/assets/icons/graduation-cap.svg'),
+	calendarPlus: require('@/assets/icons/calendar-plus.svg'),
+	chevronLeft: require('@/assets/icons/chevron-left.svg'),
+	chevronRight: require('@/assets/icons/chevron-right.svg'),
+	alarmClock: require('@/assets/icons/alarm-clock.svg'),
+	circleHelp: require('@/assets/icons/circle-help.svg'),
+	shieldCheck: require('@/assets/icons/shield-check.svg'),
+	bell: require('@/assets/icons/bell.svg'),
+	calendarCheck: require('@/assets/icons/calendar-check.svg'),
+	fileText: require('@/assets/icons/file-text.svg'),
+	share: require('@/assets/icons/share.svg'),
+	trash: require('@/assets/icons/trash-2.svg'),
 };
 export type AppIconName = keyof typeof icons;
 

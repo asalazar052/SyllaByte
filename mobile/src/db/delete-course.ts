@@ -5,7 +5,7 @@ import { removeSyllabus } from '@/features/upload/syllabus-storage';
 import { db } from './client';
 import { courses, professors } from './schema';
 
-export function deleteCourse(id: string) {
+export function deleteCourse(id: number) {
 	db.transaction((tx) => {
 		const course = tx.select().from(courses).where(eq(courses.id, id)).get();
 		if (!course) return;

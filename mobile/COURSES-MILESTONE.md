@@ -20,7 +20,7 @@ nested in the Courses stack so the tab bar remains visible.
   Back returns to the list with filters preserved.
 - Open Upload a syllabus, then return. This milestone does not select a file.
 - Visit each tab and return to Courses. Check a narrow viewport and larger text.
-- Directly open `/courses/math-201` and an unknown course ID; both offer a path
+- Directly open `/courses/1` and an unknown course ID; both offer a path
   back to Courses.
 
 Run `npm run lint` and `npx tsc --noEmit` for static checks.

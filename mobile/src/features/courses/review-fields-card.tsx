@@ -15,7 +15,7 @@ export function ReviewFieldsCard({
 	courseId,
 	hasSyllabus,
 }: {
-	courseId: string;
+	courseId: number;
 	hasSyllabus: boolean;
 }) {
 	const { data: fields } = useLiveQuery(reviewFieldsQuery(courseId), [courseId]);

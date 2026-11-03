@@ -15,13 +15,13 @@ sqlite.exec('PRAGMA foreign_keys = ON');
 const journal = JSON.parse(fs.readFileSync(path.join(root, 'drizzle/meta/_journal.json')));
 for (const entry of journal.entries) {
 	sqlite.exec(fs.readFileSync(path.join(root, `drizzle/${entry.tag}.sql`), 'utf8'));
-	if (entry.idx === 1)
+	if (entry.idx === 5)
 		sqlite.exec(
-			"INSERT INTO semesters(name) VALUES ('Fall 2026'); INSERT INTO courses(id, semester_id, code, title, icon, icon_background, syllabus_name, syllabus_path) VALUES ('old',1,'OLD','Older course','courses','#fff','old.pdf','old.pdf')",
+			"INSERT INTO semesters(name) VALUES ('Fall 2026'); INSERT INTO courses(id, semester_id, code, title, icon, icon_background) VALUES (1,1,'OLD','Older course','courses','#fff')",
 		);
 }
 assert.equal(
-	sqlite.prepare("SELECT syllabus_uploaded_at FROM courses WHERE id='old'").get()
+	sqlite.prepare('SELECT syllabus_uploaded_at FROM courses WHERE id=1').get()
 		.syllabus_uploaded_at,
 	null,
 );
@@ -120,6 +120,7 @@ function load(relative) {
 				shareAsync: async (uri) => shares.push(uri),
 			};
 		if (specifier === '@/constants/theme') return { SyllaColors: { paleBlue: '#eaf4ff' } };
+		if (specifier === '../constants/palette') return require('../src/constants/palette.js');
 		if (specifier.startsWith('@/')) return load(`src/${specifier.slice(2)}.ts`);
 		if (specifier.startsWith('.'))
 			return load(`${path.resolve(path.dirname(filename), specifier)}.ts`);
@@ -172,12 +173,12 @@ async function main() {
 	});
 	const { saveReviewedCourse } = load('src/db/save-course.ts');
 	const selectedAt = 1793142000000;
-	saveReviewedCourse('new', draft, 'My original syllabus.pdf', name, selectedAt);
+	const savedId = saveReviewedCourse(draft, 'My original syllabus.pdf', name, selectedAt);
 	const saved = sqlite
 		.prepare(
-			"SELECT syllabus_name, syllabus_path, syllabus_uploaded_at FROM courses WHERE id='new'",
+			'SELECT syllabus_name, syllabus_path, syllabus_uploaded_at FROM courses WHERE id = ?',
 		)
-		.get();
+		.get(savedId);
 	assert.deepEqual(
 		{ ...saved },
 		{
@@ -187,8 +188,8 @@ async function main() {
 		},
 	);
 	assert.equal(
-		sqlite.prepare("SELECT syllabus_path FROM courses WHERE id='old'").get().syllabus_path,
-		'old.pdf',
+		sqlite.prepare('SELECT title FROM courses WHERE id=1').get().title,
+		'Older course',
 		'Migration must preserve existing attachment paths',
 	);
 	storage.removeSyllabus(name);

@@ -1,7 +1,6 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
@@ -9,145 +8,101 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { courseQuery } from '@/db/queries';
 
+import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
-import { CourseTools } from './course-tools';
 import { DeleteCourseAction } from './delete-course-action';
-import { ReviewFieldsCard } from './review-fields-card';
-import { SyllabusAttachment } from './saved-resources';
+import { SavedResources, SyllabusAttachment } from './saved-resources';
 
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
-	const [menuOpen, setMenuOpen] = useState(false);
+	const courseId = Number.isInteger(Number(id)) ? Number(id) : 0;
+	const { data: course, updatedAt } = useLiveQuery(courseQuery(courseId), [courseId]);
 	function back() {
-		router.dismissTo('/courses');
+		if (router.canGoBack()) router.back();
+		else router.replace('/courses');
 	}
 	return (
 		<Screen>
-			<View className="gap-4">
-				<View className="flex-row items-center justify-between">
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Back to courses"
-						onPress={back}
-						hitSlop={10}
-						className="min-h-6 flex-row items-center gap-2"
-					>
-						<AppIcon name="arrow-left" size={17} />
-						<AppText variant="eyebrow" className="text-sylla-blue">
-							COURSES{course ? ` / ${course.code}` : ''}
-						</AppText>
-					</Pressable>
-					{course && (
-						<Pressable
-							accessibilityRole="button"
-							accessibilityLabel="Course options"
-							onPress={() => setMenuOpen(true)}
-							hitSlop={10}
-							className="h-6 w-6 items-center justify-center"
-						>
-							<AppIcon name="ellipsis" size={21} />
-						</Pressable>
-					)}
-				</View>
-				{course && (
-					<AppText variant="title" accessibilityRole="header">
-						{course.title}
-					</AppText>
-				)}
-			</View>
+			<Pressable
+				accessibilityRole="button"
+				onPress={back}
+				className="justify-center self-start"
+			>
+				<AppText variant="action" className="text-sylla-blue">
+					← Back to courses
+				</AppText>
+			</Pressable>
 			{updatedAt === undefined ? null : !course ? (
 				<AppCard>
 					<AppText variant="heading">Course not found</AppText>
-					<AppText>This course could not be found.</AppText>
+					<AppText>This course is not part of your mock semester.</AppText>
 				</AppCard>
 			) : (
 				<>
-					<CourseInformation course={course} />
-					<ReviewFieldsCard courseId={course.id} hasSyllabus={!!course.syllabusPath} />
-					<CourseTools courseId={course.id} />
-					{course.syllabusName && (
-						<SyllabusAttachment
-							name={course.syllabusName}
-							courseId={course.id}
-							uploadedAt={course.syllabusUploadedAt}
-						/>
-					)}
-					{course.isSample && (
-						<AppText variant="caption" className="text-sylla-brown">
-							Demo course · Created from sample extraction data.
+					<View className="gap-3">
+						<AppText variant="eyebrow" className="text-sylla-blue">
+							COURSES / {course.code}
 						</AppText>
+						<View className="flex-row items-center justify-between gap-4">
+							<AppText
+								variant="title"
+								accessibilityRole="header"
+								className="min-w-0 flex-1"
+							>
+								{course.title}
+							</AppText>
+							<CourseIcon
+								icon={course.icon}
+								background={course.iconBackground}
+								width={80}
+								height={80}
+							/>
+						</View>
+					</View>
+					<CourseInformation course={course} />
+					{course.reviewFields.length > 0 && (
+						<AppCard
+							className="border-sylla-peach bg-sylla-peach"
+							rightCornerIcon={<AppIcon name="scan" size={22} />}
+						>
+							<AppText variant="heading">
+								{course.reviewFields.length}{' '}
+								{course.reviewFields.length === 1 ? 'detail needs' : 'details need'}{' '}
+								a closer look
+							</AppText>
+							<AppText className="text-sylla-brown">
+								These mock fields are flagged for review. Compare them with your
+								syllabus before relying on them.
+							</AppText>
+							{course.reviewFields.map((field) => (
+								<View
+									key={field.label}
+									className="gap-1 rounded-small bg-sylla-surface p-3"
+								>
+									<AppText variant="label">{field.label}</AppText>
+									<AppText>{field.value}</AppText>
+								</View>
+							))}
+						</AppCard>
+					)}
+					{course.syllabusName && (
+						<>
+							<SyllabusAttachment
+								name={course.syllabusName}
+								courseId={course.id}
+								uploadedAt={course.syllabusUploadedAt}
+							/>
+							<AppText variant="section">Important dates</AppText>
+							<SavedResources kind="dates" courseId={course.id} />
+							<AppText variant="section">Materials</AppText>
+							<SavedResources kind="materials" courseId={course.id} />
+						</>
 					)}
 					<DeleteCourseAction
 						id={course.id}
 						code={course.code}
 						onDeleted={() => router.replace('/courses')}
 					/>
-					<Modal
-						visible={menuOpen}
-						transparent
-						animationType="fade"
-						onRequestClose={() => setMenuOpen(false)}
-					>
-						<View className="flex-1 items-center justify-center bg-black/50 p-6">
-							<View
-								accessibilityViewIsModal
-								className="w-full max-w-xl gap-2 rounded-2xl bg-sylla-surface p-4"
-							>
-								<AppText variant="section">Course options</AppText>
-								{course.syllabusName && (
-									<Pressable
-										accessibilityRole="button"
-										className="min-h-12 justify-center"
-										onPress={() => {
-											setMenuOpen(false);
-											router.push({
-												pathname: '/courses/[id]/syllabus',
-												params: { id },
-											});
-										}}
-									>
-										<AppText>View original syllabus</AppText>
-									</Pressable>
-								)}
-								<Pressable
-									accessibilityRole="button"
-									className="min-h-12 justify-center"
-									onPress={() => {
-										setMenuOpen(false);
-										router.push({
-											pathname: '/courses/[id]/materials',
-											params: { id },
-										});
-									}}
-								>
-									<AppText>Course materials</AppText>
-								</Pressable>
-								<Pressable
-									accessibilityRole="button"
-									className="min-h-12 justify-center"
-									onPress={() => {
-										setMenuOpen(false);
-										router.push({
-											pathname: '/courses/[id]/dates',
-											params: { id },
-										});
-									}}
-								>
-									<AppText>Important dates</AppText>
-								</Pressable>
-								<Pressable
-									accessibilityRole="button"
-									className="min-h-12 items-center justify-center"
-									onPress={() => setMenuOpen(false)}
-								>
-									<AppText variant="action" className="text-sylla-blue">
-										Close
-									</AppText>
-								</Pressable>
-							</View>
-						</View>
-					</Modal>
 				</>
 			)}
 		</Screen>

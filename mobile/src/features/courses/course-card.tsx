@@ -7,6 +7,8 @@ import { AppText } from '@/components/ui/app-text';
 import { type Course } from '@/db/queries';
 import { formatTimeRange, joinParts } from '@/lib/format';
 
+import { CourseIcon } from './course-icon';
+
 export function CourseCard({ course }: { course: Course }) {
 	return (
 		<Pressable
@@ -15,13 +17,7 @@ export function CourseCard({ course }: { course: Course }) {
 			onPress={() => router.push({ pathname: '/courses/[id]', params: { id: course.id } })}
 			className={`${cardClassName} min-h-20 flex-row items-center gap-3 p-3.5 active:opacity-70`}
 		>
-			{/* The color is stored with the course in the database, so it can't be a static class. */}
-			<View
-				className="h-12 w-11 items-center justify-center rounded-small"
-				style={{ backgroundColor: course.iconBackground }}
-			>
-				<AppIcon name={course.icon} />
-			</View>
+			<CourseIcon icon={course.icon} background={course.iconBackground} />
 			<View className="flex-1 gap-1.5">
 				<View className="flex-row flex-wrap items-center gap-2">
 					<AppText variant="code" className="text-sylla-blue">

@@ -4,17 +4,9 @@ import { SyllaColors } from '@/constants/theme';
 import { type CourseDraft, validateDraft } from '@/features/upload/review-draft';
 
 import { db } from './client';
-import {
-	courseDates,
-	courseMaterials,
-	courses,
-	officeHours,
-	professors,
-	semesters,
-} from './schema';
+import { courseMaterials, courses, events, officeHours, professors, semesters } from './schema';
 
 export function saveReviewedCourse(
-	id: string,
 	draft: CourseDraft,
 	syllabusName: string,
 	syllabusPath: string | null,
@@ -23,7 +15,7 @@ export function saveReviewedCourse(
 	const error = validateDraft(draft);
 	if (error) throw new Error(error);
 	const nullable = (value: string) => value.trim() || null;
-	db.transaction((tx) => {
+	return db.transaction((tx) => {
 		let semester = tx
 			.select()
 			.from(semesters)
@@ -54,9 +46,9 @@ export function saveReviewedCourse(
 			.values({ name: nullable(draft.professorName), email: nullable(draft.professorEmail) })
 			.returning()
 			.get();
-		tx.insert(courses)
+		const { id } = tx
+			.insert(courses)
 			.values({
-				id,
 				semesterId: semester.id,
 				professorId: professor.id,
 				code: draft.code.trim(),
@@ -73,7 +65,8 @@ export function saveReviewedCourse(
 				syllabusUploadedAt,
 				isSample: true,
 			})
-			.run();
+			.returning({ id: courses.id })
+			.get();
 		if (draft.officeDays || draft.officeStart !== null || draft.officeLocation.trim())
 			tx.insert(officeHours)
 				.values({
@@ -86,17 +79,21 @@ export function saveReviewedCourse(
 				})
 				.run();
 		for (const item of draft.dates.filter((item) => item.include))
-			tx.insert(courseDates)
+			tx.insert(events)
 				.values({
 					courseId: id,
 					title: item.title.trim(),
 					date: item.date,
-					time: nullable(item.time),
+					type: /exam|midterm|final/i.test(item.title) ? 'exam' : 'assignment',
+					startTime: item.time
+						? Number(item.time.slice(0, 2)) * 60 + Number(item.time.slice(3))
+						: null,
 				})
 				.run();
 		for (const item of draft.materials.filter((item) => item.include))
 			tx.insert(courseMaterials)
 				.values({ courseId: id, title: item.title.trim(), details: nullable(item.details) })
 				.run();
+		return id;
 	});
 }

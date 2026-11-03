@@ -7,7 +7,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
 
-export function CourseTools({ courseId }: { courseId: string }) {
+export function CourseTools({ courseId }: { courseId: number }) {
 	const { data: materials } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
 	const { data: dates } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
 	return (
