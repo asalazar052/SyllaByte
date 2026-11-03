@@ -3,6 +3,9 @@ export async function retainSyllabus(_uri: string, _courseId: string): Promise<s
 	return null;
 }
 export function removeSyllabus(_path: string) {}
-export async function openSyllabus(_path: string) {
+export async function resolveSyllabus(_path: string): Promise<{ uri: string }> {
+	throw new Error('Open the mobile app to view your saved syllabus.');
+}
+export async function shareSyllabus(_path: string) {
 	throw new Error('Open the mobile app to access a retained syllabus.');
 }

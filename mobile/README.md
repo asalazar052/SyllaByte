@@ -1,5 +1,11 @@
 # Welcome to your Expo app 👋
 
+For physical iPhone and Android setup, follow the
+[project's device instructions](../README.md#running-on-a-physical-iphone).
+The app runs in **Expo Go**; start it with `npx expo start --go` and scan the QR
+code on your phone. Only the **embedded PDF viewer** requires a development
+build because Expo Go does not include its native dependencies.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started

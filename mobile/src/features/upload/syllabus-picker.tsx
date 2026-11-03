@@ -37,6 +37,7 @@ const SyllabusPickerContext = createContext<SyllabusPicker | null>(null);
 // Keep the selected asset available when moving between Courses and the upload modal.
 export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+	const [selectedAt, setSelectedAt] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [picking, setPicking] = useState(false);
 	const busy = useRef(false);
@@ -80,6 +81,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 				return false;
 			}
 			setFile(selected);
+			setSelectedAt(Date.now());
 			setSavedCourseId(null);
 			dispatch({ type: 'reset' });
 			return true;
@@ -95,6 +97,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 	function clear() {
 		if (processing || savingRef.current) return;
 		setFile(null);
+		setSelectedAt(null);
 		setError(null);
 		setSavedCourseId(null);
 		dispatch({ type: 'reset' });
@@ -131,7 +134,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 		try {
 			const id = `import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 			path = await retainSyllabus(file.uri, id);
-			saveReviewedCourse(id, draft, file.name, path);
+			saveReviewedCourse(id, draft, file.name, path, selectedAt);
 			setSavedCourseId(id);
 			return true;
 		} catch (cause) {

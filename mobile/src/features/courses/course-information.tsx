@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
@@ -28,11 +29,26 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 
 	return (
 		<AppCard>
-			<AppText variant="heading">Course information</AppText>
+			<View className="flex-row flex-wrap items-center justify-between gap-2">
+				<AppText variant="label">Course information</AppText>
+				<AppText
+					variant="action"
+					className="rounded-full bg-sylla-green px-2.5 py-1 text-sylla-blue"
+				>
+					{course.isSample
+						? 'Sample data'
+						: course.reviewFields.length
+							? 'Needs review'
+							: 'Saved'}
+				</AppText>
+			</View>
 			<EditableRow
 				icon="calendar"
 				title={joinParts(course.days, formatTimeRange(course.startTime, course.endTime))}
-				subtitle={course.location ?? undefined}
+				subtitle={joinParts(
+					course.location,
+					course.credits !== null && `${course.credits} credits`,
+				)}
 				placeholder="Add schedule and location"
 				editLabel="Edit schedule and location"
 				values={{
@@ -40,15 +56,24 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 					startTime: course.startTime,
 					endTime: course.endTime,
 					location: course.location ?? '',
+					credits: course.credits === null ? '' : String(course.credits),
 				}}
-				onSave={({ days, startTime, endTime, location }) => {
+				onSave={({ days, startTime, endTime, location, credits }) => {
 					if (startTime !== null && endTime !== null && endTime <= startTime)
 						return TIME_ORDER;
+					if (
+						credits.trim() &&
+						(!/^\d+$/.test(credits.trim()) ||
+							Number(credits) === 0 ||
+							!Number.isSafeInteger(Number(credits)))
+					)
+						return 'Credits must be a whole number above 0.';
 					updateCourse(course.id, {
 						days: days || null,
 						startTime,
 						endTime,
 						location: orNull(location),
+						credits: credits.trim() ? Number(credits) : null,
 					});
 				}}
 			>
@@ -72,6 +97,12 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 							label="Location"
 							value={draft.location}
 							onChangeText={(text) => update('location', text)}
+						/>
+						<TextField
+							label="Credits"
+							value={draft.credits}
+							onChangeText={(text) => update('credits', text)}
+							keyboardType="number-pad"
 						/>
 					</>
 				)}
@@ -167,30 +198,6 @@ export function CourseInformation({ course }: { course: CourseDetail }) {
 					</EditableRow>
 				</>
 			)}
-			<EditableRow
-				title={course.credits ? `${course.credits} credits` : undefined}
-				placeholder="Add credits"
-				editLabel="Edit credits"
-				values={{ credits: course.credits === null ? '' : String(course.credits) }}
-				onSave={({ credits }) => {
-					if (
-						credits.trim() &&
-						(!/^\d+$/.test(credits.trim()) || Number(credits) === 0)
-					) {
-						return 'Credits must be a whole number above 0.';
-					}
-					updateCourse(course.id, { credits: credits.trim() ? Number(credits) : null });
-				}}
-			>
-				{(draft, update) => (
-					<TextField
-						label="Credits"
-						value={draft.credits}
-						onChangeText={(text) => update('credits', text)}
-						keyboardType="number-pad"
-					/>
-				)}
-			</EditableRow>
 		</AppCard>
 	);
 }

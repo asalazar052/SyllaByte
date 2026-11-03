@@ -6,6 +6,7 @@ import { AppText } from '@/components/ui/app-text';
 
 type Props<T> = {
 	icon?: AppIconName;
+	compact?: boolean;
 	title?: string;
 	subtitle?: string;
 	// Shown in place of the title and subtitle when there is nothing to display.
@@ -21,6 +22,7 @@ type Props<T> = {
 
 export function EditableRow<T>({
 	icon,
+	compact = false,
 	title,
 	subtitle,
 	placeholder,
@@ -52,18 +54,29 @@ export function EditableRow<T>({
 	if (!editing) {
 		const [primary, secondary] = [title, subtitle].filter(Boolean);
 		return (
-			<View className="min-h-11 flex-row items-center gap-3">
+			<View
+				className={
+					compact
+						? 'min-h-11 flex-row items-center gap-2 rounded-small bg-sylla-surface px-2'
+						: 'min-h-9 flex-row items-center gap-3'
+				}
+			>
 				{icon && <AppIcon name={icon} size={19} />}
 				<View className="flex-1 gap-1">
 					{primary ? (
-						<AppText variant="label">{primary}</AppText>
+						<AppText
+							variant={compact ? 'caption' : 'label'}
+							className={compact ? undefined : 'leading-4'}
+						>
+							{primary}
+						</AppText>
 					) : (
 						<AppText variant="label" className="text-sylla-muted">
 							{placeholder}
 						</AppText>
 					)}
 					{secondary ? (
-						<AppText variant="caption" className="text-sylla-muted">
+						<AppText variant="caption" className="leading-[14px] text-sylla-muted">
 							{secondary}
 						</AppText>
 					) : null}

@@ -1,7 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 
 import { db } from './client';
-import { courses, officeHours, professors } from './schema';
+import { courseReviewFields, courses, officeHours, professors } from './schema';
+
+export function updateReviewField(id: number, value: string) {
+	db.update(courseReviewFields)
+		.set({ value: value.trim() })
+		.where(eq(courseReviewFields.id, id))
+		.run();
+}
 
 type CourseEdit = Pick<
 	typeof courses.$inferInsert,

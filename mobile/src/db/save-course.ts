@@ -18,6 +18,7 @@ export function saveReviewedCourse(
 	draft: CourseDraft,
 	syllabusName: string,
 	syllabusPath: string | null,
+	syllabusUploadedAt: number | null = null,
 ) {
 	const error = validateDraft(draft);
 	if (error) throw new Error(error);
@@ -69,6 +70,7 @@ export function saveReviewedCourse(
 				iconBackground: SyllaColors.paleBlue,
 				syllabusName,
 				syllabusPath,
+				syllabusUploadedAt,
 				isSample: true,
 			})
 			.run();

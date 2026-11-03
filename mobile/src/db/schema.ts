@@ -48,6 +48,7 @@ export const courses = sqliteTable(
 		iconBackground: text('icon_background').notNull(),
 		syllabusName: text('syllabus_name'),
 		syllabusPath: text('syllabus_path'),
+		syllabusUploadedAt: integer('syllabus_uploaded_at'),
 		isSample: integer('is_sample', { mode: 'boolean' }).notNull().default(false),
 	},
 	(table) => [check('courses_time_range', timeRange(table.startTime, table.endTime))],

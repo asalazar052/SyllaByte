@@ -1,0 +1,1 @@
+ALTER TABLE `courses` ADD `syllabus_uploaded_at` integer;

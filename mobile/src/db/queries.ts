@@ -4,6 +4,7 @@ import { db } from './client';
 import {
 	courseDates,
 	courseMaterials,
+	courseReviewFields,
 	courses,
 	officeHours,
 	professors,
@@ -46,6 +47,9 @@ export const courseQuery = (id: string) =>
 
 export const professorQuery = (id: number) =>
 	db.select().from(professors).where(eq(professors.id, id));
+
+export const reviewFieldsQuery = (courseId: string) =>
+	db.select().from(courseReviewFields).where(eq(courseReviewFields.courseId, courseId));
 
 export const officeHoursQuery = (professorId: number, courseId: string) =>
 	db

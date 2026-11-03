@@ -1,12 +1,11 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
+import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
-import { openSyllabus } from '@/features/upload/syllabus-storage';
 
 export function SavedResources({
 	kind,
@@ -66,43 +65,37 @@ export function SavedResources({
 	);
 }
 
-export function SyllabusAttachment({ name, path }: { name: string; path: string | null }) {
-	const [error, setError] = useState<string | null>(null);
+export function SyllabusAttachment({
+	name,
+	courseId,
+	uploadedAt,
+}: {
+	name: string;
+	courseId: string;
+	uploadedAt: number | null;
+}) {
 	return (
-		<AppCard>
-			<AppText variant="heading">Original syllabus</AppText>
-			<AppText>{name}</AppText>
-			{path ? (
-				<Pressable
-					accessibilityRole="button"
-					onPress={async () => {
-						setError(null);
-						try {
-							await openSyllabus(path);
-						} catch (cause) {
-							setError(
-								cause instanceof Error
-									? cause.message
-									: 'Unable to open the syllabus.',
-							);
-						}
-					}}
-					className="min-h-11 justify-center"
-				>
-					<AppText variant="action" className="text-sylla-blue">
-						Open or share PDF
-					</AppText>
-				</Pressable>
-			) : (
+		<Pressable
+			accessibilityRole="button"
+			accessibilityLabel={`View original syllabus, ${name}`}
+			onPress={() =>
+				router.push({ pathname: '/courses/[id]/syllabus', params: { id: courseId } })
+			}
+			className="min-h-11 flex-row items-center gap-3"
+		>
+			<AppIcon name="document" size={25} />
+			<View className="min-w-0 flex-1 gap-1">
+				<AppText variant="label" numberOfLines={2}>
+					{name}
+				</AppText>
 				<AppText variant="caption" className="text-sylla-muted">
-					The original PDF is retained when you add a course in the mobile app.
+					{uploadedAt !== null
+						? `Uploaded ${new Date(uploadedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · `
+						: ''}
+					View original
 				</AppText>
-			)}
-			{error && (
-				<AppText accessibilityRole="alert" className="text-sylla-brown">
-					{error}
-				</AppText>
-			)}
-		</AppCard>
+			</View>
+			<AppIcon name="external-link" size={16} />
+		</Pressable>
 	);
 }
