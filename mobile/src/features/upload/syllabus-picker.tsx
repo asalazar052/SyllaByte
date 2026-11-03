@@ -27,7 +27,7 @@ type SyllabusPicker = {
 	startExtraction: () => void;
 	cancelExtraction: () => void;
 	updateDraft: (draft: CourseDraft) => void;
-	save: () => Promise<boolean>;
+	save: (draft?: CourseDraft) => Promise<boolean>;
 	saving: boolean;
 	savedCourseId: number | null;
 };
@@ -119,9 +119,9 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 		dispatch({ type: 'edit', draft });
 	}
 
-	async function save() {
+	async function save(reviewedDraft?: CourseDraft) {
 		if (savingRef.current || savedCourseId || !file || !extraction.result) return false;
-		const draft = extraction.result.draft;
+		const draft = reviewedDraft ?? extraction.result.draft;
 		const validation = validateDraft(draft);
 		if (validation) {
 			setError(validation);

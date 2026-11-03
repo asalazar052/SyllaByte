@@ -125,8 +125,6 @@ export function validateDraft(draft: CourseDraft): string | null {
 		return 'Each time range needs an end time after its start time.';
 	for (const item of [...draft.dates, ...draft.materials].filter((item) => item.include)) {
 		if (!item.title.trim()) return 'Give every included date and material a title.';
-		if (item.needsReview && !item.confirmed)
-			return 'Confirm the highlighted items or exclude them before saving.';
 	}
 	for (const item of draft.dates.filter((item) => item.include)) {
 		const date = new Date(`${item.date}T12:00:00Z`);

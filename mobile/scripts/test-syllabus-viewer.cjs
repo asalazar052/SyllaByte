@@ -163,8 +163,27 @@ async function main() {
 	files.set('documents/syllabi/empty.pdf', Buffer.alloc(0));
 	await assert.rejects(storage.resolveSyllabus('empty.pdf'), /empty/);
 
-	const { createSampleDraft } = load('src/features/upload/review-draft.ts');
+	const { createSampleDraft, validateDraft } = load('src/features/upload/review-draft.ts');
 	const draft = createSampleDraft();
+	assert.equal(validateDraft(draft), null, 'sample items no longer require review confirmation');
+	const requiredOnly = {
+		...draft,
+		credits: '',
+		days: '',
+		startTime: null,
+		endTime: null,
+		location: '',
+		professorName: '',
+		professorEmail: '',
+		officeDays: '',
+		officeStart: null,
+		officeEnd: null,
+		officeLocation: '',
+		dates: draft.dates.map((item) => ({ ...item, include: false, date: '' })),
+		materials: draft.materials.map((item) => ({ ...item, include: false, title: '' })),
+	};
+	assert.equal(validateDraft(requiredOnly), null, 'excluded optional items do not block saving');
+	assert.ok(validateDraft({ ...requiredOnly, code: '' }), 'course code is required');
 	draft.dates.forEach((item) => {
 		item.confirmed = true;
 	});
