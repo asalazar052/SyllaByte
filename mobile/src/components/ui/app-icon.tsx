@@ -1,6 +1,16 @@
 import { Image } from 'expo-image';
 
 const icons = {
+	calculator: require('@/assets/icons/calculator.svg'),
+	'external-link': require('@/assets/icons/external-link.svg'),
+	ellipsis: require('@/assets/icons/ellipsis.svg'),
+
+	document: require('@/assets/icons/document.svg'),
+	'arrow-left': require('@/assets/icons/arrow-left.svg'),
+	'chevron-left': require('@/assets/icons/chevron-left.svg'),
+	'chevron-down': require('@/assets/icons/chevron-down.svg'),
+	minus: require('@/assets/icons/minus.svg'),
+
 	search: require('@/assets/icons/search.svg'),
 	scan: require('@/assets/icons/scan.svg'),
 	arrow: require('@/assets/icons/arrow.svg'),

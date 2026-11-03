@@ -1,7 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 
 import { db } from './client';
-import { courses, officeHours, professors, settings, SETTINGS_ID } from './schema';
+import {
+	courseReviewFields,
+	courses,
+	officeHours,
+	professors,
+	settings,
+	SETTINGS_ID,
+} from './schema';
 
 type CourseEdit = Pick<
 	typeof courses.$inferInsert,
@@ -39,5 +46,12 @@ export function saveOfficeHours(professorId: number, courseId: number, values: O
 			target: [officeHours.professorId, officeHours.courseId],
 			set: values,
 		})
+		.run();
+}
+
+export function updateReviewField(id: number, value: string) {
+	db.update(courseReviewFields)
+		.set({ value: value.trim() })
+		.where(eq(courseReviewFields.id, id))
 		.run();
 }

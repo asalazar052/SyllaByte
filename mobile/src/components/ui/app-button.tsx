@@ -7,14 +7,19 @@ export function AppButton({
 	label,
 	onPress,
 	icon,
+	disabled = false,
 }: {
 	label: string;
 	onPress: () => void;
 	icon?: AppIconName;
+	disabled?: boolean;
 }) {
 	return (
 		<Pressable
 			accessibilityRole="button"
+			accessibilityState={{ disabled }}
+			disabled={disabled}
+			style={disabled ? { opacity: 0.5 } : undefined}
 			onPress={onPress}
 			className="min-h-12 flex-row items-center justify-center gap-2.5 rounded-small bg-sylla-navy p-3.5 active:opacity-75"
 		>

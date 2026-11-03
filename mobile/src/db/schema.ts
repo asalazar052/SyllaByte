@@ -94,6 +94,10 @@ export const courses = sqliteTable(
 		credits: integer('credits'),
 		icon: text('icon').$type<AppIconName>().notNull(),
 		iconBackground: text('icon_background').notNull(),
+		syllabusName: text('syllabus_name'),
+		syllabusPath: text('syllabus_path'),
+		syllabusUploadedAt: integer('syllabus_uploaded_at'),
+		isSample: integer('is_sample', { mode: 'boolean' }).notNull().default(false),
 		// Marks the course's events on the calendar.
 		accentColor: text('accent_color').notNull().default(SyllaColors.blue),
 	},
@@ -207,6 +211,15 @@ export const semestersRelations = relations(semesters, ({ many }) => ({
 	courses: many(courses),
 	files: many(files),
 }));
+
+export const courseMaterials = sqliteTable('course_materials', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	courseId: integer('course_id')
+		.notNull()
+		.references(() => courses.id, { onDelete: 'cascade' }),
+	title: text('title').notNull(),
+	details: text('details'),
+});
 
 export const professorsRelations = relations(professors, ({ many }) => ({
 	courses: many(courses),

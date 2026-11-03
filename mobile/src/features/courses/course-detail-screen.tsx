@@ -10,6 +10,8 @@ import { courseQuery } from '@/db/queries';
 
 import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
+import { DeleteCourseAction } from './delete-course-action';
+import { SavedResources, SyllabusAttachment } from './saved-resources';
 
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -83,10 +85,24 @@ export function CourseDetailScreen() {
 							))}
 						</AppCard>
 					)}
-					<AppText variant="caption" className="text-sylla-muted">
-						Course details preview · Editing, confirmation, and syllabus viewing will
-						arrive with the review milestone.
-					</AppText>
+					{course.syllabusName && (
+						<>
+							<SyllabusAttachment
+								name={course.syllabusName}
+								courseId={course.id}
+								uploadedAt={course.syllabusUploadedAt}
+							/>
+							<AppText variant="section">Important dates</AppText>
+							<SavedResources kind="dates" courseId={course.id} />
+							<AppText variant="section">Materials</AppText>
+							<SavedResources kind="materials" courseId={course.id} />
+						</>
+					)}
+					<DeleteCourseAction
+						id={course.id}
+						code={course.code}
+						onDeleted={() => router.replace('/courses')}
+					/>
 				</>
 			)}
 		</Screen>

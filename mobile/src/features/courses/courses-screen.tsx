@@ -9,12 +9,25 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { currentSemesterQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
+import { allSemestersQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
+import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 
 import { CourseCard } from './course-card';
 
 export function CoursesScreen() {
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
+	const {
+		error: uploadError,
+		picking,
+		pick,
+		file,
+		extraction,
+		processing,
+		savedCourseId,
+		saving,
+	} = useSyllabusPicker();
+	const { data: semesters } = useLiveQuery(allSemestersQuery());
+	const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
+	const semester = semesters.find((item) => item.id === selectedSemesterId) ?? semesters[0];
 	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [query, setQuery] = useState('');
@@ -111,6 +124,25 @@ export function CoursesScreen() {
 			</Pressable>
 
 			<View className="gap-3">
+				{semesters.length > 1 && (
+					<View className="flex-row flex-wrap gap-2">
+						{semesters.map((item) => (
+							<Pressable
+								key={item.id}
+								accessibilityRole="button"
+								accessibilityState={{ selected: semester?.id === item.id }}
+								onPress={() => setSelectedSemesterId(item.id)}
+								className={
+									semester?.id === item.id
+										? 'min-h-11 justify-center rounded-small bg-sylla-paleBlue px-3'
+										: 'min-h-11 justify-center rounded-small border border-sylla-border px-3'
+								}
+							>
+								<AppText variant="action">{item.name}</AppText>
+							</Pressable>
+						))}
+					</View>
+				)}
 				<View className="flex-row flex-wrap items-center justify-between gap-2">
 					<AppText variant="section" accessibilityRole="header">
 						{semester?.name}
@@ -155,11 +187,34 @@ export function CoursesScreen() {
 					</AppCard>
 				)}
 			</View>
+			{extraction.phase !== 'idle' && file && !savedCourseId && (
+				<AppCard>
+					<AppText variant="heading">
+						{processing ? 'Syllabus processing' : 'Sample extraction ready'}
+					</AppText>
+					<AppText className="text-sylla-muted">{file.name}</AppText>
+					<AppText variant="caption" className="text-sylla-brown">
+						Demo · Sample data
+					</AppText>
+					<AppButton
+						label={processing ? 'View progress' : 'View extracted details'}
+						onPress={() => router.push('/upload')}
+					/>
+				</AppCard>
+			)}
 			<AppButton
-				label="Upload a syllabus"
+				label={picking ? 'Opening files…' : 'Upload a syllabus'}
 				icon="plus"
-				onPress={() => router.push('/upload')}
+				disabled={picking || processing || saving}
+				onPress={async () => {
+					if (await pick()) router.push('/upload');
+				}}
 			/>
+			{uploadError && (
+				<AppText accessibilityRole="alert" className="text-sylla-brown">
+					{uploadError}
+				</AppText>
+			)}
 		</Screen>
 	);
 }

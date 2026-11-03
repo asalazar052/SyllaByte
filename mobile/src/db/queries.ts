@@ -2,6 +2,8 @@ import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
 
 import { db } from './client';
 import {
+	courseMaterials,
+	courseReviewFields,
 	courses,
 	events,
 	files,
@@ -97,3 +99,32 @@ export function filterCourses(courseList: Course[], query: string, reviewOnly: b
 			`${course.code} ${course.title}`.toLowerCase().includes(normalized),
 	);
 }
+
+export const allSemestersQuery = semestersQuery;
+export const reviewFieldsQuery = (courseId: number) =>
+	db.select().from(courseReviewFields).where(eq(courseReviewFields.courseId, courseId));
+export const savedDatesQuery = (courseId?: number) =>
+	db
+		.select({
+			item: {
+				id: events.id,
+				courseId: events.courseId,
+				title: events.title,
+				date: events.date,
+				time: sql<
+					string | null
+				>`case when ${events.startTime} is null then null else printf('%02d:%02d', ${events.startTime} / 60, ${events.startTime} % 60) end`,
+			},
+			course: courses,
+		})
+		.from(events)
+		.innerJoin(courses, eq(events.courseId, courses.id))
+		.where(courseId !== undefined ? eq(events.courseId, courseId) : undefined)
+		.orderBy(events.date, events.startTime);
+export const savedMaterialsQuery = (courseId?: number) =>
+	db
+		.select({ item: courseMaterials, course: courses })
+		.from(courseMaterials)
+		.innerJoin(courses, eq(courseMaterials.courseId, courses.id))
+		.where(courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined)
+		.orderBy(courses.code, courseMaterials.title);

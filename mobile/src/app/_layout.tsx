@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 import { SyllaColors } from '@/constants/theme';
 import { useDatabase } from '@/db/use-database';
+import { SyllabusPickerProvider } from '@/features/upload/syllabus-picker';
 
 export { ErrorBoundary } from 'expo-router';
 export const unstable_settings = { anchor: '(tabs)' };
@@ -40,16 +41,18 @@ export default function RootLayout() {
 	if (!ready) return null;
 	return (
 		<ThemeProvider value={theme}>
-			<StatusBar style="dark" />
-			<Stack
-				screenOptions={{
-					headerShown: false,
-					contentStyle: { backgroundColor: SyllaColors.background },
-				}}
-			>
-				<Stack.Screen name="(tabs)" />
-				<Stack.Screen name="upload" options={{ presentation: 'modal' }} />
-			</Stack>
+			<SyllabusPickerProvider>
+				<StatusBar style="dark" />
+				<Stack
+					screenOptions={{
+						headerShown: false,
+						contentStyle: { backgroundColor: SyllaColors.background },
+					}}
+				>
+					<Stack.Screen name="(tabs)" />
+					<Stack.Screen name="upload" options={{ presentation: 'modal' }} />
+				</Stack>
+			</SyllabusPickerProvider>
 		</ThemeProvider>
 	);
 }
