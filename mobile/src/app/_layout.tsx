@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 import { SyllaColors } from '@/constants/theme';
 import { useDatabase } from '@/db/use-database';
+import { ReminderSync } from '@/features/reminders/reminder-sync';
 import { SyllabusPickerProvider } from '@/features/upload/syllabus-picker';
 
 export { ErrorBoundary } from 'expo-router';
@@ -43,6 +44,7 @@ export default function RootLayout() {
 		<ThemeProvider value={theme}>
 			<SyllabusPickerProvider>
 				<StatusBar style="dark" />
+				<ReminderSync />
 				<Stack
 					screenOptions={{
 						headerShown: false,

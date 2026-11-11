@@ -15,6 +15,7 @@ import {
 	semestersQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { requestReminderPermission } from '@/features/reminders/reminders';
 import { formatDateRange } from '@/lib/dates';
 import { formatLeadTime, formatTime, joinParts } from '@/lib/format';
 
@@ -143,8 +144,11 @@ export function SettingsScreen() {
 					)}
 					toggle={{
 						value: settings.defaultRemindersEnabled,
-						onValueChange: (value) =>
-							updateSettings({ defaultRemindersEnabled: value }),
+						onValueChange: (value) => {
+							updateSettings({ defaultRemindersEnabled: value });
+							// Asks to send notifications the first time reminders are turned on.
+							if (value) void requestReminderPermission();
+						},
 					}}
 					chevron
 					onPress={() => router.push('/settings/reminders')}
