@@ -82,3 +82,40 @@ export function formatBytes(bytes: number) {
 	// Whole bytes and kilobytes need no decimal; larger sizes keep one, without a trailing '.0'.
 	return `${unit < 2 ? Math.round(value) : Number(value.toFixed(1))} ${units[unit]}`;
 }
+
+// Event dates are stored as 'YYYY-MM-DD' and times as 'HH:MM' (24-hour), both wall-clock with no time zone.
+// These convert to and from the pickers' Dates using local components so the stored value never shifts.
+export function isoToDate(value: string) {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+	if (!match) return null;
+	const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+	const date = new Date(year, month - 1, day);
+	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+		? date
+		: null;
+}
+
+export function dateToIso(date: Date) {
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${date.getFullYear()}-${month}-${day}`;
+}
+
+export function formatDate(date: Date) {
+	return date.toLocaleDateString(undefined, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	});
+}
+
+export function clockToMinutes(value: string) {
+	const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+	return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+export function minutesToClock(minutes: number) {
+	const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
+	return `${hour}:${String(minutes % 60).padStart(2, '0')}`;
+}

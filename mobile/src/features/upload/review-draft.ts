@@ -133,9 +133,9 @@ export function validateDraft(draft: CourseDraft): string | null {
 			!Number.isFinite(date.getTime()) ||
 			date.toISOString().slice(0, 10) !== item.date
 		)
-			return `Enter a valid date (YYYY-MM-DD) for ${item.title}.`;
+			return `Choose a valid date for ${item.title}.`;
 		if (item.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(item.time))
-			return `Enter a time in 24-hour HH:MM format for ${item.title}, or leave it blank.`;
+			return `Choose a valid time for ${item.title}, or clear it.`;
 	}
 	return null;
 }

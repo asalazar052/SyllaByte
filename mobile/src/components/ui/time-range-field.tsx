@@ -6,7 +6,7 @@ import { dateToMinutes, formatTime, minutesToDate } from '@/lib/format';
 
 import { AppText } from './app-text';
 
-function TimeField({
+export function TimeField({
 	label,
 	minutes,
 	onChange,

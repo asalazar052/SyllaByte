@@ -5,12 +5,18 @@ import { Pressable, View } from 'react-native';
 import { AppButton } from '@/components/ui/app-button';
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
+import { DateField } from '@/components/ui/date-field';
 import { DaysField } from '@/components/ui/days-field';
 import { TextField } from '@/components/ui/text-field';
-import { TimeRangeField } from '@/components/ui/time-range-field';
+import { TimeField, TimeRangeField } from '@/components/ui/time-range-field';
+import { requestReminderPermission } from '@/features/reminders/reminders';
+import { clockToMinutes, dateToIso, isoToDate, minutesToClock } from '@/lib/format';
 
 import type { CourseDraft } from './review-draft';
+import { SemesterField } from './semester-field';
 import { useSyllabusPicker } from './syllabus-picker';
+
+const DEFAULT_TIME = 9 * 60;
 
 function Check({
 	label,
@@ -53,7 +59,6 @@ export function ReviewForm() {
 			(
 				| 'code'
 				| 'title'
-				| 'semester'
 				| 'credits'
 				| 'location'
 				| 'professorName'
@@ -93,7 +98,10 @@ export function ReviewForm() {
 					</AppText>
 					{text('code', 'Course code *')}
 					{text('title', 'Course title *')}
-					{text('semester', 'Semester *')}
+					<SemesterField
+						value={draft.semester}
+						onChange={(semester) => update('semester', semester)}
+					/>
 				</AppCard>
 				<AppCard>
 					<AppText variant="heading">Course details · Optional</AppText>
@@ -153,9 +161,10 @@ export function ReviewForm() {
 				<AppCard>
 					<AppText variant="heading">Important dates · Optional</AppText>
 					<AppText variant="caption" className="text-sylla-muted">
-						Times use 24-hour HH:MM. Leave the time blank for a date-only event.
+						Leave the time off for a date-only event.
 					</AppText>
 					{draft.dates.map((item) => {
+						const timeMinutes = clockToMinutes(item.time);
 						const change = (values: Partial<typeof item>) =>
 							update(
 								'dates',
@@ -183,17 +192,52 @@ export function ReviewForm() {
 											value={item.title}
 											onChangeText={(title) => change({ title })}
 										/>
-										<TextField
-											label="Date (YYYY-MM-DD, required if included)"
-											value={item.date}
-											onChangeText={(date) => change({ date })}
-											autoCapitalize="none"
+										<DateField
+											label="Date"
+											value={isoToDate(item.date)}
+											onChange={(date) => change({ date: dateToIso(date) })}
 										/>
-										<TextField
-											label="Time (HH:MM, optional)"
-											value={item.time}
-											onChangeText={(time) => change({ time })}
-										/>
+										{timeMinutes === null ? (
+											<Pressable
+												accessibilityRole="button"
+												accessibilityLabel={`Add time for ${item.title || 'date'}`}
+												onPress={() =>
+													change({ time: minutesToClock(DEFAULT_TIME) })
+												}
+												className="min-h-11 self-start justify-center"
+											>
+												<AppText
+													variant="label"
+													className="text-sylla-blue"
+												>
+													Add time
+												</AppText>
+											</Pressable>
+										) : (
+											<View className="gap-1">
+												<TimeField
+													label="Time"
+													minutes={timeMinutes}
+													onChange={(minutes) =>
+														change({ time: minutesToClock(minutes) })
+													}
+												/>
+												<Pressable
+													accessibilityRole="button"
+													accessibilityLabel={`Clear time for ${item.title || 'date'}`}
+													onPress={() => change({ time: '' })}
+													hitSlop={8}
+													className="self-start"
+												>
+													<AppText
+														variant="action"
+														className="text-sylla-blue"
+													>
+														Clear time
+													</AppText>
+												</Pressable>
+											</View>
+										)}
 									</>
 								)}
 							</View>
@@ -278,6 +322,8 @@ export function ReviewForm() {
 								: {}),
 						})
 					) {
+						// The saved dates carry reminders, so this is the moment to ask to send notifications.
+						void requestReminderPermission();
 						clear();
 						router.replace('/courses');
 					}

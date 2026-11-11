@@ -15,7 +15,7 @@ export default function Upload() {
 	const { file, error, picking, pick, clear, processing, extraction, startExtraction, saving } =
 		useSyllabusPicker();
 	return (
-		<Screen>
+		<Screen grabber>
 			<AppText variant="eyebrow" className="text-sylla-blue mt-3">
 				SYLLABYTE / UPLOAD
 			</AppText>
