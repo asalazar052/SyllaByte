@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "SyllaByte",
+    "slug": "syllabyte",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "syllabyte",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
@@ -23,8 +23,10 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
-        "android.permission.ACCESS_NETWORK_STATE"
-      ]
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
+      "package": "com.asalazar052.mobile"
     },
     "web": {
       "output": "server",
