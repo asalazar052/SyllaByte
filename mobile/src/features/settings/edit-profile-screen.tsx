@@ -6,14 +6,13 @@ import { AppButton } from '@/components/ui/app-button';
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { SyllaColors } from '@/constants/theme';
 import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
 import { EMAIL, orNull } from '@/lib/input';
-
-import { backToSettings, SettingsPageHeader } from './settings-page-header';
 
 const labelClassName = 'font-inter-medium text-sylla-blue';
 const inputClassName = 'min-h-12 bg-sylla-surface p-3.5 text-[13px]';
@@ -22,7 +21,10 @@ export function EditProfileScreen() {
 	const { data: settings } = useLiveQuery(settingsQuery());
 	return (
 		<Screen>
-			<SettingsPageHeader
+			<PageHeader
+				parent="SETTINGS"
+				backLabel="Back to settings"
+				onBack={() => goBackOr('/settings')}
 				title="Edit your profile."
 				description="A few details to make your semester feel like yours."
 			/>
@@ -56,7 +58,7 @@ function ProfileForm({ settings }: { settings: Settings }) {
 			institution: orNull(draft.institution),
 			email: orNull(draft.email),
 		});
-		backToSettings();
+		goBackOr('/settings');
 	}
 
 	return (

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppIcon } from '@/components/ui/app-icon';
@@ -16,6 +17,8 @@ import { EventSymbol } from './event-symbol';
 
 const WEEKDAY_HEADINGS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MAX_MARKERS = 3;
+// How soon a second tap on a type has to follow the first to count as a double tap.
+const DOUBLE_TAP_MS = 300;
 
 function DayCell({
 	date,
@@ -78,6 +81,7 @@ export function MonthCalendar({
 	colorOf,
 	hiddenCategories,
 	onToggleCategory,
+	onSoloCategory,
 	onSelect,
 	onChangeMonth,
 	onToday,
@@ -90,10 +94,26 @@ export function MonthCalendar({
 	colorOf: (courseId: number | null) => string;
 	hiddenCategories: EventCategory[];
 	onToggleCategory: (category: EventCategory) => void;
+	// Shows this type and hides all the others.
+	onSoloCategory: (category: EventCategory) => void;
 	onSelect: (date: string) => void;
 	onChangeMonth: (step: -1 | 1) => void;
 	onToday: () => void;
 }) {
+	const lastTap = useRef<{ category: EventCategory; at: number } | null>(null);
+
+	// One tap switches a type on or off. A second tap on the same type right after it shows only that type.
+	function pressCategory(category: EventCategory, at: number) {
+		const last = lastTap.current;
+		if (last && last.category === category && at - last.at <= DOUBLE_TAP_MS) {
+			lastTap.current = null;
+			onSoloCategory(category);
+			return;
+		}
+		lastTap.current = { category, at };
+		onToggleCategory(category);
+	}
+
 	return (
 		<View className="gap-3">
 			<View className="flex-row items-center justify-between">
@@ -165,7 +185,12 @@ export function MonthCalendar({
 							accessibilityRole="checkbox"
 							accessibilityLabel={label}
 							aria-checked={shown}
-							onPress={() => onToggleCategory(category)}
+							// Screen readers can't double tap a checkbox, so they get the same shortcut as an action.
+							accessibilityActions={[{ name: 'solo', label: `Show only ${label}` }]}
+							onAccessibilityAction={() => onSoloCategory(category)}
+							onPress={(event) =>
+								pressCategory(category, event.nativeEvent.timestamp)
+							}
 							hitSlop={8}
 							className={`flex-row items-center gap-1.5 active:opacity-75 ${shown ? '' : 'opacity-50'}`}
 						>

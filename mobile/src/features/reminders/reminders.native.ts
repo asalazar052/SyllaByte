@@ -1,4 +1,4 @@
-import { gte } from 'drizzle-orm';
+import { eq, gte } from 'drizzle-orm';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { router, useRootNavigationState, useSegments } from 'expo-router';
@@ -125,6 +125,22 @@ export function syncReminders() {
 // screen, and a push made then can be overwritten by that setup.
 const COLD_START_DELAY_MS = 350;
 
+// Takes the user to the calendar on the item's day, then opens the item's details over it.
+async function openReminder(eventId: number) {
+	if (!Number.isInteger(eventId) || eventId <= 0) return;
+	// The date comes from the item itself, not the notification, so it is right even if the item was moved
+	// after the reminder was scheduled.
+	const event = await db.query.events.findFirst({ where: eq(events.id, eventId) });
+	// Closes whatever is open over the tabs, such as another item's details or the upload screen.
+	if (router.canDismiss()) router.dismissAll();
+	router.navigate({
+		pathname: '/calendar',
+		params: event ? { date: event.date, focus: String(Date.now()) } : {},
+	});
+	// An item that has since been deleted leaves the user on the calendar.
+	if (event) router.push({ pathname: '/event/[id]', params: { id: event.id } });
+}
+
 // Opens the item when its reminder is tapped, including a tap that started the app.
 export function useReminderTaps() {
 	const response = Notifications.useLastNotificationResponse();
@@ -138,8 +154,7 @@ export function useReminderTaps() {
 		const timer = setTimeout(() => {
 			// The tap is only used up once the item is open, so a render that cancels the wait doesn't lose it.
 			Notifications.clearLastNotificationResponse();
-			if (Number.isInteger(eventId) && eventId > 0)
-				router.push({ pathname: '/event/[id]', params: { id: eventId } });
+			void openReminder(eventId).catch(() => {});
 		}, COLD_START_DELAY_MS);
 		return () => clearTimeout(timer);
 	}, [response, navigationReady, firstScreenShowing]);

@@ -4,12 +4,12 @@ import { View } from 'react-native';
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { filesQuery, type UploadedFile } from '@/db/queries';
 import { formatBytes, joinParts } from '@/lib/format';
 
-import { SettingsPageHeader } from './settings-page-header';
 import { UploadedFileCard } from './uploaded-file-card';
 
 const PROCESSING_PLACEHOLDER = 0.72;
@@ -32,7 +32,10 @@ export function UploadedFilesScreen() {
 	return (
 		<Screen>
 			<View className="gap-5">
-				<SettingsPageHeader
+				<PageHeader
+					parent="SETTINGS"
+					backLabel="Back to settings"
+					onBack={() => goBackOr('/settings')}
 					title="Uploaded files."
 					description="Save a copy or remove a syllabus from the app."
 				/>

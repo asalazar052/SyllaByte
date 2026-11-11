@@ -1,10 +1,11 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import {
 	courseQuery,
@@ -27,21 +28,24 @@ export function CourseDetailScreen() {
 	const { data: materials } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
 	// The dates and materials belong to the course, so they stay when its syllabus file is removed.
 	const hasResources = dates.length > 0 || materials.length > 0;
-	function back() {
-		if (router.canGoBack()) router.back();
-		else router.replace('/courses');
-	}
 	return (
 		<Screen>
-			<Pressable
-				accessibilityRole="button"
-				onPress={back}
-				className="justify-center self-start"
-			>
-				<AppText variant="action" className="text-sylla-blue">
-					← Back to courses
-				</AppText>
-			</Pressable>
+			<PageHeader
+				parent={course ? `COURSES / ${course.code}` : 'COURSES'}
+				backLabel="Back to courses"
+				onBack={() => goBackOr('/courses')}
+				title={course?.title}
+				accessory={
+					course && (
+						<CourseIcon
+							icon={course.icon}
+							background={course.iconBackground}
+							width={80}
+							height={80}
+						/>
+					)
+				}
+			/>
 			{updatedAt === undefined ? null : !course ? (
 				<AppCard>
 					<AppText variant="heading">Course not found</AppText>
@@ -49,26 +53,6 @@ export function CourseDetailScreen() {
 				</AppCard>
 			) : (
 				<>
-					<View className="gap-3">
-						<AppText variant="eyebrow" className="text-sylla-blue">
-							COURSES / {course.code}
-						</AppText>
-						<View className="flex-row items-center justify-between gap-4">
-							<AppText
-								variant="title"
-								accessibilityRole="header"
-								className="min-w-0 flex-1"
-							>
-								{course.title}
-							</AppText>
-							<CourseIcon
-								icon={course.icon}
-								background={course.iconBackground}
-								width={80}
-								height={80}
-							/>
-						</View>
-					</View>
 					<CourseInformation course={course} />
 					{course.reviewFields.length > 0 && (
 						<AppCard

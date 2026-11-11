@@ -8,6 +8,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { DateField } from '@/components/ui/date-field';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SelectField } from '@/components/ui/select-field';
 import { TimeField } from '@/components/ui/time-range-field';
@@ -20,7 +21,6 @@ import { toIsoDate } from '@/lib/dates';
 import { dateToIso, isoToDate } from '@/lib/format';
 
 import { eventTypeInfo } from './calendar-items';
-import { CalendarPageHeader } from './calendar-page-header';
 import { ItemField, ItemInput } from './item-fields';
 import { describeReminder, useItemReminder } from './item-reminder';
 
@@ -69,15 +69,16 @@ export function AddItemScreen() {
 		// Back to the calendar on the new item's day.
 		router.dismissTo({
 			pathname: '/calendar',
-			params: { date, added: String(Date.now()) },
+			params: { date, focus: String(Date.now()) },
 		});
 	}
 
 	return (
 		<Screen>
-			<CalendarPageHeader
+			<PageHeader
 				parent="CALENDAR"
 				backLabel="Back to calendar"
+				onBack={() => goBackOr('/calendar')}
 				title="Add an item."
 				description="A deadline, an exam, or a little time to prepare."
 			/>

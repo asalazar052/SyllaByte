@@ -1,9 +1,8 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable } from 'react-native';
 
-import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { courseQuery } from '@/db/queries';
 
@@ -15,20 +14,12 @@ function CourseResourcesScreen({ kind }: { kind: 'dates' | 'materials' }) {
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
 	return (
 		<Screen>
-			<Pressable
-				accessibilityRole="button"
-				accessibilityLabel="Back to course"
-				onPress={() => router.dismissTo({ pathname: '/courses/[id]', params: { id } })}
-				className="min-h-11 flex-row items-center gap-2"
-			>
-				<AppIcon name="arrow-left" size={17} />
-				<AppText variant="eyebrow" className="text-sylla-blue">
-					{course?.code ?? 'COURSE'} / {kind.toUpperCase()}
-				</AppText>
-			</Pressable>
-			<AppText variant="title" accessibilityRole="header">
-				{kind === 'dates' ? 'Important dates' : 'Course materials'}
-			</AppText>
+			<PageHeader
+				parent={`${course?.code ?? 'COURSE'} / ${kind.toUpperCase()}`}
+				backLabel="Back to course"
+				onBack={() => router.dismissTo({ pathname: '/courses/[id]', params: { id } })}
+				title={kind === 'dates' ? 'Important dates' : 'Course materials'}
+			/>
 			{updatedAt === undefined ? null : !course ? (
 				<AppText>This course could not be found.</AppText>
 			) : (

@@ -5,6 +5,7 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { updateSettings } from '@/db/mutations';
@@ -12,14 +13,16 @@ import { type Settings, settingsQuery } from '@/db/queries';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 
 import { ReminderWheels } from './reminder-wheels';
-import { SettingsPageHeader } from './settings-page-header';
 
 export function RemindersScreen() {
 	const { data: settings } = useLiveQuery(settingsQuery());
 	return (
 		<Screen>
 			<View className="gap-2.5">
-				<SettingsPageHeader
+				<PageHeader
+					parent="SETTINGS"
+					backLabel="Back to settings"
+					onBack={() => goBackOr('/settings')}
 					title="A timely heads-up."
 					description="Choose when your default reminders arrive."
 				/>

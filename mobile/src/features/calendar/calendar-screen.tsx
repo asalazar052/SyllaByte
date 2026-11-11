@@ -24,6 +24,7 @@ import {
 	type CalendarItem,
 	compareByTime,
 	courseColor,
+	eventCategories,
 	type EventCategory,
 	eventItem,
 	eventTypeInfo,
@@ -40,14 +41,15 @@ export function CalendarScreen() {
 	const [selected, setSelected] = useState(today);
 	const [courseId, setCourseId] = useState<number | null>(null);
 	const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
-	// Set when an item has just been added, to show the day it landed on.
-	const { date: addedDate, added } = useLocalSearchParams<{ date?: string; added?: string }>();
-	const [shownAdd, setShownAdd] = useState<string>();
-	if (added && added !== shownAdd) {
-		setShownAdd(added);
-		if (addedDate && isoToDate(addedDate)) {
-			setSelected(addedDate);
-			setMonth(startOfMonth(addedDate));
+	// Sent along with a date to show that day: after an item is added, or when a reminder is tapped. `focus`
+	// changes on every visit, so going to the same day twice still counts.
+	const { date: focusDate, focus } = useLocalSearchParams<{ date?: string; focus?: string }>();
+	const [shownFocus, setShownFocus] = useState<string>();
+	if (focus && focus !== shownFocus) {
+		setShownFocus(focus);
+		if (focusDate && isoToDate(focusDate)) {
+			setSelected(focusDate);
+			setMonth(startOfMonth(focusDate));
 		}
 	}
 	const [hiddenCategories, setHiddenCategories] = useStoredState<EventCategory[]>(
@@ -121,6 +123,11 @@ export function CalendarScreen() {
 		);
 	}
 
+	// Shows one type of item and hides all the others.
+	function soloCategory(category: EventCategory) {
+		setHiddenCategories(eventCategories.filter((other) => other !== category));
+	}
+
 	return (
 		<Screen scrollRef={scrollRef}>
 			<View className="gap-4">
@@ -154,6 +161,7 @@ export function CalendarScreen() {
 				colorOf={(id) => courseColor(courseById(id))}
 				hiddenCategories={hiddenCategories}
 				onToggleCategory={toggleCategory}
+				onSoloCategory={soloCategory}
 				onSelect={select}
 				onChangeMonth={changeMonth}
 				onToday={showToday}

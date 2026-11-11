@@ -4,11 +4,11 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { ReminderWheels } from '@/features/settings/reminder-wheels';
 
-import { CalendarPageHeader } from './calendar-page-header';
 import { useItemReminder } from './item-reminder';
 
 export function ItemReminderScreen() {
@@ -16,9 +16,10 @@ export function ItemReminderScreen() {
 	return (
 		<Screen>
 			<View className="gap-2.5">
-				<CalendarPageHeader
+				<PageHeader
 					parent="CALENDAR / REMINDER"
 					backLabel="Back to the item"
+					onBack={() => goBackOr('/calendar')}
 					title="Need reminding?"
 					description="Let us know when we should give you a nudge."
 				/>

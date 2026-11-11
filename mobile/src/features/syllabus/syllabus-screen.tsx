@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '@/components/ui/app-button';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { PageHeader } from '@/components/ui/page-header';
 import { SyllaColors } from '@/constants/theme';
 import { courseQuery, type CourseSyllabus, courseSyllabusQuery } from '@/db/queries';
 import { resolveSyllabus, shareSyllabus } from '@/features/upload/syllabus-storage';
@@ -108,23 +109,12 @@ function SyllabusViewer({
 			className="min-h-0 flex-1 bg-sylla-background"
 		>
 			<View className="min-h-0 w-full max-w-xl flex-1 gap-5 self-center px-6 pb-5 pt-3">
-				<View className="gap-4">
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Back to course"
-						onPress={back}
-						hitSlop={10}
-						className="min-h-6 flex-row items-center gap-2"
-					>
-						<AppIcon name="arrow-left" size={17} />
-						<AppText variant="eyebrow" className="text-sylla-blue">
-							{course?.code ?? 'COURSE'} / SYLLABUS
-						</AppText>
-					</Pressable>
-					<AppText variant="title" accessibilityRole="header">
-						Syllabus
-					</AppText>
-				</View>
+				<PageHeader
+					parent={`${course?.code ?? 'COURSE'} / SYLLABUS`}
+					backLabel="Back to course"
+					onBack={back}
+					title="Syllabus"
+				/>
 				{syllabus && (
 					<View className="flex-row items-center gap-3">
 						<View className="h-11 w-10 items-center justify-center rounded-small bg-sylla-paleBlue">
