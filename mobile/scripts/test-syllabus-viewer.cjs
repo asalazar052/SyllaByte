@@ -20,10 +20,12 @@ for (const entry of journal.entries) {
 			"INSERT INTO semesters(name) VALUES ('Fall 2026'); INSERT INTO courses(id, semester_id, code, title, icon, icon_background) VALUES (1,1,'OLD','Older course','courses','#fff')",
 		);
 }
-assert.equal(
-	sqlite.prepare('SELECT syllabus_uploaded_at FROM courses WHERE id=1').get()
-		.syllabus_uploaded_at,
-	null,
+assert.deepEqual(
+	sqlite
+		.prepare("SELECT name FROM pragma_table_info('courses') WHERE name LIKE 'syllabus%'")
+		.all(),
+	[],
+	'Syllabus details live in the files table, not on courses',
 );
 
 const client = {
@@ -76,6 +78,10 @@ class File extends Directory {
 	}
 	get size() {
 		return files.get(this.uri)?.length ?? 0;
+	}
+	async digest(algorithm) {
+		assert.equal(algorithm, 'MD5');
+		return require('node:crypto').createHash('md5').update(files.get(this.uri)).digest('hex');
 	}
 	async copy(destination) {
 		await Promise.resolve();
@@ -152,8 +158,11 @@ async function main() {
 	assert.equal(PdfDocument({ page: 1 }).type, 'Pdf');
 	assert.equal(pdfImports, 1, 'Load the renderer only inside a supported native build');
 	const storage = load('src/features/upload/syllabus-storage.native.ts');
-	const name = await storage.retainSyllabus('source.pdf', 'course');
+	const retained = await storage.retainSyllabus('source.pdf', 'course');
+	const name = retained.path;
 	assert.equal(name, 'course.pdf');
+	assert.equal(retained.bytes, files.get('source.pdf').length);
+	assert.match(retained.checksum, /^[0-9a-f]{32}$/);
 	const { uri } = await storage.resolveSyllabus(name);
 	assert.deepEqual(files.get(uri), files.get('source.pdf'), 'Viewer must use original PDF bytes');
 	await storage.shareSyllabus(name);
@@ -192,18 +201,29 @@ async function main() {
 	});
 	const { saveReviewedCourse } = load('src/db/save-course.ts');
 	const selectedAt = 1793142000000;
-	const savedId = saveReviewedCourse(draft, 'My original syllabus.pdf', name, selectedAt);
+	const savedId = saveReviewedCourse(draft, {
+		filename: 'My original syllabus.pdf',
+		storagePath: name,
+		bytes: retained.bytes,
+		checksum: retained.checksum,
+		uploadedAt: selectedAt,
+	});
 	const saved = sqlite
 		.prepare(
-			'SELECT syllabus_name, syllabus_path, syllabus_uploaded_at FROM courses WHERE id = ?',
+			'SELECT f.type, f.filename, f.storage_path, f.uploaded_at, f.bytes, f.checksum, f.semester_id, c.semester_id AS course_semester FROM files f JOIN courses c ON c.id = f.course_id WHERE f.course_id = ?',
 		)
 		.get(savedId);
 	assert.deepEqual(
 		{ ...saved },
 		{
-			syllabus_name: 'My original syllabus.pdf',
-			syllabus_path: name,
-			syllabus_uploaded_at: selectedAt,
+			type: 'syllabus',
+			filename: 'My original syllabus.pdf',
+			storage_path: name,
+			uploaded_at: selectedAt,
+			bytes: retained.bytes,
+			checksum: retained.checksum,
+			semester_id: saved.course_semester,
+			course_semester: saved.course_semester,
 		},
 	);
 	assert.equal(

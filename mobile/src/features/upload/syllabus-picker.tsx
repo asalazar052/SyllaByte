@@ -133,8 +133,15 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 		let path: string | null = null;
 		try {
 			const id = `import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-			path = await retainSyllabus(file.uri, id);
-			const courseId = saveReviewedCourse(draft, file.name, path, selectedAt);
+			const retained = await retainSyllabus(file.uri, id);
+			path = retained.path;
+			const courseId = saveReviewedCourse(draft, {
+				filename: file.name,
+				storagePath: retained.path,
+				bytes: retained.bytes ?? file.size ?? 0,
+				checksum: retained.checksum,
+				uploadedAt: selectedAt ?? Date.now(),
+			});
 			setSavedCourseId(courseId);
 			return true;
 		} catch (cause) {

@@ -211,7 +211,7 @@ const seedEvents: (Omit<typeof events.$inferInsert, 'courseId'> & { course: stri
 	},
 	{
 		course: null,
-		type: 'reminder',
+		type: 'other',
 		title: 'Last day to withdraw from a course',
 		date: '2026-10-16',
 		startTime: at(17),
@@ -241,7 +241,7 @@ const seedEvents: (Omit<typeof events.$inferInsert, 'courseId'> & { course: stri
 	},
 	{
 		course: null,
-		type: 'reminder',
+		type: 'other',
 		title: 'Register for spring classes',
 		date: '2026-10-27',
 		startTime: at(17),

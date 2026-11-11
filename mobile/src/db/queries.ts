@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNotNull, lte, sql } from 'drizzle-orm';
 
 import { db } from './client';
 import {
@@ -40,6 +40,18 @@ export const courseQuery = (id: number) =>
 	db.query.courses.findFirst({
 		where: eq(courses.id, id),
 		with: { semester: true, reviewFields: true },
+	});
+
+// The syllabus the user uploaded for a course (the newest, if there is more than one). Sample files that
+// ship with the app have no upload time, so they don't count.
+export const courseSyllabusQuery = (courseId: number) =>
+	db.query.files.findFirst({
+		where: and(
+			eq(files.courseId, courseId),
+			eq(files.type, 'syllabus'),
+			isNotNull(files.uploadedAt),
+		),
+		orderBy: [desc(files.version), desc(files.id)],
 	});
 
 export const professorQuery = (id: number) =>
@@ -85,6 +97,7 @@ export type Semester = Awaited<ReturnType<typeof semestersQuery>>[number];
 export type CourseCredits = Awaited<ReturnType<typeof courseCreditsQuery>>[number];
 export type Course = Awaited<ReturnType<typeof semesterCoursesQuery>>[number];
 export type CourseDetail = NonNullable<Awaited<ReturnType<typeof courseQuery>>>;
+export type CourseSyllabus = NonNullable<Awaited<ReturnType<typeof courseSyllabusQuery>>>;
 export type UploadedFile = Awaited<ReturnType<typeof filesQuery>>[number];
 export type CalendarEvent = Awaited<ReturnType<typeof eventsBetweenQuery>>[number];
 export type Professor = Awaited<ReturnType<typeof professorQuery>>[number];

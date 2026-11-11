@@ -21,7 +21,7 @@ export const eventTypeInfo: Record<EventType, { label: string; category: EventCa
 	lab_report: { label: 'Lab report', category: 'due' },
 	quiz: { label: 'Quiz', category: 'exam' },
 	exam: { label: 'Exam', category: 'exam' },
-	reminder: { label: 'Reminder', category: 'reminder' },
+	other: { label: 'Other', category: 'reminder' },
 };
 
 const NO_COURSE_COLOR = SyllaColors.muted;

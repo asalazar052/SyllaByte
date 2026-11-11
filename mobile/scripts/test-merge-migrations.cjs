@@ -58,10 +58,6 @@ restoreLegacyUploads(connection(main));
 assert.equal(main.prepare('SELECT title FROM courses WHERE id=17').get().title, 'Incoming course');
 assert.equal(main.prepare('SELECT count(*) AS n FROM settings').get().n, 1);
 assert.equal(
-	main.prepare('SELECT syllabus_path FROM courses WHERE id=17').get().syllabus_path,
-	null,
-);
-assert.equal(
 	main.prepare("SELECT name FROM sqlite_master WHERE name='__upload_merge_backup'").get(),
 	undefined,
 );
@@ -101,8 +97,11 @@ restoreLegacyUploads(adapter);
 const course = legacy.prepare('SELECT * FROM courses').get();
 assert.equal(typeof course.id, 'number');
 assert.equal(course.code, 'PDF 101');
-assert.equal(course.syllabus_path, 'original.pdf');
-assert.equal(course.syllabus_uploaded_at, 1793142000000);
+const syllabus = legacy.prepare('SELECT * FROM files WHERE course_id=?').get(course.id);
+assert.equal(syllabus.filename, 'Original.pdf');
+assert.equal(syllabus.storage_path, 'original.pdf');
+assert.equal(syllabus.uploaded_at, 1793142000000);
+assert.equal(syllabus.type, 'syllabus');
 assert.equal(legacy.prepare('SELECT start_time,type,course_id FROM events').get().start_time, 630);
 assert.equal(legacy.prepare('SELECT type FROM events').get().type, 'exam');
 assert.equal(

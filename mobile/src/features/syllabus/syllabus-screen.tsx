@@ -8,7 +8,7 @@ import { AppButton } from '@/components/ui/app-button';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { SyllaColors } from '@/constants/theme';
-import { courseQuery } from '@/db/queries';
+import { courseQuery, type CourseSyllabus, courseSyllabusQuery } from '@/db/queries';
 import { resolveSyllabus, shareSyllabus } from '@/features/upload/syllabus-storage';
 
 import { PdfDocument } from './pdf-document';
@@ -19,12 +19,21 @@ export function SyllabusScreen() {
 	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
 	const currentCourse = course?.id === id ? course : undefined;
+	const { data: syllabus, updatedAt: syllabusUpdatedAt } = useLiveQuery(courseSyllabusQuery(id), [
+		id,
+	]);
+	const currentSyllabus = syllabus?.courseId === id ? syllabus : undefined;
 	return (
 		<SyllabusViewer
-			key={`${id}-${currentCourse?.syllabusPath ?? ''}`}
+			key={`${id}-${currentSyllabus?.storagePath ?? ''}`}
 			id={id}
 			course={currentCourse}
-			queried={updatedAt !== undefined && (!course || course.id === id)}
+			syllabus={currentSyllabus}
+			queried={
+				updatedAt !== undefined &&
+				syllabusUpdatedAt !== undefined &&
+				(!course || course.id === id)
+			}
 		/>
 	);
 }
@@ -32,13 +41,15 @@ export function SyllabusScreen() {
 function SyllabusViewer({
 	id,
 	course,
+	syllabus,
 	queried,
 }: {
 	id: number;
 	course: Awaited<ReturnType<typeof courseQuery>>;
+	syllabus: CourseSyllabus | undefined;
 	queried: boolean;
 }) {
-	const path = course?.syllabusPath;
+	const path = syllabus?.storagePath;
 	const [source, setSource] = useState<{ uri: string } | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [retry, setRetry] = useState(0);
@@ -114,19 +125,19 @@ function SyllabusViewer({
 						Syllabus
 					</AppText>
 				</View>
-				{course?.syllabusName && (
+				{syllabus && (
 					<View className="flex-row items-center gap-3">
 						<View className="h-11 w-10 items-center justify-center rounded-small bg-sylla-paleBlue">
 							<AppIcon name="document" />
 						</View>
 						<View className="min-w-0 flex-1 gap-1">
 							<AppText variant="label" numberOfLines={2}>
-								{course.syllabusName}
+								{syllabus.filename}
 							</AppText>
 							<AppText variant="caption" className="text-sylla-muted">
 								{pages ? `${pages} ${pages === 1 ? 'page' : 'pages'}` : 'PDF'}
-								{course.syllabusUploadedAt != null
-									? ` · Uploaded ${new Date(course.syllabusUploadedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+								{syllabus.uploadedAt != null
+									? ` · Uploaded ${new Date(syllabus.uploadedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 									: ''}
 							</AppText>
 						</View>
@@ -140,7 +151,7 @@ function SyllabusViewer({
 								setSharing(true);
 								setShareError(null);
 								try {
-									await shareSyllabus(path);
+									await shareSyllabus(path, syllabus?.filename);
 								} catch (cause) {
 									setShareError(
 										cause instanceof Error

@@ -95,7 +95,7 @@ export function restoreLegacyUploads(db: Connection) {
 			const semesterId = semesters.get(String(row.semester_id));
 			if (!semesterId) throw new Error('Could not recover an uploaded course semester.');
 			const id = db.runSync(
-				`INSERT INTO courses (semester_id, professor_id, code, title, days, start_time, end_time, location, credits, icon, icon_background, syllabus_name, syllabus_path, syllabus_uploaded_at, is_sample) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO courses (semester_id, professor_id, code, title, days, start_time, end_time, location, credits, icon, icon_background, is_sample) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				semesterId,
 				professors.get(String(row.professor_id)) ?? null,
 				row.code,
@@ -107,11 +107,19 @@ export function restoreLegacyUploads(db: Connection) {
 				row.credits,
 				row.icon,
 				row.icon_background,
-				row.syllabus_name ?? null,
-				row.syllabus_path ?? null,
-				row.syllabus_uploaded_at ?? null,
 				row.is_sample ?? 0,
 			).lastInsertRowId;
+			if (row.syllabus_name)
+				db.runSync(
+					'INSERT INTO files (semester_id, course_id, type, filename, bytes, storage_path, uploaded_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+					semesterId,
+					id,
+					'syllabus',
+					row.syllabus_name,
+					0,
+					row.syllabus_path ?? null,
+					row.syllabus_uploaded_at ?? null,
+				);
 			courses.set(String(row.id), id);
 		}
 		for (const row of data.office_hours) {

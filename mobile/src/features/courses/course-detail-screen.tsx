@@ -6,7 +6,12 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { courseQuery } from '@/db/queries';
+import {
+	courseQuery,
+	courseSyllabusQuery,
+	savedDatesQuery,
+	savedMaterialsQuery,
+} from '@/db/queries';
 
 import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
@@ -17,6 +22,11 @@ export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const courseId = Number.isInteger(Number(id)) ? Number(id) : 0;
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(courseId), [courseId]);
+	const { data: syllabus } = useLiveQuery(courseSyllabusQuery(courseId), [courseId]);
+	const { data: dates } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
+	const { data: materials } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
+	// The dates and materials belong to the course, so they stay when its syllabus file is removed.
+	const hasResources = dates.length > 0 || materials.length > 0;
 	function back() {
 		if (router.canGoBack()) router.back();
 		else router.replace('/courses');
@@ -85,13 +95,15 @@ export function CourseDetailScreen() {
 							))}
 						</AppCard>
 					)}
-					{course.syllabusName && (
+					{syllabus && (
+						<SyllabusAttachment
+							name={syllabus.filename}
+							courseId={course.id}
+							uploadedAt={syllabus.uploadedAt}
+						/>
+					)}
+					{hasResources && (
 						<>
-							<SyllabusAttachment
-								name={course.syllabusName}
-								courseId={course.id}
-								uploadedAt={course.syllabusUploadedAt}
-							/>
 							<AppText variant="section">Important dates</AppText>
 							<SavedResources kind="dates" courseId={course.id} />
 							<AppText variant="section">Materials</AppText>

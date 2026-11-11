@@ -94,9 +94,6 @@ export const courses = sqliteTable(
 		credits: integer('credits'),
 		icon: text('icon').$type<AppIconName>().notNull(),
 		iconBackground: text('icon_background').notNull(),
-		syllabusName: text('syllabus_name'),
-		syllabusPath: text('syllabus_path'),
-		syllabusUploadedAt: integer('syllabus_uploaded_at'),
 		isSample: integer('is_sample', { mode: 'boolean' }).notNull().default(false),
 		// Marks the course's events on the calendar.
 		accentColor: text('accent_color').notNull().default(SyllaColors.blue),
@@ -131,7 +128,7 @@ export const officeHours = sqliteTable(
 	],
 );
 
-export const eventTypes = ['assignment', 'lab_report', 'quiz', 'exam', 'reminder'] as const;
+export const eventTypes = ['assignment', 'lab_report', 'quiz', 'exam', 'other'] as const;
 export type EventType = (typeof eventTypes)[number];
 
 // Dated items on the calendar. Recurring class meetings and weekly office hours stay on courses and
@@ -151,6 +148,13 @@ export const events = sqliteTable(
 		endTime: integer('end_time'),
 		location: text('location'),
 		notes: text('notes'),
+		// A reminder set on this item alone. All three are null while the item follows the default reminder
+		// in settings.
+		reminderEnabled: integer('reminder_enabled', { mode: 'boolean' }),
+		// Whole days before the date.
+		reminderDaysAhead: integer('reminder_days_ahead'),
+		// Minutes after midnight.
+		reminderTime: integer('reminder_time'),
 	},
 	(table) => [
 		index('events_date_idx').on(table.date),
@@ -184,8 +188,13 @@ export const files = sqliteTable(
 		pageCount: integer('page_count'),
 		// Size of the file in bytes.
 		bytes: integer('bytes').notNull(),
-		// MD5 of the file's contents, as 32 lowercase hex digits.
-		checksum: text('checksum').notNull(),
+		// MD5 of the file's contents, as 32 lowercase hex digits. Null where it can't be computed (the web build).
+		checksum: text('checksum'),
+		// Name of the retained copy in the app's syllabi folder. Null when no copy is kept (the web build, or a
+		// sample file that ships with the app).
+		storagePath: text('storage_path'),
+		// When the user uploaded the file, in milliseconds since the epoch. Null for sample files.
+		uploadedAt: integer('uploaded_at'),
 	},
 	(table) => [
 		check('files_version', sql`${table.version} >= 1`),

@@ -4,14 +4,26 @@ import { SyllaColors } from '@/constants/theme';
 import { type CourseDraft, validateDraft } from '@/features/upload/review-draft';
 
 import { db } from './client';
-import { courseMaterials, courses, events, officeHours, professors, semesters } from './schema';
+import {
+	courseMaterials,
+	courses,
+	events,
+	files,
+	officeHours,
+	professors,
+	semesters,
+} from './schema';
 
-export function saveReviewedCourse(
-	draft: CourseDraft,
-	syllabusName: string,
-	syllabusPath: string | null,
-	syllabusUploadedAt: number | null = null,
-) {
+// The uploaded PDF, which is recorded in the files table.
+export type SyllabusUpload = {
+	filename: string;
+	storagePath: string | null;
+	bytes: number;
+	checksum: string | null;
+	uploadedAt: number;
+};
+
+export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 	const error = validateDraft(draft);
 	if (error) throw new Error(error);
 	const nullable = (value: string) => value.trim() || null;
@@ -60,13 +72,22 @@ export function saveReviewedCourse(
 				location: nullable(draft.location),
 				icon: 'courses',
 				iconBackground: SyllaColors.paleBlue,
-				syllabusName,
-				syllabusPath,
-				syllabusUploadedAt,
 				isSample: true,
 			})
 			.returning({ id: courses.id })
 			.get();
+		tx.insert(files)
+			.values({
+				semesterId: semester.id,
+				courseId: id,
+				type: 'syllabus',
+				filename: syllabus.filename,
+				bytes: syllabus.bytes,
+				checksum: syllabus.checksum,
+				storagePath: syllabus.storagePath,
+				uploadedAt: syllabus.uploadedAt,
+			})
+			.run();
 		if (draft.officeDays || draft.officeStart !== null || draft.officeLocation.trim())
 			tx.insert(officeHours)
 				.values({
