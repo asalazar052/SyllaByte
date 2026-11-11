@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { router, useLocalSearchParams } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
-import { type ScrollView, View } from 'react-native';
+import { Pressable, type ScrollView, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
@@ -13,9 +14,11 @@ import {
 	eventsBetweenQuery,
 	nextExamQuery,
 	semesterCoursesQuery,
+	settingsQuery,
 } from '@/db/queries';
 import { useStoredState } from '@/hooks/use-stored-state';
 import { addMonths, formatLongDate, monthWeeks, startOfMonth, toIsoDate } from '@/lib/dates';
+import { isoToDate } from '@/lib/format';
 
 import {
 	type CalendarItem,
@@ -37,6 +40,16 @@ export function CalendarScreen() {
 	const [selected, setSelected] = useState(today);
 	const [courseId, setCourseId] = useState<number | null>(null);
 	const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+	// Set when an item has just been added, to show the day it landed on.
+	const { date: addedDate, added } = useLocalSearchParams<{ date?: string; added?: string }>();
+	const [shownAdd, setShownAdd] = useState<string>();
+	if (added && added !== shownAdd) {
+		setShownAdd(added);
+		if (addedDate && isoToDate(addedDate)) {
+			setSelected(addedDate);
+			setMonth(startOfMonth(addedDate));
+		}
+	}
 	const [hiddenCategories, setHiddenCategories] = useStoredState<EventCategory[]>(
 		'calendar.hiddenCategories',
 		[],
@@ -52,11 +65,12 @@ export function CalendarScreen() {
 		gridEnd,
 	]);
 	const { data: officeHours } = useLiveQuery(allOfficeHoursQuery());
+	const { data: settings } = useLiveQuery(settingsQuery());
 	const { data: nextExam } = useLiveQuery(nextExamQuery(today, courseId), [today, courseId]);
 
 	const courseById = (id: number | null) => courses.find((course) => course.id === id);
 	const items = [
-		...monthEvents.map(eventItem),
+		...monthEvents.map((event) => eventItem(event, settings)),
 		...officeHoursItems(
 			officeHours.filter((hours) => courseById(hours.courseId)),
 			weeks.flat(),
@@ -114,7 +128,17 @@ export function CalendarScreen() {
 					<AppText variant="eyebrow" className="text-sylla-blue">
 						{(semester?.name ?? '').toUpperCase()} / CALENDAR
 					</AppText>
-					<AppIcon name="calendarPlus" size={21} />
+					<Pressable
+						accessibilityRole="button"
+						accessibilityLabel="Add an item"
+						onPress={() =>
+							router.push({ pathname: '/calendar/add', params: { date: selected } })
+						}
+						hitSlop={12}
+						className="active:opacity-70"
+					>
+						<AppIcon name="calendarPlus" size={21} />
+					</Pressable>
 				</View>
 				<AppText variant="title" accessibilityRole="header">
 					Make room for it all.
@@ -146,9 +170,25 @@ export function CalendarScreen() {
 						{agenda.length} {agenda.length === 1 ? 'item' : 'items'}
 					</AppText>
 				</View>
-				{agenda.map((item) => (
-					<EventCard key={item.key} item={item} course={courseById(item.courseId)} />
-				))}
+				{agenda.map((item) => {
+					const { eventId } = item;
+					return (
+						<EventCard
+							key={item.key}
+							item={item}
+							course={courseById(item.courseId)}
+							onPress={
+								eventId === null
+									? undefined
+									: () =>
+											router.push({
+												pathname: '/event/[id]',
+												params: { id: eventId },
+											})
+							}
+						/>
+					);
+				})}
 				{agenda.length === 0 && (
 					<AppCard>
 						<AppText variant="heading">Nothing scheduled</AppText>

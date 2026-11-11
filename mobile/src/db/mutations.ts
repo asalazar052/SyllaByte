@@ -4,6 +4,7 @@ import { db } from './client';
 import {
 	courseReviewFields,
 	courses,
+	events,
 	officeHours,
 	professors,
 	settings,
@@ -17,6 +18,15 @@ type CourseEdit = Pick<
 type ProfessorEdit = Partial<Omit<typeof professors.$inferInsert, 'id'>>;
 type SettingsEdit = Partial<Omit<typeof settings.$inferInsert, 'id'>>;
 type OfficeHoursEdit = Omit<typeof officeHours.$inferInsert, 'id' | 'professorId' | 'courseId'>;
+
+// Adds a dated item to the calendar.
+export function addEvent(values: Omit<typeof events.$inferInsert, 'id'>) {
+	db.insert(events).values(values).run();
+}
+
+export function updateEvent(id: number, values: Partial<Omit<typeof events.$inferInsert, 'id'>>) {
+	db.update(events).set(values).where(eq(events.id, id)).run();
+}
 
 export function updateSettings(values: SettingsEdit) {
 	db.update(settings).set(values).where(eq(settings.id, SETTINGS_ID)).run();

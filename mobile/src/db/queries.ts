@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 
 import { db } from './client';
 import {
@@ -70,6 +70,10 @@ export const eventsBetweenQuery = (from: string, to: string) =>
 		orderBy: [asc(events.date), asc(sql`${events.startTime} is null`), asc(events.startTime)],
 	});
 
+// One dated item with the course it belongs to, if any.
+export const eventQuery = (id: number) =>
+	db.query.events.findFirst({ where: eq(events.id, id), with: { course: true } });
+
 // The first exam on or after `from`, optionally within one course.
 export const nextExamQuery = (from: string, courseId: number | null) =>
 	db.query.events.findFirst({
@@ -99,6 +103,7 @@ export type Course = Awaited<ReturnType<typeof semesterCoursesQuery>>[number];
 export type CourseDetail = NonNullable<Awaited<ReturnType<typeof courseQuery>>>;
 export type CourseSyllabus = NonNullable<Awaited<ReturnType<typeof courseSyllabusQuery>>>;
 export type UploadedFile = Awaited<ReturnType<typeof filesQuery>>[number];
+export type CalendarEventDetail = NonNullable<Awaited<ReturnType<typeof eventQuery>>>;
 export type CalendarEvent = Awaited<ReturnType<typeof eventsBetweenQuery>>[number];
 export type Professor = Awaited<ReturnType<typeof professorQuery>>[number];
 export type OfficeHours = Awaited<ReturnType<typeof officeHoursQuery>>[number];
@@ -116,6 +121,7 @@ export function filterCourses(courseList: Course[], query: string, reviewOnly: b
 export const allSemestersQuery = semestersQuery;
 export const reviewFieldsQuery = (courseId: number) =>
 	db.select().from(courseReviewFields).where(eq(courseReviewFields.courseId, courseId));
+// A course's important dates: its exams and quizzes.
 export const savedDatesQuery = (courseId?: number) =>
 	db
 		.select({
@@ -124,15 +130,19 @@ export const savedDatesQuery = (courseId?: number) =>
 				courseId: events.courseId,
 				title: events.title,
 				date: events.date,
-				time: sql<
-					string | null
-				>`case when ${events.startTime} is null then null else printf('%02d:%02d', ${events.startTime} / 60, ${events.startTime} % 60) end`,
+				startTime: events.startTime,
+				endTime: events.endTime,
 			},
 			course: courses,
 		})
 		.from(events)
 		.innerJoin(courses, eq(events.courseId, courses.id))
-		.where(courseId !== undefined ? eq(events.courseId, courseId) : undefined)
+		.where(
+			and(
+				inArray(events.type, ['exam', 'quiz']),
+				courseId !== undefined ? eq(events.courseId, courseId) : undefined,
+			),
+		)
 		.orderBy(events.date, events.startTime);
 export const savedMaterialsQuery = (courseId?: number) =>
 	db

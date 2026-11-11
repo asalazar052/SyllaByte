@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 
 import { AppIcon, type AppIconName } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
@@ -9,9 +10,13 @@ type Props<T> = {
 	compact?: boolean;
 	title?: string;
 	subtitle?: string;
+	// Overrides the subtitle's text style, such as its color.
+	subtitleClassName?: string;
 	// Shown in place of the title and subtitle when there is nothing to display.
 	placeholder: string;
 	editLabel: string;
+	// Shown beside the edit button while the row isn't being edited, such as a button to undo a change.
+	accessory?: ReactNode;
 	// Saved values, copied into a draft when editing starts.
 	values: T;
 	// Returns an error message to keep the editor open, or nothing once saved.
@@ -25,8 +30,10 @@ export function EditableRow<T>({
 	compact = false,
 	title,
 	subtitle,
+	subtitleClassName,
 	placeholder,
 	editLabel,
+	accessory,
 	values,
 	onSave,
 	children,
@@ -76,11 +83,18 @@ export function EditableRow<T>({
 						</AppText>
 					)}
 					{secondary ? (
-						<AppText variant="caption" className="leading-[14px] text-sylla-muted">
+						<AppText
+							variant="caption"
+							className={twMerge(
+								'leading-[14px] text-sylla-muted',
+								subtitleClassName,
+							)}
+						>
 							{secondary}
 						</AppText>
 					) : null}
 				</View>
+				{accessory}
 				<Pressable
 					accessibilityRole="button"
 					accessibilityLabel={editLabel}

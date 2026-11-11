@@ -53,6 +53,7 @@ export default function RootLayout() {
 				>
 					<Stack.Screen name="(tabs)" />
 					<Stack.Screen name="upload" options={{ presentation: 'modal' }} />
+					<Stack.Screen name="event/[id]" options={{ presentation: 'modal' }} />
 				</Stack>
 			</SyllabusPickerProvider>
 		</ThemeProvider>

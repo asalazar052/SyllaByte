@@ -1,10 +1,11 @@
 import { SyllaColors } from '@/constants/theme';
-import type { CalendarEvent, Course, OfficeHoursWithProfessor } from '@/db/queries';
+import type { CalendarEvent, Course, OfficeHoursWithProfessor, Settings } from '@/db/queries';
 import type { EventType } from '@/db/schema';
-import { dayOfWeek } from '@/lib/dates';
+import { addDays, dayOfWeek } from '@/lib/dates';
 import { type DayCode, formatTime, formatTimeRange, parseDays } from '@/lib/format';
 
 import type { SymbolShape } from './event-symbol';
+import { itemReminder } from './item-reminder';
 
 export type EventCategory = 'due' | 'exam' | 'officeHours' | 'reminder';
 
@@ -26,7 +27,7 @@ export const eventTypeInfo: Record<EventType, { label: string; category: EventCa
 
 const NO_COURSE_COLOR = SyllaColors.muted;
 
-export function courseColor(course: Course | undefined) {
+export function courseColor(course: Pick<Course, 'accentColor'> | undefined) {
 	return course?.accentColor ?? NO_COURSE_COLOR;
 }
 
@@ -43,6 +44,8 @@ export function parseHiddenCategories(stored: unknown) {
 // What the calendar lists for a day: a dated event, or one occurrence of a weekly set of office hours.
 export type CalendarItem = {
 	key: string;
+	// The events row this came from, or null for office hours, which repeat weekly and have no row of their own.
+	eventId: number | null;
 	date: string;
 	courseId: number | null;
 	category: EventCategory;
@@ -50,12 +53,17 @@ export type CalendarItem = {
 	typeLabel: string;
 	startTime: number | null;
 	endTime: number | null;
+	// When the item's reminder goes off, or null when it has none. Office hours have no reminder.
+	reminder: { date: string; time: number } | null;
 };
 
-export function eventItem(event: CalendarEvent): CalendarItem {
+// `settings` supplies the default reminder for an item that has none of its own.
+export function eventItem(event: CalendarEvent, settings: Settings | undefined): CalendarItem {
+	const reminder = settings ? itemReminder(event, settings) : null;
 	const { label, category } = eventTypeInfo[event.type];
 	return {
 		key: `event-${event.id}`,
+		eventId: event.id,
 		date: event.date,
 		courseId: event.courseId,
 		category,
@@ -63,6 +71,9 @@ export function eventItem(event: CalendarEvent): CalendarItem {
 		typeLabel: label,
 		startTime: event.startTime,
 		endTime: event.endTime,
+		reminder: reminder?.enabled
+			? { date: addDays(event.date, -reminder.daysAhead), time: reminder.time }
+			: null,
 	};
 }
 
@@ -80,6 +91,7 @@ export function officeHoursItems(
 			.filter((date) => weekdays.has(dayOfWeek(date)))
 			.map((date): CalendarItem => ({
 				key: `office-hours-${hours.id}-${date}`,
+				eventId: null,
 				date,
 				courseId: hours.courseId,
 				category: 'officeHours',
@@ -87,6 +99,7 @@ export function officeHoursItems(
 				typeLabel: 'Office hours',
 				startTime: hours.startTime,
 				endTime: hours.endTime,
+				reminder: null,
 			}));
 	});
 }

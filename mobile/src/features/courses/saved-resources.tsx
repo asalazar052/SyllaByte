@@ -6,6 +6,8 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
+import { formatLongDate } from '@/lib/dates';
+import { formatTime, formatTimeRange, joinParts } from '@/lib/format';
 
 export function SavedResources({
 	kind,
@@ -21,7 +23,13 @@ export function SavedResources({
 			? dates.map(({ item, course }) => ({
 					...item,
 					course,
-					detail: `${item.date}${item.time ? ` · ${item.time}` : ' · All day'}`,
+					detail: joinParts(
+						`${formatLongDate(item.date)}, ${item.date.slice(0, 4)}`,
+						item.startTime === null
+							? 'All day'
+							: formatTimeRange(item.startTime, item.endTime) ||
+									formatTime(item.startTime),
+					),
 				}))
 			: materials.map(({ item, course }) => ({ ...item, course, detail: item.details }));
 	return (
@@ -29,7 +37,9 @@ export function SavedResources({
 			{!rows.length && (
 				<AppCard>
 					<AppText className="text-sylla-muted">
-						{kind === 'dates' ? 'No saved dates yet.' : 'No saved materials yet.'}{' '}
+						{kind === 'dates'
+							? 'No exams or quizzes saved yet.'
+							: 'No saved materials yet.'}{' '}
 						Review and add a syllabus to see them here.
 					</AppText>
 				</AppCard>

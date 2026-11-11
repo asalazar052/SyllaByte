@@ -26,6 +26,7 @@ const icons = {
 	materials: require('@/assets/icons/materials.svg'),
 	settings: require('@/assets/icons/settings.svg'),
 	pencil: require('@/assets/icons/pencil.svg'),
+	undo: require('@/assets/icons/undo.svg'),
 	user: require('@/assets/icons/user.svg'),
 	clock: require('@/assets/icons/clock.svg'),
 	graduationCap: require('@/assets/icons/graduation-cap.svg'),
