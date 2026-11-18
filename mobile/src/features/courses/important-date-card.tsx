@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { cardClassName } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { type SavedDate } from '@/db/queries';
+import { type SavedDate, type UpcomingDate } from '@/db/queries';
 import { courseColor } from '@/lib/colors';
 import {
 	dayOfMonth,
@@ -40,14 +40,14 @@ function DateTile({ date, color }: { date: string; color: string }) {
 	);
 }
 
-// One exam or quiz. `today` is the day its countdown counts from. `onPress` is left out where the card
-// has nowhere to go.
+// One dated item, usually an exam or quiz. `today` is the day its countdown counts from. `onPress` is left
+// out where the card has nowhere to go. A reminder with no course gets the muted color.
 export function ImportantDateCard({
 	date,
 	today,
 	onPress,
 }: {
-	date: SavedDate;
+	date: SavedDate | UpcomingDate;
 	today: string;
 	onPress?: () => void;
 }) {
@@ -77,7 +77,7 @@ export function ImportantDateCard({
 					{item.title}
 				</AppText>
 				<AppText className="text-[10px] text-sylla-muted">{when}</AppText>
-				{course.isSample && (
+				{course?.isSample && (
 					<AppText className="text-[10px] text-sylla-brown">Sample data</AppText>
 				)}
 			</View>

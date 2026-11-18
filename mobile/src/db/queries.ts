@@ -146,6 +146,33 @@ export const savedDatesQuery = (courseId?: number) =>
 		)
 		.orderBy(events.date, events.startTime);
 export type SavedDate = Awaited<ReturnType<typeof savedDatesQuery>>[number];
+// Dated items from `from` to `to`, both 'YYYY-MM-DD' and inclusive, soonest first, each with its course (null
+// for a reminder that belongs to none). Shaped like a SavedDate so the same card shows it.
+export const upcomingDatesQuery = (from: string, to: string) =>
+	db
+		.select({
+			item: {
+				id: events.id,
+				courseId: events.courseId,
+				type: events.type,
+				title: events.title,
+				date: events.date,
+				startTime: events.startTime,
+				endTime: events.endTime,
+			},
+			course: courses,
+		})
+		.from(events)
+		.leftJoin(courses, eq(events.courseId, courses.id))
+		.where(and(gte(events.date, from), lte(events.date, to)))
+		.orderBy(events.date, sql`${events.startTime} is null`, events.startTime);
+export type UpcomingDate = Awaited<ReturnType<typeof upcomingDatesQuery>>[number];
+// Every dated item with its course, for what is worked out from all of them (such as which reminders have gone off).
+export const eventsWithCoursesQuery = () => db.query.events.findMany({ with: { course: true } });
+// The course each review field belongs to, for counting how many details a course has flagged.
+export const reviewFieldCoursesQuery = () =>
+	db.select({ courseId: courseReviewFields.courseId }).from(courseReviewFields);
+export type EventWithCourse = Awaited<ReturnType<typeof eventsWithCoursesQuery>>[number];
 export const savedMaterialsQuery = (courseId?: number) =>
 	db
 		.select({ item: courseMaterials, course: courses })

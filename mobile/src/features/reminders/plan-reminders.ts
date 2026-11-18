@@ -40,7 +40,7 @@ export const REMINDER_ID_PREFIX = 'reminder-';
 export const MAX_SCHEDULED = 60;
 
 // 'YYYY-MM-DD' with minutes after midnight, as a Date in the device's time zone.
-function localDate(iso: string, minutes: number) {
+export function localDate(iso: string, minutes: number) {
 	const [year, month, day] = iso.split('-').map(Number);
 	return new Date(year, month - 1, day, Math.floor(minutes / 60), minutes % 60);
 }

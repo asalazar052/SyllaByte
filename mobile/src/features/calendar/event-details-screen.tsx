@@ -10,6 +10,7 @@ import { currentSemesterQuery, eventQuery, settingsQuery } from '@/db/queries';
 import { courseColor } from '@/lib/colors';
 
 import { categoryInfo, eventTypeInfo } from './calendar-items';
+import { DeleteEventAction } from './delete-event-action';
 import { EventInformation } from './event-information';
 import { EventSymbol } from './event-symbol';
 
@@ -50,6 +51,7 @@ export function EventDetailsScreen() {
 						</AppText>
 					</View>
 					{settings && <EventInformation event={event} settings={settings} />}
+					<DeleteEventAction id={event.id} title={event.title} onDeleted={closeDetails} />
 				</>
 			) : (
 				<AppCard>

@@ -15,6 +15,6 @@ export function lighten(hex: string, amount: number) {
 
 // The color that marks a course wherever it appears: its events on the calendar, its books and its dates.
 // A course that can't be found is muted.
-export function courseColor(course: { accentColor: string } | undefined) {
+export function courseColor(course: { accentColor: string } | null | undefined) {
 	return course?.accentColor ?? SyllaColors.muted;
 }

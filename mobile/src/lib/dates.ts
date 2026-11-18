@@ -114,12 +114,14 @@ export function formatShortDate(iso: string) {
 	return `${WEEKDAYS[date.getDay()].slice(0, 3)}, ${MONTHS[date.getMonth()].slice(0, 3)} ${date.getDate()}`;
 }
 
+// 'Aug 31'
+export function formatMonthDay(iso: string) {
+	const date = parseIsoDate(iso);
+	return `${MONTHS[date.getMonth()].slice(0, 3)} ${date.getDate()}`;
+}
+
 // 'Aug 31–Dec 18'; '' when either end is unset.
 export function formatDateRange(start: string | null, end: string | null) {
 	if (start === null || end === null) return '';
-	const monthDay = (iso: string) => {
-		const date = parseIsoDate(iso);
-		return `${MONTHS[date.getMonth()].slice(0, 3)} ${date.getDate()}`;
-	};
-	return `${monthDay(start)}–${monthDay(end)}`;
+	return `${formatMonthDay(start)}–${formatMonthDay(end)}`;
 }

@@ -28,6 +28,11 @@ export function updateEvent(id: number, values: Partial<Omit<typeof events.$infe
 	db.update(events).set(values).where(eq(events.id, id)).run();
 }
 
+// Removes a dated item from the calendar. Its reminder goes with it: ReminderSync reschedules when events change.
+export function deleteEvent(id: number) {
+	db.delete(events).where(eq(events.id, id)).run();
+}
+
 export function updateSettings(values: SettingsEdit) {
 	db.update(settings).set(values).where(eq(settings.id, SETTINGS_ID)).run();
 }
