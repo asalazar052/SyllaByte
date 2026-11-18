@@ -59,7 +59,7 @@ const BUSY_OVER = 3;
 // Where each list starts, drawn once when the app loads.
 const draw = Math.random();
 
-// `dueThisWeek` is how many things are due in the semester's current week: none is clear, up to
+// `dueThisWeek` is how many things are left in the semester's current week: none is clear, up to
 // BUSY_OVER is light, and more than that is busy. `taps` is how many times the card has been tapped, which
 // steps through the list and wraps around, so a tap never repeats the line it just showed.
 export function semesterQuip(dueThisWeek: number, taps = 0) {
