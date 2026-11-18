@@ -1,1 +1,1 @@
-export { SyllabusScreen as default } from '@/features/syllabus/syllabus-screen';
+export { SyllabusScreen as default } from '@/features/syllabus-viewer/syllabus-screen';

@@ -5,11 +5,10 @@ import { Pressable, View } from 'react-native';
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { EditableRow } from '@/components/ui/editable-row';
 import { TextField } from '@/components/ui/text-field';
 import { updateReviewField } from '@/db/mutations';
 import { reviewFieldsQuery } from '@/db/queries';
-
-import { EditableRow } from './editable-row';
 
 export function ReviewFieldsCard({
 	courseId,

@@ -1,4 +1,4 @@
-import { type CourseDraft, createSampleDraft } from './review-draft';
+import { type CourseDraft, createSampleDraft } from '@/lib/review-draft';
 
 export const processingStages = [
 	{

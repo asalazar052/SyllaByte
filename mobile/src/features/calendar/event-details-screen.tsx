@@ -7,8 +7,9 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { currentSemesterQuery, eventQuery, settingsQuery } from '@/db/queries';
+import { courseColor } from '@/lib/colors';
 
-import { categoryInfo, courseColor, eventTypeInfo } from './calendar-items';
+import { categoryInfo, eventTypeInfo } from './calendar-items';
 import { EventInformation } from './event-information';
 import { EventSymbol } from './event-symbol';
 

@@ -9,6 +9,8 @@ const ts = require('typescript');
 const { BaseSQLiteDatabase, SQLiteSyncDialect } = require('drizzle-orm/sqlite-core');
 const { BetterSQLiteSession } = require('drizzle-orm/better-sqlite3/session');
 
+const { compressedPdf } = require('./fixtures/compressed-pdf.cjs');
+
 const root = path.resolve(__dirname, '..');
 const sqlite = new DatabaseSync(':memory:');
 sqlite.exec('PRAGMA foreign_keys = ON');
@@ -83,6 +85,10 @@ class File extends Directory {
 		assert.equal(algorithm, 'MD5');
 		return require('node:crypto').createHash('md5').update(files.get(this.uri)).digest('hex');
 	}
+	async arrayBuffer() {
+		const bytes = files.get(this.uri);
+		return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+	}
 	async copy(destination) {
 		await Promise.resolve();
 		files.set(destination.uri, Buffer.from(files.get(this.uri)));
@@ -146,6 +152,9 @@ function load(relative) {
 }
 
 async function main() {
+	// A PDF that keeps its pages in a compressed object stream, which scanning the bytes can't count.
+	files.set('source.pdf', compressedPdf(3));
+	files.set('damaged.pdf', Buffer.from('%PDF-1.4\nOriginal syllabus bytes'));
 	const { PdfDocument } = load('src/features/syllabus/pdf-document.native.tsx');
 	assert.equal(pdfImports, 0, 'Route imports must not load native PDF dependencies');
 	assert.equal(
@@ -157,11 +166,16 @@ async function main() {
 	nativeReady = true;
 	assert.equal(PdfDocument({ page: 1 }).type, 'Pdf');
 	assert.equal(pdfImports, 1, 'Load the renderer only inside a supported native build');
-	const storage = load('src/features/upload/syllabus-storage.native.ts');
+	const storage = load('src/lib/syllabus-storage.native.ts');
 	const retained = await storage.retainSyllabus('source.pdf', 'course');
 	const name = retained.path;
 	assert.equal(name, 'course.pdf');
 	assert.equal(retained.bytes, files.get('source.pdf').length);
+	assert.equal(retained.pages, 3, 'The page count comes from the retained PDF');
+	const damaged = await storage.retainSyllabus('damaged.pdf', 'damaged');
+	assert.equal(damaged.pages, null, 'A PDF that cannot be read is kept without a page count');
+	assert.equal(damaged.path, 'damaged.pdf');
+	storage.removeSyllabus(damaged.path);
 	assert.match(retained.checksum, /^[0-9a-f]{32}$/);
 	const { uri } = await storage.resolveSyllabus(name);
 	assert.deepEqual(files.get(uri), files.get('source.pdf'), 'Viewer must use original PDF bytes');
@@ -172,7 +186,7 @@ async function main() {
 	files.set('documents/syllabi/empty.pdf', Buffer.alloc(0));
 	await assert.rejects(storage.resolveSyllabus('empty.pdf'), /empty/);
 
-	const { createSampleDraft, validateDraft } = load('src/features/upload/review-draft.ts');
+	const { createSampleDraft, validateDraft } = load('src/lib/review-draft.ts');
 	const draft = createSampleDraft();
 	assert.equal(validateDraft(draft), null, 'sample items no longer require review confirmation');
 	const requiredOnly = {
@@ -205,12 +219,13 @@ async function main() {
 		filename: 'My original syllabus.pdf',
 		storagePath: name,
 		bytes: retained.bytes,
+		pageCount: retained.pages,
 		checksum: retained.checksum,
 		uploadedAt: selectedAt,
 	});
 	const saved = sqlite
 		.prepare(
-			'SELECT f.type, f.filename, f.storage_path, f.uploaded_at, f.bytes, f.checksum, f.semester_id, c.semester_id AS course_semester FROM files f JOIN courses c ON c.id = f.course_id WHERE f.course_id = ?',
+			'SELECT f.type, f.filename, f.storage_path, f.uploaded_at, f.bytes, f.page_count, f.checksum, f.semester_id, c.semester_id AS course_semester FROM files f JOIN courses c ON c.id = f.course_id WHERE f.course_id = ?',
 		)
 		.get(savedId);
 	assert.deepEqual(
@@ -221,6 +236,7 @@ async function main() {
 			storage_path: name,
 			uploaded_at: selectedAt,
 			bytes: retained.bytes,
+			page_count: 3,
 			checksum: retained.checksum,
 			semester_id: saved.course_semester,
 			course_semester: saved.course_semester,

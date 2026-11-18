@@ -5,9 +5,33 @@ export type RetainedSyllabus = {
 	// Name of the copy in the syllabi folder.
 	path: string | null;
 	bytes: number | null;
+	// How many pages the PDF has, or null when that couldn't be worked out.
+	pages: number | null;
 	// MD5 of the copy as 32 lowercase hex digits.
 	checksum: string | null;
 };
+
+// The number of pages in a PDF on the device, or null when it can't be read, such as a damaged or locked
+// file. A syllabus is still saved without its page count, so this never throws.
+async function countPages(file: File): Promise<number | null> {
+	try {
+		// A dynamic import() makes Metro split the library into a separate bundle, which fails to load while the
+		// dev server is running, so it is required here instead.
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const pdfLib: typeof import('@cantoo/pdf-lib') = require('@cantoo/pdf-lib');
+		const { PDFDocument, ParseSpeeds } = pdfLib;
+		const document = await PDFDocument.load(new Uint8Array(await file.arrayBuffer()), {
+			// A PDF locked against editing still has pages to count.
+			ignoreEncryption: true,
+			updateMetadata: false,
+			parseSpeed: ParseSpeeds.Fast,
+		});
+		const pages = document.getPageCount();
+		return pages > 0 ? pages : null;
+	} catch {
+		return null;
+	}
+}
 
 export async function retainSyllabus(uri: string, courseId: string): Promise<RetainedSyllabus> {
 	const directory = new Directory(Paths.document, 'syllabi');
@@ -20,6 +44,7 @@ export async function retainSyllabus(uri: string, courseId: string): Promise<Ret
 		return {
 			path: name,
 			bytes: destination.size,
+			pages: await countPages(destination),
 			checksum: /^[0-9a-f]{32}$/.test(digest) ? digest : null,
 		};
 	} catch (error) {

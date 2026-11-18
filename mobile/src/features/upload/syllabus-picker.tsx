@@ -11,10 +11,10 @@ import {
 import { Platform } from 'react-native';
 
 import { saveReviewedCourse } from '@/db/save-course';
+import { type CourseDraft, validateDraft } from '@/lib/review-draft';
+import { removeSyllabus, retainSyllabus } from '@/lib/syllabus-storage';
 
 import { extractionReducer, type ExtractionState, initialExtraction } from './mock-extraction';
-import { type CourseDraft, validateDraft } from './review-draft';
-import { removeSyllabus, retainSyllabus } from './syllabus-storage';
 
 type SyllabusPicker = {
 	file: DocumentPicker.DocumentPickerAsset | null;
@@ -139,6 +139,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 				filename: file.name,
 				storagePath: retained.path,
 				bytes: retained.bytes ?? file.size ?? 0,
+				pageCount: retained.pages,
 				checksum: retained.checksum,
 				uploadedAt: selectedAt ?? Date.now(),
 			});

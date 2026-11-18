@@ -1,7 +1,7 @@
 // Works out which reminders to schedule. It takes plain data and has no app or native imports, so it can be
 // checked on its own.
-import { addDays, formatLongDate } from '../../lib/dates';
-import { formatTime, joinParts } from '../../lib/format';
+import { addDays, formatLongDate } from '@/lib/dates';
+import { formatTime, joinParts } from '@/lib/format';
 
 export type ReminderEvent = {
 	id: number;

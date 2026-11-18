@@ -3,14 +3,13 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { DaysField } from '@/components/ui/days-field';
+import { EditableRow } from '@/components/ui/editable-row';
 import { TextField } from '@/components/ui/text-field';
 import { TimeRangeField } from '@/components/ui/time-range-field';
 import { saveOfficeHours, updateCourse, updateProfessor } from '@/db/mutations';
 import { type CourseDetail, officeHoursQuery, professorQuery } from '@/db/queries';
 import { formatTimeRange, joinParts } from '@/lib/format';
 import { EMAIL, orNull } from '@/lib/input';
-
-import { EditableRow } from './editable-row';
 
 const TIME_ORDER = 'The end time must be after the start time.';
 

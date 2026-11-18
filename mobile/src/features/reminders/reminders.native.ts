@@ -9,8 +9,9 @@ import { SyllaColors } from '@/constants/theme';
 import { db } from '@/db/client';
 import { settingsQuery } from '@/db/queries';
 import { events } from '@/db/schema';
-import { eventTypeInfo } from '@/features/calendar/calendar-items';
+import { type EventType } from '@/db/schema';
 import { toIsoDate } from '@/lib/dates';
+import { eventTypeLabels } from '@/lib/event-types';
 
 import { planReminders, REMINDER_ID_PREFIX } from './plan-reminders';
 
@@ -91,7 +92,7 @@ async function schedule() {
 		with: { course: true },
 	});
 	const reminders = planReminders(upcoming, settings, now, (type) =>
-		type in eventTypeInfo ? eventTypeInfo[type as keyof typeof eventTypeInfo].label : type,
+		type in eventTypeLabels ? eventTypeLabels[type as EventType] : type,
 	);
 	for (const reminder of reminders) {
 		await Notifications.scheduleNotificationAsync({
@@ -125,24 +126,22 @@ export function syncReminders() {
 // screen, and a push made then can be overwritten by that setup.
 const COLD_START_DELAY_MS = 350;
 
-// Takes the user to the calendar on the item's day, then opens the item's details over it.
-async function openReminder(eventId: number) {
+// What to do with the item a tapped reminder is for, which is `undefined` once the item has been deleted.
+export type OpenEvent = (event: { id: number; date: string } | undefined) => void;
+
+// Closes what is open, then hands the item to `onOpenEvent` to show.
+async function openReminder(eventId: number, onOpenEvent: OpenEvent) {
 	if (!Number.isInteger(eventId) || eventId <= 0) return;
 	// The date comes from the item itself, not the notification, so it is right even if the item was moved
 	// after the reminder was scheduled.
 	const event = await db.query.events.findFirst({ where: eq(events.id, eventId) });
 	// Closes whatever is open over the tabs, such as another item's details or the upload screen.
 	if (router.canDismiss()) router.dismissAll();
-	router.navigate({
-		pathname: '/calendar',
-		params: event ? { date: event.date, focus: String(Date.now()) } : {},
-	});
-	// An item that has since been deleted leaves the user on the calendar.
-	if (event) router.push({ pathname: '/event/[id]', params: { id: event.id } });
+	onOpenEvent(event);
 }
 
 // Opens the item when its reminder is tapped, including a tap that started the app.
-export function useReminderTaps() {
+export function useReminderTaps(onOpenEvent: OpenEvent) {
 	const response = Notifications.useLastNotificationResponse();
 	const navigationReady = useRootNavigationState()?.key !== undefined;
 	// Empty until the router has worked out which screen it's on.
@@ -154,8 +153,8 @@ export function useReminderTaps() {
 		const timer = setTimeout(() => {
 			// The tap is only used up once the item is open, so a render that cancels the wait doesn't lose it.
 			Notifications.clearLastNotificationResponse();
-			void openReminder(eventId).catch(() => {});
+			void openReminder(eventId, onOpenEvent).catch(() => {});
 		}, COLD_START_DELAY_MS);
 		return () => clearTimeout(timer);
-	}, [response, navigationReady, firstScreenShowing]);
+	}, [response, navigationReady, firstScreenShowing, onOpenEvent]);
 }

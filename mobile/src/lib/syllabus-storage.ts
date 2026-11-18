@@ -2,10 +2,11 @@
 export type RetainedSyllabus = {
 	path: string | null;
 	bytes: number | null;
+	pages: number | null;
 	checksum: string | null;
 };
 export async function retainSyllabus(_uri: string, _courseId: string): Promise<RetainedSyllabus> {
-	return { path: null, bytes: null, checksum: null };
+	return { path: null, bytes: null, pages: null, checksum: null };
 }
 export function removeSyllabus(_path: string) {}
 export async function resolveSyllabus(_path: string): Promise<{ uri: string }> {

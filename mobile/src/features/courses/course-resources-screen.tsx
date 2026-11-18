@@ -4,9 +4,20 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { AppText } from '@/components/ui/app-text';
 import { PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
-import { courseQuery } from '@/db/queries';
+import { courseQuery, savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
+import { MaterialList } from '@/features/materials/material-list';
 
-import { SavedResources } from './saved-resources';
+import { ImportantDatesList } from './important-dates-list';
+
+function CourseDates({ courseId }: { courseId: number }) {
+	const { data } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
+	return <ImportantDatesList dates={data} linkToCalendar />;
+}
+
+function CourseMaterials({ courseId }: { courseId: number }) {
+	const { data } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
+	return <MaterialList materials={data} />;
+}
 
 function CourseResourcesScreen({ kind }: { kind: 'dates' | 'materials' }) {
 	const { id: routeId } = useLocalSearchParams<{ id: string }>();
@@ -22,8 +33,10 @@ function CourseResourcesScreen({ kind }: { kind: 'dates' | 'materials' }) {
 			/>
 			{updatedAt === undefined ? null : !course ? (
 				<AppText>This course could not be found.</AppText>
+			) : kind === 'dates' ? (
+				<CourseDates courseId={id} />
 			) : (
-				<SavedResources kind={kind} courseId={id} />
+				<CourseMaterials courseId={id} />
 			)}
 		</Screen>
 	);

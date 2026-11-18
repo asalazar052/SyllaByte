@@ -17,13 +17,13 @@ import {
 	settingsQuery,
 } from '@/db/queries';
 import { useStoredState } from '@/hooks/use-stored-state';
+import { courseColor } from '@/lib/colors';
 import { addMonths, formatLongDate, monthWeeks, startOfMonth, toIsoDate } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
 
 import {
 	type CalendarItem,
 	compareByTime,
-	courseColor,
 	eventCategories,
 	type EventCategory,
 	eventItem,

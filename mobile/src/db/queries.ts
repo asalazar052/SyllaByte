@@ -128,6 +128,7 @@ export const savedDatesQuery = (courseId?: number) =>
 			item: {
 				id: events.id,
 				courseId: events.courseId,
+				type: events.type,
 				title: events.title,
 				date: events.date,
 				startTime: events.startTime,
@@ -144,6 +145,7 @@ export const savedDatesQuery = (courseId?: number) =>
 			),
 		)
 		.orderBy(events.date, events.startTime);
+export type SavedDate = Awaited<ReturnType<typeof savedDatesQuery>>[number];
 export const savedMaterialsQuery = (courseId?: number) =>
 	db
 		.select({ item: courseMaterials, course: courses })
@@ -151,3 +153,4 @@ export const savedMaterialsQuery = (courseId?: number) =>
 		.innerJoin(courses, eq(courseMaterials.courseId, courses.id))
 		.where(courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined)
 		.orderBy(courses.code, courseMaterials.title);
+export type SavedMaterial = Awaited<ReturnType<typeof savedMaterialsQuery>>[number];

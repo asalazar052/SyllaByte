@@ -7,15 +7,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '@/components/ui/app-button';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { PageHeader } from '@/components/ui/page-header';
+import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { SyllaColors } from '@/constants/theme';
 import { courseQuery, type CourseSyllabus, courseSyllabusQuery } from '@/db/queries';
-import { resolveSyllabus, shareSyllabus } from '@/features/upload/syllabus-storage';
+import { resolveSyllabus, shareSyllabus } from '@/lib/syllabus-storage';
 
 import { PdfDocument } from './pdf-document';
 import { ViewerControls } from './viewer-controls';
 
-export function SyllabusScreen() {
+// `origin` is where the viewer was opened from, which is where its back link returns to: the course's
+// page, or the list of uploaded files in settings.
+export function SyllabusScreen({ origin = 'course' }: { origin?: 'course' | 'files' }) {
 	const { id: routeId } = useLocalSearchParams<{ id: string }>();
 	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
 	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
@@ -28,6 +30,7 @@ export function SyllabusScreen() {
 		<SyllabusViewer
 			key={`${id}-${currentSyllabus?.storagePath ?? ''}`}
 			id={id}
+			origin={origin}
 			course={currentCourse}
 			syllabus={currentSyllabus}
 			queried={
@@ -39,13 +42,19 @@ export function SyllabusScreen() {
 	);
 }
 
+export function UploadedFileSyllabusScreen() {
+	return <SyllabusScreen origin="files" />;
+}
+
 function SyllabusViewer({
 	id,
+	origin,
 	course,
 	syllabus,
 	queried,
 }: {
 	id: number;
+	origin: 'course' | 'files';
 	course: Awaited<ReturnType<typeof courseQuery>>;
 	syllabus: CourseSyllabus | undefined;
 	queried: boolean;
@@ -85,7 +94,8 @@ function SyllabusViewer({
 	}, [path, retry]);
 
 	function back() {
-		router.dismissTo({ pathname: '/courses/[id]', params: { id } });
+		if (origin === 'files') goBackOr('/settings/uploaded-files');
+		else router.dismissTo({ pathname: '/courses/[id]', params: { id } });
 	}
 	const unavailable = !queried
 		? null
@@ -111,7 +121,7 @@ function SyllabusViewer({
 			<View className="min-h-0 w-full max-w-xl flex-1 gap-5 self-center px-6 pb-5 pt-3">
 				<PageHeader
 					parent={`${course?.code ?? 'COURSE'} / SYLLABUS`}
-					backLabel="Back to course"
+					backLabel={origin === 'files' ? 'Back to uploaded files' : 'Back to course'}
 					onBack={back}
 					title="Syllabus"
 				/>

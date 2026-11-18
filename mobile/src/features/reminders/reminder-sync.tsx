@@ -5,11 +5,12 @@ import { AppState } from 'react-native';
 import { db } from '@/db/client';
 import { settingsQuery } from '@/db/queries';
 
-import { configureReminders, syncReminders, useReminderTaps } from './reminders';
+import { configureReminders, type OpenEvent, syncReminders, useReminderTaps } from './reminders';
 
 // Keeps the scheduled notifications in step with the calendar and the reminder settings. It renders
-// nothing, so it can sit anywhere under the root layout.
-export function ReminderSync() {
+// nothing, so it can sit anywhere under the root layout. `onOpenEvent` shows the item when its reminder is
+// tapped.
+export function ReminderSync({ onOpenEvent }: { onOpenEvent: OpenEvent }) {
 	const { data: events } = useLiveQuery(db.query.events.findMany());
 	const { data: settings } = useLiveQuery(settingsQuery());
 
@@ -26,6 +27,6 @@ export function ReminderSync() {
 		void syncReminders();
 	}, [events, settings]);
 
-	useReminderTaps();
+	useReminderTaps(onOpenEvent);
 	return null;
 }

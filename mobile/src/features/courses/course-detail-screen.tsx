@@ -13,11 +13,13 @@ import {
 	savedDatesQuery,
 	savedMaterialsQuery,
 } from '@/db/queries';
+import { MaterialList } from '@/features/materials/material-list';
 
 import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
 import { DeleteCourseAction } from './delete-course-action';
-import { SavedResources, SyllabusAttachment } from './saved-resources';
+import { ImportantDatesList } from './important-dates-list';
+import { SyllabusAttachment } from './syllabus-attachment';
 
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -79,20 +81,20 @@ export function CourseDetailScreen() {
 							))}
 						</AppCard>
 					)}
+					{hasResources && (
+						<>
+							<AppText variant="section">Important dates</AppText>
+							<ImportantDatesList dates={dates} linkToCalendar />
+							<AppText variant="section">Materials</AppText>
+							<MaterialList materials={materials} />
+						</>
+					)}
 					{syllabus && (
 						<SyllabusAttachment
 							name={syllabus.filename}
 							courseId={course.id}
 							uploadedAt={syllabus.uploadedAt}
 						/>
-					)}
-					{hasResources && (
-						<>
-							<AppText variant="section">Important dates</AppText>
-							<SavedResources kind="dates" courseId={course.id} />
-							<AppText variant="section">Materials</AppText>
-							<SavedResources kind="materials" courseId={course.id} />
-						</>
 					)}
 					<DeleteCourseAction
 						id={course.id}

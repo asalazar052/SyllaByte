@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 
-import { removeSyllabus } from '@/features/upload/syllabus-storage';
+import { removeSyllabus } from '@/lib/syllabus-storage';
 
 import { db } from './client';
 import { files } from './schema';

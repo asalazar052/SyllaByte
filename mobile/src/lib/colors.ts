@@ -1,3 +1,5 @@
+import { SyllaColors } from '@/constants/theme';
+
 // Mixes a '#RRGGBB' color toward white: 0 returns the color, 1 returns white. Anything that isn't
 // a six-digit hex color comes back unchanged.
 export function lighten(hex: string, amount: number) {
@@ -9,4 +11,10 @@ export function lighten(hex: string, amount: number) {
 			.padStart(2, '0');
 	});
 	return `#${channels.join('')}`;
+}
+
+// The color that marks a course wherever it appears: its events on the calendar, its books and its dates.
+// A course that can't be found is muted.
+export function courseColor(course: { accentColor: string } | undefined) {
+	return course?.accentColor ?? SyllaColors.muted;
 }

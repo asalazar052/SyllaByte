@@ -6,6 +6,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { DateField } from '@/components/ui/date-field';
+import { EditableRow } from '@/components/ui/editable-row';
 import { SelectField } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
@@ -17,9 +18,8 @@ import {
 	type Settings,
 } from '@/db/queries';
 import { type EventType, eventTypes } from '@/db/schema';
-import { EditableRow } from '@/features/courses/editable-row';
+import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { requestReminderPermission } from '@/features/reminders/reminders';
-import { ReminderWheels } from '@/features/settings/reminder-wheels';
 import { formatLongDate } from '@/lib/dates';
 import { dateToIso, isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';

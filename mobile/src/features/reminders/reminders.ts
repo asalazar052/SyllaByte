@@ -4,4 +4,5 @@ export async function requestReminderPermission() {
 	return false;
 }
 export async function syncReminders() {}
-export function useReminderTaps() {}
+export type OpenEvent = (event: { id: number; date: string } | undefined) => void;
+export function useReminderTaps(_onOpenEvent: OpenEvent) {}

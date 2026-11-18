@@ -69,6 +69,39 @@ export function formatMonth(iso: string) {
 	return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+// 'Sep'
+export function formatMonthShort(iso: string) {
+	return MONTHS[parseIsoDate(iso).getMonth()].slice(0, 3);
+}
+
+// 'Wednesday'
+export function formatWeekday(iso: string) {
+	return WEEKDAYS[dayOfWeek(iso)];
+}
+
+// How many days `iso` is after `from`: negative for a date that has passed.
+export function daysUntil(iso: string, from: string) {
+	return Math.round((parseIsoDate(iso).getTime() - parseIsoDate(from).getTime()) / 86_400_000);
+}
+
+// 'Today', 'Tomorrow' or 'Yesterday', then days up to 13 of them ('In 12 days', '3 days ago'), weeks from
+// 14 to 30 ('2 weeks ago') and months from 31 ('1 month ago').
+export function formatCountdown(iso: string, from: string) {
+	const days = daysUntil(iso, from);
+	if (days === 0) return 'Today';
+	if (days === 1) return 'Tomorrow';
+	if (days === -1) return 'Yesterday';
+	const away = Math.abs(days);
+	const [count, unit] =
+		away < 14
+			? [away, 'day']
+			: away < 31
+				? [Math.floor(away / 7), 'week']
+				: [Math.floor(away / 30), 'month'];
+	const span = `${count} ${unit}${count === 1 ? '' : 's'}`;
+	return days > 0 ? `In ${span}` : `${span} ago`;
+}
+
 // 'Wednesday, Sep 23'
 export function formatLongDate(iso: string) {
 	const date = parseIsoDate(iso);

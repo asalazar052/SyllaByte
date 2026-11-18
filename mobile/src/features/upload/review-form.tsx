@@ -11,8 +11,8 @@ import { TextField } from '@/components/ui/text-field';
 import { TimeField, TimeRangeField } from '@/components/ui/time-range-field';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { clockToMinutes, dateToIso, isoToDate, minutesToClock } from '@/lib/format';
+import type { CourseDraft } from '@/lib/review-draft';
 
-import type { CourseDraft } from './review-draft';
 import { SemesterField } from './semester-field';
 import { useSyllabusPicker } from './syllabus-picker';
 

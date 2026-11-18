@@ -10,6 +10,7 @@ import { SyllaColors } from '@/constants/theme';
 import { useDatabase } from '@/db/use-database';
 import { ReminderSync } from '@/features/reminders/reminder-sync';
 import { SyllabusPickerProvider } from '@/features/upload/syllabus-picker';
+import { showEventOnCalendar } from '@/lib/show-event';
 
 export { ErrorBoundary } from 'expo-router';
 export const unstable_settings = { anchor: '(tabs)' };
@@ -44,7 +45,7 @@ export default function RootLayout() {
 		<ThemeProvider value={theme}>
 			<SyllabusPickerProvider>
 				<StatusBar style="dark" />
-				<ReminderSync />
+				<ReminderSync onOpenEvent={showEventOnCalendar} />
 				<Stack
 					screenOptions={{
 						headerShown: false,

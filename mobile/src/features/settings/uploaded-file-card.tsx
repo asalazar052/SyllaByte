@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 
@@ -6,8 +7,8 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { deleteFile } from '@/db/delete-file';
 import type { UploadedFile } from '@/db/queries';
-import { shareSyllabus } from '@/features/upload/syllabus-storage';
 import { formatBytes, joinParts } from '@/lib/format';
+import { shareSyllabus } from '@/lib/syllabus-storage';
 
 type UploadedFileCardProps = {
 	file: UploadedFile;
@@ -21,6 +22,9 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 	const [error, setError] = useState<string | null>(null);
 	// Sample files that ship with the app, and files from the web build, have no copy on the device.
 	const hasCopy = file.storagePath !== null;
+	// The viewer shows a course's syllabus, so a file needs both a copy to show and a course to open it under.
+	const courseId = file.courseId;
+	const canOpen = hasCopy && courseId !== null;
 
 	async function exportFile() {
 		if (!file.storagePath || working) return;
@@ -51,37 +55,52 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 
 	return (
 		<AppCard className="gap-2 p-3">
-			<View className="flex-row items-center gap-3">
-				<View className="h-9 w-9 items-center justify-center rounded-small bg-sylla-paleBlue">
-					<AppIcon name="fileText" size={19} />
+			<Pressable
+				accessibilityRole="button"
+				accessibilityLabel={`Open ${file.filename}`}
+				accessibilityState={{ disabled: !canOpen }}
+				disabled={!canOpen}
+				onPress={() =>
+					router.push({
+						pathname: '/settings/syllabus/[id]',
+						params: { id: courseId ?? 0 },
+					})
+				}
+				className="gap-2 active:opacity-70"
+			>
+				<View className="flex-row items-center gap-3">
+					<View className="h-9 w-9 items-center justify-center rounded-small bg-sylla-paleBlue">
+						<AppIcon name="fileText" size={19} />
+					</View>
+					<View className="min-w-0 flex-1 gap-1">
+						<AppText variant="code" className="text-sylla-blue">
+							{file.course?.code ?? 'NO COURSE'}
+						</AppText>
+						<AppText variant="label">
+							{file.course?.title ?? 'Not linked to a course'}
+						</AppText>
+					</View>
+					{canOpen && <AppIcon name="chevron" size={15} />}
 				</View>
-				<View className="min-w-0 flex-1 gap-1">
-					<AppText variant="code" className="text-sylla-blue">
-						{file.course?.code ?? 'NO COURSE'}
-					</AppText>
-					<AppText variant="label">
-						{file.course?.title ?? 'Not linked to a course'}
-					</AppText>
-				</View>
-			</View>
 
-			<View className="flex-row items-center justify-between gap-3">
-				<AppText
-					variant="micro"
-					numberOfLines={1}
-					ellipsizeMode="middle"
-					className="min-w-0 shrink text-sylla-muted"
-				>
-					{file.filename}
-				</AppText>
-				<AppText variant="micro" className="shrink-0 text-sylla-muted">
-					{joinParts(
-						file.pageCount !== null &&
-							`${file.pageCount} ${file.pageCount === 1 ? 'page' : 'pages'}`,
-						formatBytes(file.bytes),
-					)}
-				</AppText>
-			</View>
+				<View className="flex-row items-center justify-between gap-3">
+					<AppText
+						variant="micro"
+						numberOfLines={1}
+						ellipsizeMode="middle"
+						className="min-w-0 shrink text-sylla-muted"
+					>
+						{file.filename}
+					</AppText>
+					<AppText variant="micro" className="shrink-0 text-sylla-muted">
+						{joinParts(
+							file.pageCount !== null &&
+								`${file.pageCount} ${file.pageCount === 1 ? 'page' : 'pages'}`,
+							formatBytes(file.bytes),
+						)}
+					</AppText>
+				</View>
+			</Pressable>
 
 			<View className="flex-row gap-2.5">
 				<Pressable

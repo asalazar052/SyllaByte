@@ -1,7 +1,7 @@
-import { SyllaColors } from '@/constants/theme';
-import type { CalendarEvent, Course, OfficeHoursWithProfessor, Settings } from '@/db/queries';
+import type { CalendarEvent, OfficeHoursWithProfessor, Settings } from '@/db/queries';
 import type { EventType } from '@/db/schema';
 import { addDays, dayOfWeek } from '@/lib/dates';
+import { eventTypeLabels } from '@/lib/event-types';
 import { type DayCode, formatTime, formatTimeRange, parseDays } from '@/lib/format';
 
 import type { SymbolShape } from './event-symbol';
@@ -17,19 +17,20 @@ export const categoryInfo: Record<EventCategory, { label: string; shape: SymbolS
 	reminder: { label: 'Reminders', shape: 'diamond' },
 };
 
-export const eventTypeInfo: Record<EventType, { label: string; category: EventCategory }> = {
-	assignment: { label: 'Assignment', category: 'due' },
-	lab_report: { label: 'Lab report', category: 'due' },
-	quiz: { label: 'Quiz', category: 'exam' },
-	exam: { label: 'Exam', category: 'exam' },
-	other: { label: 'Other', category: 'reminder' },
+const eventTypeCategories: Record<EventType, EventCategory> = {
+	assignment: 'due',
+	lab_report: 'due',
+	quiz: 'exam',
+	exam: 'exam',
+	other: 'reminder',
 };
 
-const NO_COURSE_COLOR = SyllaColors.muted;
-
-export function courseColor(course: Pick<Course, 'accentColor'> | undefined) {
-	return course?.accentColor ?? NO_COURSE_COLOR;
-}
+export const eventTypeInfo = Object.fromEntries(
+	Object.entries(eventTypeCategories).map(([type, category]) => [
+		type,
+		{ label: eventTypeLabels[type as EventType], category },
+	]),
+) as Record<EventType, { label: string; category: EventCategory }>;
 
 export const eventCategories = Object.keys(categoryInfo) as EventCategory[];
 

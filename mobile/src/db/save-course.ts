@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { SyllaColors } from '@/constants/theme';
-import { type CourseDraft, validateDraft } from '@/features/upload/review-draft';
+import { type CourseDraft, validateDraft } from '@/lib/review-draft';
 
 import { db } from './client';
 import {
@@ -19,6 +19,8 @@ export type SyllabusUpload = {
 	filename: string;
 	storagePath: string | null;
 	bytes: number;
+	// Null when the page count couldn't be worked out.
+	pageCount: number | null;
 	checksum: string | null;
 	uploadedAt: number;
 };
@@ -82,6 +84,7 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 				courseId: id,
 				type: 'syllabus',
 				filename: syllabus.filename,
+				pageCount: syllabus.pageCount,
 				bytes: syllabus.bytes,
 				checksum: syllabus.checksum,
 				storagePath: syllabus.storagePath,

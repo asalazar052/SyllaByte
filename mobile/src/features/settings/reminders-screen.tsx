@@ -10,9 +10,8 @@ import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
+import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { requestReminderPermission } from '@/features/reminders/reminders';
-
-import { ReminderWheels } from './reminder-wheels';
 
 export function RemindersScreen() {
 	const { data: settings } = useLiveQuery(settingsQuery());

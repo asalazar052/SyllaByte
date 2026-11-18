@@ -7,7 +7,7 @@ import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { ReminderWheels } from '@/features/settings/reminder-wheels';
+import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 
 import { useItemReminder } from './item-reminder';
 
