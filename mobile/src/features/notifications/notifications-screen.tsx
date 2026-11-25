@@ -5,60 +5,33 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
-import {
-	eventsWithCoursesQuery,
-	filesQuery,
-	reviewFieldCoursesQuery,
-	settingsQuery,
-} from '@/db/queries';
+import { notificationsQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
-import { useNow } from '@/hooks/use-now';
-import { useStoredState } from '@/hooks/use-stored-state';
-import { toIsoDate } from '@/lib/dates';
+import { markAllNotificationsRead, markNotificationRead } from '@/domain/commands';
+import { useToday } from '@/hooks/use-now';
 import { showEventOnCalendar } from '@/lib/show-event';
 
-import { type AppNotification, buildNotifications, dayHeading } from './build-notifications';
 import { NotificationCard } from './notification-card';
-
-// The notifications the user has opened or marked as read, remembered on the device.
-function parseReadIds(stored: unknown) {
-	return Array.isArray(stored) ? stored.filter((id) => typeof id === 'string') : [];
-}
+import {
+	type AppNotification,
+	dayHeading,
+	groupByDay,
+	toAppNotification,
+} from './notification-display';
 
 export function NotificationsScreen() {
-	const now = useNow();
-	const today = toIsoDate(now);
-	const { data: events } = useQuery(eventsWithCoursesQuery());
-	const { data: files } = useQuery(filesQuery());
-	const { data: reviewFields } = useQuery(reviewFieldCoursesQuery());
-	const { data: settings } = useQuery(settingsQuery());
-	const [readIds, setReadIds] = useStoredState<string[]>(
-		'notifications.readIds',
-		[],
-		parseReadIds,
-	);
-
-	const reviewCounts = new Map<number, number>();
-	for (const { courseId } of reviewFields) {
-		reviewCounts.set(courseId, (reviewCounts.get(courseId) ?? 0) + 1);
-	}
-	const notifications = buildNotifications({ events, files, reviewCounts, settings, now });
-	const isUnread = (notification: AppNotification) => !readIds.includes(notification.id);
-	const unreadCount = notifications.filter(isUnread).length;
-
-	const groups: { day: string; items: AppNotification[] }[] = [];
-	for (const notification of notifications) {
-		const day = toIsoDate(notification.at);
-		const group = groups.find((item) => item.day === day);
-		if (group) group.items.push(notification);
-		else groups.push({ day, items: [notification] });
-	}
+	const today = useToday();
+	const { data: rows } = useQuery(notificationsQuery());
+	const notifications = rows.map(toAppNotification);
+	const unreadCount = notifications.filter((notification) => notification.unread).length;
+	const groups = groupByDay(notifications);
 
 	function open(notification: AppNotification) {
-		if (isUnread(notification)) setReadIds([...readIds, notification.id]);
+		if (notification.unread) markNotificationRead(notification.id);
 		const { target } = notification;
-		if (target.kind === 'event') showEventOnCalendar(target.event);
-		else router.push({ pathname: '/courses/[id]', params: { id: target.id } });
+		if (target?.kind === 'event') showEventOnCalendar(target.event);
+		else if (target?.kind === 'course')
+			router.push({ pathname: '/courses/[id]', params: { id: target.id } });
 	}
 
 	return (
@@ -90,7 +63,7 @@ export function NotificationsScreen() {
 						{unreadCount > 0 && (
 							<Pressable
 								accessibilityRole="button"
-								onPress={() => setReadIds(notifications.map((item) => item.id))}
+								onPress={markAllNotificationsRead}
 								hitSlop={12}
 								className="active:opacity-70"
 							>
@@ -113,7 +86,6 @@ export function NotificationsScreen() {
 								<NotificationCard
 									key={notification.id}
 									notification={notification}
-									unread={isUnread(notification)}
 									today={today}
 									onPress={() => open(notification)}
 								/>

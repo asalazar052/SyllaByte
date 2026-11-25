@@ -16,6 +16,8 @@ import { type CourseDraft, validateDraft } from '@/lib/review-draft';
 import { removeSyllabus, retainSyllabus } from '@/lib/syllabus-storage';
 
 import { inferEventType } from '../event-types';
+import { recordNotification } from '../notifications/record';
+import { syllabusText } from '../notifications/text';
 import { ports } from '../ports';
 
 // The PDF the user picked.
@@ -122,7 +124,9 @@ function insertCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 			})
 			.returning({ id: courses.id })
 			.get();
-		tx.insert(files)
+		const dateCount = draft.dates.filter((item) => item.include).length;
+		const { id: fileId } = tx
+			.insert(files)
 			.values({
 				semesterId: semester.id,
 				courseId: id,
@@ -134,7 +138,15 @@ function insertCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 				storagePath: syllabus.storagePath,
 				uploadedAt: syllabus.uploadedAt,
 			})
-			.run();
+			.returning({ id: files.id })
+			.get();
+		recordNotification(tx, {
+			kind: 'syllabus',
+			dedupeKey: `syllabus:${fileId}`,
+			...syllabusText(draft.code.trim(), dateCount),
+			courseId: id,
+			createdAt: Date.now(),
+		});
 		if (draft.officeDays || draft.officeStart !== null || draft.officeLocation.trim())
 			tx.insert(officeHours)
 				.values({
@@ -162,6 +174,6 @@ function insertCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 			tx.insert(courseMaterials)
 				.values({ courseId: id, title: item.title.trim(), details: orNull(item.details) })
 				.run();
-		return { courseId: id, dateCount: draft.dates.filter((item) => item.include).length };
+		return { courseId: id, dateCount };
 	});
 }

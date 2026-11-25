@@ -7,7 +7,7 @@ import {
 	type AppNotification,
 	notificationMeta,
 	type NotificationTone,
-} from './build-notifications';
+} from './notification-display';
 
 const tones: Record<NotificationTone, { tile: string; text: string }> = {
 	blue: { tile: 'bg-sylla-paleBlue/60', text: 'text-sylla-blue' },
@@ -18,15 +18,14 @@ const tones: Record<NotificationTone, { tile: string; text: string }> = {
 // An unread notification keeps its border and has a dot after its title; once read, the border goes.
 export function NotificationCard({
 	notification,
-	unread,
 	today,
 	onPress,
 }: {
 	notification: AppNotification;
-	unread: boolean;
 	today: string;
 	onPress: () => void;
 }) {
+	const { unread } = notification;
 	const tone = tones[notification.tone];
 	const meta = notificationMeta(notification, today);
 	return (

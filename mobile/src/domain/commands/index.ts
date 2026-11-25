@@ -4,5 +4,6 @@
 export * from './courses';
 export * from './events';
 export * from './files';
+export * from './notifications';
 export * from './settings';
 export * from './syllabus';

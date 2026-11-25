@@ -5,10 +5,10 @@ import { importantEventTypes } from '@/domain/event-types';
 import { db } from './client';
 import {
 	courseMaterials,
-	courseReviewFields,
 	courses,
 	events,
 	files,
+	notifications,
 	officeHours,
 	professors,
 	semesters,
@@ -165,12 +165,6 @@ export const upcomingDatesQuery = (from: string, to: string) =>
 		.where(and(gte(events.date, from), lte(events.date, to)))
 		.orderBy(events.date, sql`${events.startTime} is null`, events.startTime);
 export type UpcomingDate = Awaited<ReturnType<typeof upcomingDatesQuery>>[number];
-// Every dated item with its course, for what is worked out from all of them (such as which reminders have gone off).
-export const eventsWithCoursesQuery = () => db.query.events.findMany({ with: { course: true } });
-// The course each review field belongs to, for counting how many details a course has flagged.
-export const reviewFieldCoursesQuery = () =>
-	db.select({ courseId: courseReviewFields.courseId }).from(courseReviewFields);
-export type EventWithCourse = Awaited<ReturnType<typeof eventsWithCoursesQuery>>[number];
 // A course's materials, or those of every course in a semester, or all of them.
 export const savedMaterialsQuery = (courseId?: number, semesterId?: number) =>
 	db
@@ -185,3 +179,13 @@ export const savedMaterialsQuery = (courseId?: number, semesterId?: number) =>
 		)
 		.orderBy(courses.code, courseMaterials.title);
 export type SavedMaterial = Awaited<ReturnType<typeof savedMaterialsQuery>>[number];
+
+// What the Notifications screen lists, newest first, each with the item it opens if that still exists.
+const NOTIFICATIONS_SHOWN = 100;
+export const notificationsQuery = () =>
+	db.query.notifications.findMany({
+		with: { event: true },
+		orderBy: [desc(notifications.createdAt), desc(notifications.id)],
+		limit: NOTIFICATIONS_SHOWN,
+	});
+export type NotificationRow = Awaited<ReturnType<typeof notificationsQuery>>[number];
