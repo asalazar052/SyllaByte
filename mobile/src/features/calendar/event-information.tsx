@@ -17,16 +17,23 @@ import {
 	semesterCoursesQuery,
 	type Settings,
 } from '@/db/queries';
-import { type EventType, eventTypes } from '@/db/schema';
+import { type EventType } from '@/db/schema';
+import { eventTypeInfo, eventTypeOptions } from '@/domain/event-types';
+import {
+	defaultReminder,
+	NO_OWN_REMINDER,
+	reminderToFields,
+	resolveReminder,
+} from '@/domain/reminders/resolve';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { formatLongDate, toIsoDate } from '@/lib/dates';
 import { isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
 
-import { eventTypeInfo, formatItemTime } from './calendar-items';
+import { formatItemTime } from './calendar-items';
 import { ItemField } from './item-fields';
-import { describeReminder, type ItemReminder, itemReminder } from './item-reminder';
+import { describeReminder } from './item-reminder';
 
 const DEFAULT_START = 9 * 60;
 const DEFAULT_LENGTH = 60;
@@ -132,12 +139,8 @@ export function EventInformation({
 		event.course && !semesterCourses.some((course) => course.id === event.course?.id)
 			? [...semesterCourses, event.course]
 			: semesterCourses;
-	const reminder = itemReminder(event, settings);
-	const defaults: ItemReminder = {
-		enabled: settings.defaultRemindersEnabled,
-		daysAhead: settings.reminderDaysAhead,
-		time: settings.reminderTime,
-	};
+	const reminder = resolveReminder(event, settings);
+	const defaults = defaultReminder(settings);
 	const custom = event.reminderEnabled !== null;
 	const date = isoToDate(event.date);
 
@@ -166,10 +169,7 @@ export function EventInformation({
 						<ItemField label="Type">
 							<SelectField
 								label="Type"
-								options={eventTypes.map((value) => ({
-									value,
-									label: eventTypeInfo[value].label,
-								}))}
+								options={eventTypeOptions}
 								selected={draft.type}
 								onSelect={(value) => update('type', value)}
 							/>
@@ -260,13 +260,7 @@ export function EventInformation({
 						<Pressable
 							accessibilityRole="button"
 							accessibilityLabel="Revert reminder to default"
-							onPress={() =>
-								updateEvent(event.id, {
-									reminderEnabled: null,
-									reminderDaysAhead: null,
-									reminderTime: null,
-								})
-							}
+							onPress={() => updateEvent(event.id, NO_OWN_REMINDER)}
 							hitSlop={12}
 							className="h-7 w-7 items-center justify-center"
 						>
@@ -276,21 +270,8 @@ export function EventInformation({
 				}
 				values={reminder}
 				onSave={(next) => {
-					const isDefault =
-						next.enabled === defaults.enabled &&
-						next.daysAhead === defaults.daysAhead &&
-						next.time === defaults.time;
 					if (next.enabled) void requestReminderPermission();
-					updateEvent(
-						event.id,
-						isDefault
-							? { reminderEnabled: null, reminderDaysAhead: null, reminderTime: null }
-							: {
-									reminderEnabled: next.enabled,
-									reminderDaysAhead: next.daysAhead,
-									reminderTime: next.time,
-								},
-					);
+					updateEvent(event.id, reminderToFields(next, defaults));
 				}}
 			>
 				{(draft, update) => (

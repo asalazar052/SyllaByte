@@ -12,6 +12,7 @@ import {
 	reviewFieldCoursesQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { useNow } from '@/hooks/use-now';
 import { useStoredState } from '@/hooks/use-stored-state';
 import { toIsoDate } from '@/lib/dates';
 import { showEventOnCalendar } from '@/lib/show-event';
@@ -25,7 +26,7 @@ function parseReadIds(stored: unknown) {
 }
 
 export function NotificationsScreen() {
-	const now = new Date();
+	const now = useNow();
 	const today = toIsoDate(now);
 	const { data: events } = useLiveQuery(eventsWithCoursesQuery());
 	const { data: files } = useLiveQuery(filesQuery());

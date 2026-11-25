@@ -1,9 +1,16 @@
-// Works out which reminders to schedule. It takes plain data and has no app or native imports, so it can be
-// checked on its own.
-import { addDays, formatLongDate } from '@/lib/dates';
+// Works out which reminders to schedule. It takes plain data, so it needs neither the app nor the device.
+import { formatLongDate } from '@/lib/dates';
 import { formatTime, joinParts } from '@/lib/format';
 
-export type ReminderEvent = {
+import { eventTypeLabel } from '../event-types';
+import {
+	type EventReminderFields,
+	reminderFireTime,
+	type ReminderSettings,
+	resolveReminder,
+} from './resolve';
+
+export type ReminderEvent = EventReminderFields & {
 	id: number;
 	title: string;
 	type: string;
@@ -11,17 +18,7 @@ export type ReminderEvent = {
 	date: string;
 	// Minutes after midnight, if the item has a time.
 	startTime: number | null;
-	// The item's own reminder. All three are null while it follows the default in settings.
-	reminderEnabled: boolean | null;
-	reminderDaysAhead: number | null;
-	reminderTime: number | null;
 	course: { code: string } | null;
-};
-
-export type ReminderSettings = {
-	defaultRemindersEnabled: boolean;
-	reminderDaysAhead: number;
-	reminderTime: number;
 };
 
 export type PlannedReminder = {
@@ -39,26 +36,16 @@ export const REMINDER_ID_PREFIX = 'reminder-';
 // others are picked up the next time reminders are synced, which happens each time the app opens.
 export const MAX_SCHEDULED = 60;
 
-// 'YYYY-MM-DD' with minutes after midnight, as a Date in the device's time zone.
-export function localDate(iso: string, minutes: number) {
-	const [year, month, day] = iso.split('-').map(Number);
-	return new Date(year, month - 1, day, Math.floor(minutes / 60), minutes % 60);
-}
-
 export function planReminders(
 	events: ReminderEvent[],
 	settings: ReminderSettings,
 	now: Date,
-	typeLabel: (type: string) => string,
 ): PlannedReminder[] {
 	const planned: PlannedReminder[] = [];
 	for (const event of events) {
-		const custom = event.reminderEnabled !== null;
-		const enabled = custom ? event.reminderEnabled : settings.defaultRemindersEnabled;
-		if (!enabled) continue;
-		const daysAhead = event.reminderDaysAhead ?? settings.reminderDaysAhead;
-		const time = event.reminderTime ?? settings.reminderTime;
-		const fireAt = localDate(addDays(event.date, -daysAhead), time);
+		const reminder = resolveReminder(event, settings);
+		if (!reminder.enabled) continue;
+		const { at: fireAt } = reminderFireTime(event.date, reminder);
 		if (fireAt.getTime() <= now.getTime()) continue;
 		planned.push({
 			identifier: `${REMINDER_ID_PREFIX}${event.id}`,
@@ -67,7 +54,7 @@ export function planReminders(
 			title: event.title,
 			body: joinParts(
 				event.course?.code,
-				typeLabel(event.type),
+				eventTypeLabel(event.type),
 				`${formatLongDate(event.date)}${event.startTime === null ? '' : ` at ${formatTime(event.startTime)}`}`,
 			),
 		});

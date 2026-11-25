@@ -1,5 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 
+import { importantEventTypes } from '@/domain/event-types';
+
 import { db } from './client';
 import {
 	courseMaterials,
@@ -137,7 +139,7 @@ export const savedDatesQuery = (courseId?: number) =>
 		.innerJoin(courses, eq(events.courseId, courses.id))
 		.where(
 			and(
-				inArray(events.type, ['exam', 'quiz']),
+				inArray(events.type, importantEventTypes),
 				courseId !== undefined ? eq(events.courseId, courseId) : undefined,
 			),
 		)

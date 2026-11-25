@@ -1,6 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { SyllaColors } from '@/constants/theme';
+import { inferEventType } from '@/domain/event-types';
 import { orNull } from '@/lib/input';
 import { type CourseDraft, validateDraft } from '@/lib/review-draft';
 
@@ -108,7 +109,7 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 					courseId: id,
 					title: item.title.trim(),
 					date: item.date,
-					type: /exam|midterm|final/i.test(item.title) ? 'exam' : 'assignment',
+					type: inferEventType(item.title),
 					startTime: item.time
 						? Number(item.time.slice(0, 2)) * 60 + Number(item.time.slice(3))
 						: null,

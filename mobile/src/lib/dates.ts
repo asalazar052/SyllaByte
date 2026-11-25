@@ -27,6 +27,13 @@ function parseIsoDate(iso: string) {
 	return new Date(year, month - 1, day);
 }
 
+// A 'YYYY-MM-DD' date at a time of day (minutes after midnight), as a Date in the device's time zone.
+export function dateAtTime(iso: string, minutes: number) {
+	const date = parseIsoDate(iso);
+	date.setHours(Math.floor(minutes / 60), minutes % 60);
+	return date;
+}
+
 export function addDays(iso: string, days: number) {
 	const date = parseIsoDate(iso);
 	date.setDate(date.getDate() + days);

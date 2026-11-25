@@ -16,9 +16,11 @@ import {
 	semesterCoursesQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { eventTypeInfo } from '@/domain/event-types';
+import { useToday } from '@/hooks/use-now';
 import { useStoredState } from '@/hooks/use-stored-state';
 import { courseColor } from '@/lib/colors';
-import { addMonths, formatLongDate, monthWeeks, startOfMonth, toIsoDate } from '@/lib/dates';
+import { addMonths, formatLongDate, monthWeeks, startOfMonth } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
 import { plural } from '@/lib/plural';
 
@@ -28,7 +30,6 @@ import {
 	eventCategories,
 	type EventCategory,
 	eventItem,
-	eventTypeInfo,
 	officeHoursItems,
 	parseHiddenCategories,
 } from './calendar-items';
@@ -37,7 +38,7 @@ import { EventCard, NextExamCard } from './event-card';
 import { MonthCalendar } from './month-calendar';
 
 export function CalendarScreen() {
-	const today = toIsoDate(new Date());
+	const today = useToday();
 	const [month, setMonth] = useState(() => startOfMonth(today));
 	const [selected, setSelected] = useState(today);
 	const [courseId, setCourseId] = useState<number | null>(null);

@@ -12,7 +12,9 @@ import {
 	settingsQuery,
 	upcomingDatesQuery,
 } from '@/db/queries';
+import { eventTypeInfo } from '@/domain/event-types';
 import { ImportantDatesList } from '@/features/courses/important-dates-list';
+import { useNow } from '@/hooks/use-now';
 import { addDays, toIsoDate } from '@/lib/dates';
 
 import { SemesterOverview } from './semester-overview';
@@ -27,7 +29,7 @@ function greeting(hour: number) {
 }
 
 export function HomeScreen() {
-	const now = new Date();
+	const now = useNow();
 	const today = toIsoDate(now);
 	const { data: settings } = useLiveQuery(settingsQuery());
 	const { data: semester } = useLiveQuery(currentSemesterQuery());
@@ -41,9 +43,8 @@ export function HomeScreen() {
 		comingUpEnd,
 	]);
 
-	// A reminder isn't something that is due, so it doesn't count toward the week.
 	const dueThisWeek = progress?.week
-		? weekEvents.filter((event) => event.type !== 'other').length
+		? weekEvents.filter((event) => eventTypeInfo[event.type].deadline).length
 		: 0;
 	const name = (settings?.preferredName || settings?.fullName)?.trim().split(/\s+/)[0];
 

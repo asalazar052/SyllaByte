@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { type SavedDate, type UpcomingDate } from '@/db/queries';
-import { toIsoDate } from '@/lib/dates';
+import { useToday } from '@/hooks/use-now';
 import { showEventOnCalendar } from '@/lib/show-event';
 
 import { ImportantDateCard } from './important-date-card';
@@ -19,7 +19,7 @@ export function ImportantDatesList({
 	linkToCalendar?: boolean;
 	emptyMessage?: string;
 }) {
-	const today = toIsoDate(new Date());
+	const today = useToday();
 	return (
 		<View className="gap-2.5">
 			{dates.length === 0 && (

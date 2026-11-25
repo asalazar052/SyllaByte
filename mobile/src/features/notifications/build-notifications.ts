@@ -1,8 +1,8 @@
 import type { AppIconName } from '@/components/ui/app-icon';
 import type { EventWithCourse, Settings, UploadedFile } from '@/db/queries';
 import type { EventType } from '@/db/schema';
-import { itemReminder } from '@/features/calendar/item-reminder';
-import { localDate } from '@/features/reminders/plan-reminders';
+import { eventTypeInfo } from '@/domain/event-types';
+import { reminderFireTime, resolveReminder } from '@/domain/reminders/resolve';
 import { addDays, formatMonthDay, formatShortDate, toIsoDate } from '@/lib/dates';
 import { dateToMinutes, formatLeadTime, formatTime, joinParts } from '@/lib/format';
 import { plural } from '@/lib/plural';
@@ -27,8 +27,6 @@ export type AppNotification = {
 	// What opening it goes to.
 	target: { kind: 'event'; event: { id: number; date: string } } | { kind: 'course'; id: number };
 };
-
-const dueTypes: EventType[] = ['assignment', 'lab_report'];
 
 const reminderStyle: Record<
 	EventType,
@@ -69,13 +67,12 @@ export function buildNotifications({
 	const notifications: AppNotification[] = [];
 
 	for (const event of settings ? events : []) {
-		const reminder = itemReminder(event, settings!);
+		const reminder = resolveReminder(event, settings!);
 		if (!reminder.enabled) continue;
-		const fireDate = addDays(event.date, -reminder.daysAhead);
-		const at = localDate(fireDate, reminder.time);
+		const { date: fireDate, at } = reminderFireTime(event.date, reminder);
 		if (at.getTime() > now.getTime() || fireDate < oldest) continue;
 		const style = reminderStyle[event.type];
-		const due = dueTypes.includes(event.type);
+		const due = eventTypeInfo[event.type].hasDueDate;
 		const time = event.startTime === null ? '' : ` at ${formatTime(event.startTime)}`;
 		notifications.push({
 			id: `reminder-${event.id}-${fireDate}-${reminder.time}`,

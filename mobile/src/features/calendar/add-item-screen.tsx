@@ -15,12 +15,11 @@ import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
 import { addEvent } from '@/db/mutations';
 import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
-import { type EventType, eventTypes } from '@/db/schema';
+import { type EventType, eventTypeOptions } from '@/domain/event-types';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { toIsoDate } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
 
-import { eventTypeInfo } from './calendar-items';
 import { ItemField, ItemInput } from './item-fields';
 import { describeReminder, useItemReminder } from './item-reminder';
 
@@ -87,10 +86,7 @@ export function AddItemScreen() {
 				<ItemField label="Type">
 					<SelectField
 						label="Type"
-						options={eventTypes.map((value) => ({
-							value,
-							label: eventTypeInfo[value].label,
-						}))}
+						options={eventTypeOptions}
 						selected={type}
 						onSelect={setType}
 					/>

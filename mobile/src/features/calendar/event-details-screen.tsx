@@ -7,9 +7,10 @@ import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { currentSemesterQuery, eventQuery, settingsQuery } from '@/db/queries';
+import { eventTypeInfo } from '@/domain/event-types';
 import { courseColor } from '@/lib/colors';
 
-import { categoryInfo, eventTypeInfo } from './calendar-items';
+import { categoryInfo } from './calendar-items';
 import { DeleteEventAction } from './delete-event-action';
 import { EventInformation } from './event-information';
 import { EventSymbol } from './event-symbol';

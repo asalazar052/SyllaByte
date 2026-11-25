@@ -9,11 +9,8 @@ import { SyllaColors } from '@/constants/theme';
 import { db } from '@/db/client';
 import { settingsQuery } from '@/db/queries';
 import { events } from '@/db/schema';
-import { type EventType } from '@/db/schema';
+import { planReminders, REMINDER_ID_PREFIX } from '@/domain/reminders/plan';
 import { toIsoDate } from '@/lib/dates';
-import { eventTypeLabels } from '@/lib/event-types';
-
-import { planReminders, REMINDER_ID_PREFIX } from './plan-reminders';
 
 const CHANNEL_ID = 'reminders';
 
@@ -91,9 +88,7 @@ async function schedule() {
 		where: gte(events.date, toIsoDate(now)),
 		with: { course: true },
 	});
-	const reminders = planReminders(upcoming, settings, now, (type) =>
-		type in eventTypeLabels ? eventTypeLabels[type as EventType] : type,
-	);
+	const reminders = planReminders(upcoming, settings, now);
 	for (const reminder of reminders) {
 		await Notifications.scheduleNotificationAsync({
 			identifier: reminder.identifier,
