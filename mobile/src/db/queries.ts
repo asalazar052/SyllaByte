@@ -71,6 +71,10 @@ export const eventsBetweenQuery = (from: string, to: string) =>
 		orderBy: [asc(events.date), asc(sql`${events.startTime} is null`), asc(events.startTime)],
 	});
 
+// Items dated `from` ('YYYY-MM-DD') or later, with their course: the ones that can still have a reminder to come.
+export const remindableEventsQuery = (from: string) =>
+	db.query.events.findMany({ where: gte(events.date, from), with: { course: true } });
+
 // One dated item with the course it belongs to, if any.
 export const eventQuery = (id: number) =>
 	db.query.events.findFirst({ where: eq(events.id, id), with: { course: true } });

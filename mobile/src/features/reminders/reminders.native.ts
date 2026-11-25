@@ -1,4 +1,3 @@
-import { eq, gte } from 'drizzle-orm';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { router, useRootNavigationState, useSegments } from 'expo-router';
@@ -6,11 +5,9 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { SyllaColors } from '@/constants/theme';
-import { db } from '@/db/client';
-import { settingsQuery } from '@/db/queries';
-import { events } from '@/db/schema';
-import { planReminders, REMINDER_ID_PREFIX } from '@/domain/reminders/plan';
-import { toIsoDate } from '@/lib/dates';
+import { eventQuery } from '@/db/queries';
+import { REMINDER_ID_PREFIX } from '@/domain/reminders/plan';
+import { plannedReminders, reminderSignature } from '@/domain/reminders/upcoming';
 
 const CHANNEL_ID = 'reminders';
 
@@ -71,31 +68,37 @@ async function allowExactTiming() {
 	}
 }
 
+// Makes the scheduled reminders match the ones the calendar and settings call for right now. Only what has
+// changed is touched: reminders that are already right are left alone, so a sync that is cut short loses
+// nothing it hadn't already replaced.
 async function schedule() {
-	const scheduled = await Notifications.getAllScheduledNotificationsAsync();
 	// Only reminders are touched, so anything else the app schedules is left alone.
+	const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(
+		({ identifier }) => identifier.startsWith(REMINDER_ID_PREFIX),
+	);
+	// Without permission nothing can be scheduled, and anything left over is removed.
+	const wanted = (await hasPermission()) ? plannedReminders() : [];
+
+	const current = new Map(scheduled.map((request) => [request.identifier, request]));
+	const upToDate = new Set<string>();
+	for (const reminder of wanted) {
+		const { signature } = current.get(reminder.identifier)?.content.data ?? {};
+		if (signature === reminderSignature(reminder)) upToDate.add(reminder.identifier);
+	}
+
 	await Promise.all(
 		scheduled
-			.filter(({ identifier }) => identifier.startsWith(REMINDER_ID_PREFIX))
+			.filter(({ identifier }) => !upToDate.has(identifier))
 			.map(({ identifier }) => Notifications.cancelScheduledNotificationAsync(identifier)),
 	);
-	if (!(await hasPermission())) return;
-
-	const settings = await settingsQuery();
-	if (!settings) return;
-	const now = new Date();
-	const upcoming = await db.query.events.findMany({
-		where: gte(events.date, toIsoDate(now)),
-		with: { course: true },
-	});
-	const reminders = planReminders(upcoming, settings, now);
-	for (const reminder of reminders) {
+	for (const reminder of wanted) {
+		if (upToDate.has(reminder.identifier)) continue;
 		await Notifications.scheduleNotificationAsync({
 			identifier: reminder.identifier,
 			content: {
 				title: reminder.title,
 				body: reminder.body,
-				data: { eventId: reminder.eventId },
+				data: { eventId: reminder.eventId, signature: reminderSignature(reminder) },
 			},
 			trigger: {
 				type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -106,14 +109,30 @@ async function schedule() {
 	}
 }
 
-// Syncs run one at a time, because the app asks for one each time an item or the settings change and two
-// running together would schedule the same reminders twice.
-let queue: Promise<void> = Promise.resolve();
+// Syncs run one at a time, because two running together would schedule the same reminders twice. One asked
+// for while another is running waits for it, and any number of those become a single sync afterward.
+let running: Promise<void> | undefined;
+let askedAgain = false;
 
-// Replaces the scheduled reminders with the ones the calendar and settings call for right now.
+// Brings the scheduled reminders up to date with the calendar and settings.
 export function syncReminders() {
-	queue = queue.then(schedule).catch(() => {});
-	return queue;
+	if (running) {
+		askedAgain = true;
+		return running;
+	}
+	running = (async () => {
+		do {
+			askedAgain = false;
+			try {
+				await schedule();
+			} catch {
+				/* The next sync tries again. */
+			}
+		} while (askedAgain);
+	})().finally(() => {
+		running = undefined;
+	});
+	return running;
 }
 
 // How long to wait, once the app's first screen is showing, before opening an item from a tapped
@@ -129,7 +148,7 @@ async function openReminder(eventId: number, onOpenEvent: OpenEvent) {
 	if (!Number.isInteger(eventId) || eventId <= 0) return;
 	// The date comes from the item itself, not the notification, so it is right even if the item was moved
 	// after the reminder was scheduled.
-	const event = await db.query.events.findFirst({ where: eq(events.id, eventId) });
+	const event = await eventQuery(eventId);
 	// Closes whatever is open over the tabs, such as another item's details or the upload screen.
 	if (router.canDismiss()) router.dismissAll();
 	onOpenEvent(event);

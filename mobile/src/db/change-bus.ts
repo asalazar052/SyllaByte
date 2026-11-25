@@ -58,6 +58,14 @@ export function subscribeToTables(tables: Iterable<string>, run: () => void) {
 	};
 }
 
+// The same, for code that holds the tables themselves rather than their names.
+export function onTablesChanged(tables: Table[], run: () => void) {
+	return subscribeToTables(
+		tables.map((table) => getTableName(table)),
+		run,
+	);
+}
+
 // Marks tables as changed by hand. Writes that change other tables as a side effect (a foreign-key cascade
 // that deletes a course's dates) call this for those tables, so screens showing them refresh without relying
 // on the database to report every cascaded row.
