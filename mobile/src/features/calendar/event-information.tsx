@@ -20,8 +20,8 @@ import {
 import { type EventType, eventTypes } from '@/db/schema';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { requestReminderPermission } from '@/features/reminders/reminders';
-import { formatLongDate } from '@/lib/dates';
-import { dateToIso, isoToDate, joinParts } from '@/lib/format';
+import { formatLongDate, toIsoDate } from '@/lib/dates';
+import { isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
 
 import { eventTypeInfo, formatItemTime } from './calendar-items';
@@ -230,7 +230,7 @@ export function EventInformation({
 						<DateField
 							label="Date"
 							value={isoToDate(draft.date) ?? date}
-							onChange={(picked) => update('date', dateToIso(picked))}
+							onChange={(picked) => update('date', toIsoDate(picked))}
 						/>
 						<EventTimeFields
 							start={draft.startTime}

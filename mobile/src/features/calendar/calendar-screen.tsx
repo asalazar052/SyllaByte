@@ -20,6 +20,7 @@ import { useStoredState } from '@/hooks/use-stored-state';
 import { courseColor } from '@/lib/colors';
 import { addMonths, formatLongDate, monthWeeks, startOfMonth, toIsoDate } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 import {
 	type CalendarItem,
@@ -175,7 +176,7 @@ export function CalendarScreen() {
 						{formatLongDate(selected)}
 					</AppText>
 					<AppText variant="action" className="text-sylla-blue">
-						{agenda.length} {agenda.length === 1 ? 'item' : 'items'}
+						{plural(agenda.length, 'item')}
 					</AppText>
 				</View>
 				{agenda.map((item) => {

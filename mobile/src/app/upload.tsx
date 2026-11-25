@@ -9,6 +9,7 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { ExtractionPreview } from '@/features/upload/extraction-preview';
 import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
+import { formatBytes } from '@/lib/format';
 
 export default function Upload() {
 	const insets = useSafeAreaInsets();
@@ -40,7 +41,7 @@ export default function Upload() {
 					<View className="gap-2" accessibilityLiveRegion="polite">
 						<AppText variant="label">{file.name}</AppText>
 						<AppText variant="caption" className="text-sylla-muted">
-							PDF{file.size !== undefined ? ` · ${formatFileSize(file.size)}` : ''}
+							PDF{file.size !== undefined ? ` · ${formatBytes(file.size)}` : ''}
 						</AppText>
 					</View>
 				)}
@@ -111,10 +112,4 @@ export default function Upload() {
 			<View style={{ height: insets.bottom }} />
 		</Screen>
 	);
-}
-
-function formatFileSize(bytes: number) {
-	return bytes < 1024 * 1024
-		? `${Math.max(1, Math.round(bytes / 1024))} KB`
-		: `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

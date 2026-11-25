@@ -9,6 +9,7 @@ import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { filesQuery, type UploadedFile } from '@/db/queries';
 import { formatBytes, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 import { UploadedFileCard } from './uploaded-file-card';
 
@@ -48,7 +49,7 @@ export function UploadedFilesScreen() {
 							</AppText>
 							<AppText variant="micro" className="text-sylla-muted">
 								{joinParts(
-									`${group.length} ${group.length === 1 ? 'file' : 'files'}`,
+									plural(group.length, 'file'),
 									formatBytes(
 										group.reduce((total, file) => total + file.bytes, 0),
 									),

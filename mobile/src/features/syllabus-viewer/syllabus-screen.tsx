@@ -10,6 +10,7 @@ import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { SyllaColors } from '@/constants/theme';
 import { courseQuery, type CourseSyllabus, courseSyllabusQuery } from '@/db/queries';
+import { plural } from '@/lib/plural';
 import { resolveSyllabus, shareSyllabus } from '@/lib/syllabus-storage';
 
 import { PdfDocument } from './pdf-document';
@@ -135,7 +136,7 @@ function SyllabusViewer({
 								{syllabus.filename}
 							</AppText>
 							<AppText variant="caption" className="text-sylla-muted">
-								{pages ? `${pages} ${pages === 1 ? 'page' : 'pages'}` : 'PDF'}
+								{pages ? plural(pages, 'page') : 'PDF'}
 								{syllabus.uploadedAt != null
 									? ` · Uploaded ${new Date(syllabus.uploadedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 									: ''}

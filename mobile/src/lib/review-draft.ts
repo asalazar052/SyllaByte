@@ -1,3 +1,5 @@
+import { EMAIL } from '@/lib/input';
+
 export type ReviewItem = {
 	id: string;
 	title: string;
@@ -113,10 +115,7 @@ export function validateDraft(draft: CourseDraft): string | null {
 			!Number.isSafeInteger(Number(draft.credits)))
 	)
 		return 'Credits must be a whole number above 0.';
-	if (
-		draft.professorEmail.trim() &&
-		!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.professorEmail.trim())
-	)
+	if (draft.professorEmail.trim() && !EMAIL.test(draft.professorEmail.trim()))
 		return 'Enter a valid professor email address.';
 	if (
 		!validRange(draft.startTime, draft.endTime) ||

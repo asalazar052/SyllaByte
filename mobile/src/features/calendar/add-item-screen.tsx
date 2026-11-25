@@ -18,7 +18,7 @@ import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
 import { type EventType, eventTypes } from '@/db/schema';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { toIsoDate } from '@/lib/dates';
-import { dateToIso, isoToDate } from '@/lib/format';
+import { isoToDate } from '@/lib/format';
 
 import { eventTypeInfo } from './calendar-items';
 import { ItemField, ItemInput } from './item-fields';
@@ -126,7 +126,7 @@ export function AddItemScreen() {
 					<DateField
 						label="Due date"
 						value={dateValue}
-						onChange={(picked) => setDate(dateToIso(picked))}
+						onChange={(picked) => setDate(toIsoDate(picked))}
 					/>
 					<View className="h-px bg-sylla-border" />
 					<TimeField label="Time" minutes={time} onChange={setTime} />

@@ -8,6 +8,7 @@ import { AppText } from '@/components/ui/app-text';
 import { deleteFile } from '@/db/delete-file';
 import type { UploadedFile } from '@/db/queries';
 import { formatBytes, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 import { shareSyllabus } from '@/lib/syllabus-storage';
 
 type UploadedFileCardProps = {
@@ -94,8 +95,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 					</AppText>
 					<AppText variant="micro" className="shrink-0 text-sylla-muted">
 						{joinParts(
-							file.pageCount !== null &&
-								`${file.pageCount} ${file.pageCount === 1 ? 'page' : 'pages'}`,
+							file.pageCount !== null && plural(file.pageCount, 'page'),
 							formatBytes(file.bytes),
 						)}
 					</AppText>

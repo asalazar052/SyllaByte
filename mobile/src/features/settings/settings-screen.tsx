@@ -18,6 +18,7 @@ import {
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { formatDateRange } from '@/lib/dates';
 import { formatLeadTime, formatTime, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 import { SettingRow, SettingsGroup } from './setting-row';
 
@@ -38,7 +39,7 @@ function semesterSummary(semester: Semester, courses: CourseCredits[]) {
 	const credits = semesterCourses.reduce((total, course) => total + (course.credits ?? 0), 0);
 	return joinParts(
 		formatDateRange(semester.startDate, semester.endDate),
-		`${semesterCourses.length} ${semesterCourses.length === 1 ? 'course' : 'courses'}`,
+		plural(semesterCourses.length, 'course'),
 		`${credits} credits`,
 	);
 }

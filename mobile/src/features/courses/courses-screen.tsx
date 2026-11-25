@@ -9,8 +9,9 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { allSemestersQuery, filterCourses, semesterCoursesQuery } from '@/db/queries';
+import { filterCourses, semesterCoursesQuery, semestersQuery } from '@/db/queries';
 import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
+import { plural } from '@/lib/plural';
 
 import { CourseCard } from './course-card';
 
@@ -25,7 +26,7 @@ export function CoursesScreen() {
 		savedCourseId,
 		saving,
 	} = useSyllabusPicker();
-	const { data: semesters } = useLiveQuery(allSemestersQuery());
+	const { data: semesters } = useLiveQuery(semestersQuery());
 	const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
 	const semester = semesters.find((item) => item.id === selectedSemesterId) ?? semesters[0];
 	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
@@ -159,7 +160,7 @@ export function CoursesScreen() {
 							accessibilityLiveRegion="polite"
 						>
 							{reviewOnly ? 'Needs review · ' : ''}
-							{visible.length} {visible.length === 1 ? 'course' : 'courses'} shown
+							{plural(visible.length, 'course')} shown
 						</AppText>
 						<Pressable
 							accessibilityRole="button"

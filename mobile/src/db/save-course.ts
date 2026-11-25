@@ -1,6 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { SyllaColors } from '@/constants/theme';
+import { orNull } from '@/lib/input';
 import { type CourseDraft, validateDraft } from '@/lib/review-draft';
 
 import { db } from './client';
@@ -28,7 +29,6 @@ export type SyllabusUpload = {
 export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 	const error = validateDraft(draft);
 	if (error) throw new Error(error);
-	const nullable = (value: string) => value.trim() || null;
 	return db.transaction((tx) => {
 		let semester = tx
 			.select()
@@ -57,7 +57,7 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 			);
 		const professor = tx
 			.insert(professors)
-			.values({ name: nullable(draft.professorName), email: nullable(draft.professorEmail) })
+			.values({ name: orNull(draft.professorName), email: orNull(draft.professorEmail) })
 			.returning()
 			.get();
 		const { id } = tx
@@ -68,10 +68,10 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 				code: draft.code.trim(),
 				title: draft.title.trim(),
 				credits: draft.credits.trim() ? Number(draft.credits) : null,
-				days: nullable(draft.days),
+				days: orNull(draft.days),
 				startTime: draft.startTime,
 				endTime: draft.endTime,
-				location: nullable(draft.location),
+				location: orNull(draft.location),
 				icon: 'courses',
 				iconBackground: SyllaColors.paleBlue,
 				isSample: true,
@@ -96,10 +96,10 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 				.values({
 					professorId: professor.id,
 					courseId: id,
-					days: nullable(draft.officeDays),
+					days: orNull(draft.officeDays),
 					startTime: draft.officeStart,
 					endTime: draft.officeEnd,
-					location: nullable(draft.officeLocation),
+					location: orNull(draft.officeLocation),
 				})
 				.run();
 		for (const item of draft.dates.filter((item) => item.include))
@@ -116,7 +116,7 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 				.run();
 		for (const item of draft.materials.filter((item) => item.include))
 			tx.insert(courseMaterials)
-				.values({ courseId: id, title: item.title.trim(), details: nullable(item.details) })
+				.values({ courseId: id, title: item.title.trim(), details: orNull(item.details) })
 				.run();
 		return id;
 	});

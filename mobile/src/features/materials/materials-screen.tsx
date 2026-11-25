@@ -7,6 +7,7 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { currentSemesterQuery, savedMaterialsQuery } from '@/db/queries';
+import { plural } from '@/lib/plural';
 
 import { MaterialList } from './material-list';
 
@@ -97,8 +98,7 @@ export function MaterialsScreen() {
 						Found in your syllabi
 					</AppText>
 					<AppText className="text-[11px] text-sylla-blue">
-						{materials.length} {materials.length === 1 ? 'material' : 'materials'} ·{' '}
-						{courseCount} {courseCount === 1 ? 'course' : 'courses'}
+						{plural(materials.length, 'material')} · {plural(courseCount, 'course')}
 					</AppText>
 				</View>
 			</View>
@@ -109,7 +109,7 @@ export function MaterialsScreen() {
 						On your bookshelf
 					</AppText>
 					<AppText variant="action" className="text-sylla-blue">
-						{visible.length} {visible.length === 1 ? 'book' : 'books'}
+						{plural(visible.length, 'book')}
 					</AppText>
 				</View>
 				<MaterialList

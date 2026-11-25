@@ -5,6 +5,7 @@ import { itemReminder } from '@/features/calendar/item-reminder';
 import { localDate } from '@/features/reminders/plan-reminders';
 import { addDays, formatMonthDay, formatShortDate, toIsoDate } from '@/lib/dates';
 import { dateToMinutes, formatLeadTime, formatTime, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 // How far back the list reaches, and the most it holds.
 const DAYS_SHOWN = 14;
@@ -46,10 +47,6 @@ function whenText(daysAhead: number) {
 		: daysAhead === 1
 			? 'tomorrow'
 			: `in ${formatLeadTime(daysAhead)}`;
-}
-
-function plural(count: number, one: string, many: string) {
-	return `${count} ${count === 1 ? one : many}`;
 }
 
 // What has gone off lately: each item's reminder once its time has passed, and each syllabus once it was
@@ -107,11 +104,8 @@ export function buildNotifications({
 			at,
 			title: `Your ${file.course.code} syllabus is ready`,
 			body: [
-				dates > 0
-					? `We found ${plural(dates, 'date', 'dates')}.`
-					: 'Your course details are saved.',
-				review > 0 &&
-					`Review ${plural(review, 'detail', 'details')} before relying on them.`,
+				dates > 0 ? `We found ${plural(dates, 'date')}.` : 'Your course details are saved.',
+				review > 0 && `Review ${plural(review, 'detail')} before relying on them.`,
 			]
 				.filter(Boolean)
 				.join(' '),

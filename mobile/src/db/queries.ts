@@ -118,9 +118,6 @@ export function filterCourses(courseList: Course[], query: string, reviewOnly: b
 	);
 }
 
-export const allSemestersQuery = semestersQuery;
-export const reviewFieldsQuery = (courseId: number) =>
-	db.select().from(courseReviewFields).where(eq(courseReviewFields.courseId, courseId));
 // A course's important dates: its exams and quizzes.
 export const savedDatesQuery = (courseId?: number) =>
 	db
