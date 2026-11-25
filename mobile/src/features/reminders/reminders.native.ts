@@ -129,9 +129,9 @@ export function syncReminders() {
 				/* The next sync tries again. */
 			}
 		} while (askedAgain);
-	})().finally(() => {
+		// Nothing can run between the check above and this, so a sync asked for in that moment isn't lost.
 		running = undefined;
-	});
+	})();
 	return running;
 }
 

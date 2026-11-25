@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
-import { recordFiredReminders } from '@/domain/commands';
+import { catchUpReminders } from '@/domain/commands';
 import { plannedReminders } from '@/domain/reminders/upcoming';
 import { onRemindersChanged } from '@/domain/reminders/watch';
 
 import { configureReminders, type OpenEvent, syncReminders, useReminderTaps } from './reminders';
 
 // Wake just after a reminder's time, so it has gone off by the time the app looks. And never wait longer than an
-// hour, so a clock that jumped or a timer that was held back is caught up soon after.
+// hour, even with nothing due, so a clock that jumped or a timer that was held back is caught up soon after.
 const SETTLE_MS = 1000;
 const LONGEST_WAIT_MS = 60 * 60 * 1000;
 
@@ -25,16 +25,20 @@ export function ReminderSync({ onOpenEvent }: { onOpenEvent: OpenEvent }) {
 
 		function refresh() {
 			clearTimeout(timer);
+			// Each step is on its own, so a problem in one doesn't stop the others or the next wake-up.
+			catchUpReminders();
+			let wait = LONGEST_WAIT_MS;
 			try {
-				recordFiredReminders();
 				const next = plannedReminders()[0];
-				if (next) {
-					const wait = Math.max(next.fireAt.getTime() - Date.now(), 0) + SETTLE_MS;
-					timer = setTimeout(refresh, Math.min(wait, LONGEST_WAIT_MS));
-				}
+				if (next)
+					wait = Math.min(
+						Math.max(next.fireAt.getTime() - Date.now(), 0) + SETTLE_MS,
+						wait,
+					);
 			} catch (error) {
-				console.warn('Could not look for reminders that went off', error);
+				console.warn('Could not work out when the next reminder is due', error);
 			}
+			timer = setTimeout(refresh, wait);
 			void syncReminders();
 		}
 

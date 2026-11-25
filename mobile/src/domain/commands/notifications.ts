@@ -23,9 +23,13 @@ export function markAllNotificationsRead() {
 const MAX_RECORDED_AT_ONCE = 50;
 
 // Records the reminders that have gone off since the last time it ran, each at the moment it went off. A
-// reminder is recorded once however often this runs, and one that was already past when its item was added or
-// changed is never recorded, because the phone never sent it. The first run only notes the time, so nothing
-// from before the app was in use is recorded.
+// reminder is recorded once however often this runs. The first run only notes the time, so nothing from before
+// the app was in use is recorded. A reminder is recorded whether or not the phone was allowed to show it: the
+// list says what came due, not what was delivered.
+//
+// "Since the last time it ran" is what keeps a reminder that was already past when its item was added or
+// changed from being recorded, since it never went off. That only holds if this runs just before such a change,
+// so the commands that make one call catchUpReminders first.
 export function recordFiredReminders(now = new Date()) {
 	db.transaction((tx) => {
 		const nowMs = now.getTime();
@@ -35,20 +39,21 @@ export function recordFiredReminders(now = new Date()) {
 				.from(appState)
 				.where(eq(appState.id, APP_STATE_ID))
 				.get()?.at ?? null;
-		// The time never moves backward, so a clock set back can't send reminders out a second time.
-		const next = Math.max(checkedAt ?? nowMs, nowMs);
 		tx.insert(appState)
-			.values({ id: APP_STATE_ID, notificationsCheckedAt: next })
-			.onConflictDoUpdate({ target: appState.id, set: { notificationsCheckedAt: next } })
+			.values({ id: APP_STATE_ID, notificationsCheckedAt: nowMs })
+			.onConflictDoUpdate({ target: appState.id, set: { notificationsCheckedAt: nowMs } })
 			.run();
 		if (checkedAt === null) return;
+		// If the clock was set back, nothing between the two times is looked at again. A reminder that was already
+		// recorded is never recorded twice either way, and a clock set far ahead can't hold recording back later.
+		const since = Math.min(checkedAt, nowMs);
 
 		const defaults = tx.select().from(settings).where(eq(settings.id, SETTINGS_ID)).get();
 		if (!defaults) return;
 		// A reminder can't go off before the day it is set for, so items dated earlier can't be among them.
 		const candidates = tx.query.events
 			.findMany({
-				where: gte(events.date, toIsoDate(new Date(checkedAt))),
+				where: gte(events.date, toIsoDate(new Date(since))),
 				with: { course: true },
 			})
 			.sync();
@@ -58,7 +63,7 @@ export function recordFiredReminders(now = new Date()) {
 			if (!reminder.enabled) continue;
 			const fire = reminderFireTime(event.date, reminder);
 			const at = fire.at.getTime();
-			if (at > checkedAt && at <= nowMs) fired.push({ event, reminder, fire, at });
+			if (at > since && at <= nowMs) fired.push({ event, reminder, fire, at });
 		}
 		fired.sort((a, b) => b.at - a.at);
 		for (const { event, reminder, fire, at } of fired.slice(0, MAX_RECORDED_AT_ONCE)) {
@@ -73,4 +78,15 @@ export function recordFiredReminders(now = new Date()) {
 			});
 		}
 	});
+}
+
+// Records the reminders that have gone off up to now, and never throws, so a problem with this can't stop what
+// the user asked for. Call it just before a change that could move when a reminder goes off (adding, moving or
+// deleting an item, changing a reminder, or saving a course).
+export function catchUpReminders() {
+	try {
+		recordFiredReminders();
+	} catch (error) {
+		console.warn('Could not record reminders that went off', error);
+	}
 }

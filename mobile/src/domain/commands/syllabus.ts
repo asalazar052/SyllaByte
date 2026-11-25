@@ -19,6 +19,7 @@ import { inferEventType } from '../event-types';
 import { recordNotification } from '../notifications/record';
 import { syllabusText } from '../notifications/text';
 import { ports } from '../ports';
+import { catchUpReminders } from './notifications';
 
 // The PDF the user picked.
 export type PickedSyllabus = {
@@ -50,8 +51,11 @@ export async function saveSyllabusCourse(draft: CourseDraft, file: PickedSyllabu
 		file.uri,
 		`import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
 	);
+	let saved: { courseId: number; dateCount: number };
 	try {
-		const { courseId, dateCount } = insertCourse(draft, {
+		// The new dates carry reminders, so reminders that went off until now are recorded first.
+		catchUpReminders();
+		saved = insertCourse(draft, {
 			filename: file.name,
 			storagePath: copy.path,
 			bytes: copy.bytes ?? file.size ?? 0,
@@ -59,9 +63,6 @@ export async function saveSyllabusCourse(draft: CourseDraft, file: PickedSyllabu
 			checksum: copy.checksum,
 			uploadedAt: file.uploadedAt,
 		});
-		// The saved dates carry reminders, so this is the moment to ask to send notifications.
-		if (dateCount > 0) void ports.requestNotificationPermission();
-		return courseId;
 	} catch (cause) {
 		if (copy.path) {
 			try {
@@ -72,6 +73,9 @@ export async function saveSyllabusCourse(draft: CourseDraft, file: PickedSyllabu
 		}
 		throw cause;
 	}
+	// The saved dates carry reminders, so this is the moment to ask to send notifications.
+	if (saved.dateCount > 0) void ports.requestNotificationPermission();
+	return saved.courseId;
 }
 
 function insertCourse(draft: CourseDraft, syllabus: SyllabusUpload) {

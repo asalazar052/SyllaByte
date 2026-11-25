@@ -13,6 +13,8 @@ import {
 } from '@/db/schema';
 import { removeSyllabus } from '@/lib/syllabus-storage';
 
+import { catchUpReminders } from './notifications';
+
 type CourseEdit = Pick<
 	typeof courses.$inferInsert,
 	'days' | 'startTime' | 'endTime' | 'location' | 'credits'
@@ -51,6 +53,8 @@ export function saveOfficeHours(professorId: number, courseId: number, values: O
 // professor if no other course uses them. The retained PDF is removed last: if that fails, the database
 // changes roll back so the delete can be retried.
 export function deleteCourse(id: number) {
+	// Its items go with it, so reminders that went off for them are recorded first.
+	catchUpReminders();
 	db.transaction((tx) => {
 		const course = tx.select().from(courses).where(eq(courses.id, id)).get();
 		if (!course) return;
