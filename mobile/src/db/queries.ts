@@ -31,7 +31,6 @@ export const semestersQuery = () => db.query.semesters.findMany({ orderBy: desc(
 export const courseCreditsQuery = () =>
 	db.query.courses.findMany({ columns: { semesterId: true, credits: true } });
 
-// useLiveQuery only watches the root table, so each table a screen shows gets its own query.
 export const semesterCoursesQuery = (semesterId: number) =>
 	db.query.courses.findMany({
 		where: eq(courses.semesterId, semesterId),
@@ -172,11 +171,17 @@ export const eventsWithCoursesQuery = () => db.query.events.findMany({ with: { c
 export const reviewFieldCoursesQuery = () =>
 	db.select({ courseId: courseReviewFields.courseId }).from(courseReviewFields);
 export type EventWithCourse = Awaited<ReturnType<typeof eventsWithCoursesQuery>>[number];
-export const savedMaterialsQuery = (courseId?: number) =>
+// A course's materials, or those of every course in a semester, or all of them.
+export const savedMaterialsQuery = (courseId?: number, semesterId?: number) =>
 	db
 		.select({ item: courseMaterials, course: courses })
 		.from(courseMaterials)
 		.innerJoin(courses, eq(courseMaterials.courseId, courses.id))
-		.where(courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined)
+		.where(
+			and(
+				courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined,
+				semesterId !== undefined ? eq(courses.semesterId, semesterId) : undefined,
+			),
+		)
 		.orderBy(courses.code, courseMaterials.title);
 export type SavedMaterial = Awaited<ReturnType<typeof savedMaterialsQuery>>[number];

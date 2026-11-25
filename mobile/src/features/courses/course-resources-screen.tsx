@@ -1,28 +1,28 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { AppText } from '@/components/ui/app-text';
 import { PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { courseQuery, savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { MaterialList } from '@/features/materials/material-list';
 
 import { ImportantDatesList } from './important-dates-list';
 
 function CourseDates({ courseId }: { courseId: number }) {
-	const { data } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
+	const { data } = useQuery(savedDatesQuery(courseId), [courseId]);
 	return <ImportantDatesList dates={data} linkToCalendar />;
 }
 
 function CourseMaterials({ courseId }: { courseId: number }) {
-	const { data } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
+	const { data } = useQuery(savedMaterialsQuery(courseId), [courseId]);
 	return <MaterialList materials={data} />;
 }
 
 function CourseResourcesScreen({ kind }: { kind: 'dates' | 'materials' }) {
 	const { id: routeId } = useLocalSearchParams<{ id: string }>();
 	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
-	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
+	const { data: course, updatedAt } = useQuery(courseQuery(id), [id]);
 	return (
 		<Screen>
 			<PageHeader

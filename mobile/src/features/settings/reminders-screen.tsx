@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -10,11 +9,12 @@ import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 
 export function RemindersScreen() {
-	const { data: settings } = useLiveQuery(settingsQuery());
+	const { data: settings } = useQuery(settingsQuery());
 	return (
 		<Screen>
 			<View className="gap-2.5">

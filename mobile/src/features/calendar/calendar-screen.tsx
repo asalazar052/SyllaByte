@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
 import { Pressable, type ScrollView, View } from 'react-native';
@@ -16,6 +15,7 @@ import {
 	semesterCoursesQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
 import { useToday } from '@/hooks/use-now';
 import { useStoredState } from '@/hooks/use-stored-state';
@@ -62,15 +62,15 @@ export function CalendarScreen() {
 	const weeks = monthWeeks(month);
 	const gridStart = weeks[0][0];
 	const gridEnd = weeks[weeks.length - 1][6];
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
-	const { data: monthEvents } = useLiveQuery(eventsBetweenQuery(gridStart, gridEnd), [
+	const { data: semester } = useQuery(currentSemesterQuery());
+	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { data: monthEvents } = useQuery(eventsBetweenQuery(gridStart, gridEnd), [
 		gridStart,
 		gridEnd,
 	]);
-	const { data: officeHours } = useLiveQuery(allOfficeHoursQuery());
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: nextExam } = useLiveQuery(nextExamQuery(today, courseId), [today, courseId]);
+	const { data: officeHours } = useQuery(allOfficeHoursQuery());
+	const { data: settings } = useQuery(settingsQuery());
+	const { data: nextExam } = useQuery(nextExamQuery(today, courseId), [today, courseId]);
 
 	const courseById = (id: number | null) => courses.find((course) => course.id === id);
 	const items = [

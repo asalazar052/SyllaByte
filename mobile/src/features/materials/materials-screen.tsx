@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { type ComponentRef, useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
@@ -7,18 +6,20 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { currentSemesterQuery, savedMaterialsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { plural } from '@/lib/plural';
 
 import { MaterialList } from './material-list';
 
 export function MaterialsScreen() {
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: saved } = useLiveQuery(savedMaterialsQuery());
+	const { data: semester } = useQuery(currentSemesterQuery());
+	const { data: materials } = useQuery(savedMaterialsQuery(undefined, semester?.id ?? 0), [
+		semester?.id,
+	]);
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [query, setQuery] = useState('');
 	const input = useRef<ComponentRef<typeof TextInput>>(null);
 
-	const materials = saved.filter(({ course }) => course.semesterId === semester?.id);
 	const normalized = query.trim().toLowerCase().replace(/\s+/g, ' ');
 	const visible = materials.filter(({ item, course }) =>
 		`${course.code} ${course.title} ${item.title} ${item.details ?? ''}`

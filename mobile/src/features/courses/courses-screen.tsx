@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
@@ -10,6 +9,7 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { filterCourses, semesterCoursesQuery, semestersQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
 import { plural } from '@/lib/plural';
 
@@ -26,10 +26,10 @@ export function CoursesScreen() {
 		savedCourseId,
 		saving,
 	} = useSyllabusPicker();
-	const { data: semesters } = useLiveQuery(semestersQuery());
+	const { data: semesters } = useQuery(semestersQuery());
 	const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
 	const semester = semesters.find((item) => item.id === selectedSemesterId) ?? semesters[0];
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [query, setQuery] = useState('');
 	const [reviewOnly, setReviewOnly] = useState(false);

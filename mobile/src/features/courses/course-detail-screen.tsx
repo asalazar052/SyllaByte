@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 
@@ -13,6 +12,7 @@ import {
 	savedDatesQuery,
 	savedMaterialsQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { MaterialList } from '@/features/materials/material-list';
 
 import { CourseIcon } from './course-icon';
@@ -24,10 +24,10 @@ import { SyllabusAttachment } from './syllabus-attachment';
 export function CourseDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const courseId = Number.isInteger(Number(id)) ? Number(id) : 0;
-	const { data: course, updatedAt } = useLiveQuery(courseQuery(courseId), [courseId]);
-	const { data: syllabus } = useLiveQuery(courseSyllabusQuery(courseId), [courseId]);
-	const { data: dates } = useLiveQuery(savedDatesQuery(courseId), [courseId]);
-	const { data: materials } = useLiveQuery(savedMaterialsQuery(courseId), [courseId]);
+	const { data: course, updatedAt } = useQuery(courseQuery(courseId), [courseId]);
+	const { data: syllabus } = useQuery(courseSyllabusQuery(courseId), [courseId]);
+	const { data: dates } = useQuery(savedDatesQuery(courseId), [courseId]);
+	const { data: materials } = useQuery(savedMaterialsQuery(courseId), [courseId]);
 	// The dates and materials belong to the course, so they stay when its syllabus file is removed.
 	const hasResources = dates.length > 0 || materials.length > 0;
 	return (

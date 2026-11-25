@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Pressable, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -18,6 +17,7 @@ import {
 	type Settings,
 } from '@/db/queries';
 import { type EventType } from '@/db/schema';
+import { useQuery } from '@/db/use-query';
 import { eventTypeInfo, eventTypeOptions } from '@/domain/event-types';
 import {
 	defaultReminder,
@@ -130,8 +130,8 @@ export function EventInformation({
 	event: CalendarEventDetail;
 	settings: Settings;
 }) {
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: semesterCourses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [
+	const { data: semester } = useQuery(currentSemesterQuery());
+	const { data: semesterCourses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [
 		semester?.id,
 	]);
 	// An item from an earlier semester keeps its own course in the list.

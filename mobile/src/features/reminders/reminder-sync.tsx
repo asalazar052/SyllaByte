@@ -1,9 +1,9 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
 import { db } from '@/db/client';
 import { settingsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 
 import { configureReminders, type OpenEvent, syncReminders, useReminderTaps } from './reminders';
 
@@ -11,8 +11,8 @@ import { configureReminders, type OpenEvent, syncReminders, useReminderTaps } fr
 // nothing, so it can sit anywhere under the root layout. `onOpenEvent` shows the item when its reminder is
 // tapped.
 export function ReminderSync({ onOpenEvent }: { onOpenEvent: OpenEvent }) {
-	const { data: events } = useLiveQuery(db.query.events.findMany());
-	const { data: settings } = useLiveQuery(settingsQuery());
+	const { data: events } = useQuery(db.query.events.findMany());
+	const { data: settings } = useQuery(settingsQuery());
 
 	useEffect(() => {
 		configureReminders();

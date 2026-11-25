@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -15,6 +14,7 @@ import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
 import { addEvent } from '@/db/mutations';
 import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { type EventType, eventTypeOptions } from '@/domain/event-types';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { toIsoDate } from '@/lib/dates';
@@ -29,8 +29,8 @@ const DEFAULT_TIME = 23 * 60 + 59;
 export function AddItemScreen() {
 	const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
 	const { reminder, modified, setReminder, revert } = useItemReminder();
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { data: semester } = useQuery(currentSemesterQuery());
+	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 
 	const [type, setType] = useState<EventType>('assignment');
 	const [title, setTitle] = useState('');

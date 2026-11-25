@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -12,6 +11,7 @@ import {
 	reviewFieldCoursesQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { useNow } from '@/hooks/use-now';
 import { useStoredState } from '@/hooks/use-stored-state';
 import { toIsoDate } from '@/lib/dates';
@@ -28,10 +28,10 @@ function parseReadIds(stored: unknown) {
 export function NotificationsScreen() {
 	const now = useNow();
 	const today = toIsoDate(now);
-	const { data: events } = useLiveQuery(eventsWithCoursesQuery());
-	const { data: files } = useLiveQuery(filesQuery());
-	const { data: reviewFields } = useLiveQuery(reviewFieldCoursesQuery());
-	const { data: settings } = useLiveQuery(settingsQuery());
+	const { data: events } = useQuery(eventsWithCoursesQuery());
+	const { data: files } = useQuery(filesQuery());
+	const { data: reviewFields } = useQuery(reviewFieldCoursesQuery());
+	const { data: settings } = useQuery(settingsQuery());
 	const [readIds, setReadIds] = useStoredState<string[]>(
 		'notifications.readIds',
 		[],

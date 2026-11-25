@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -12,13 +11,14 @@ import { TextField } from '@/components/ui/text-field';
 import { SyllaColors } from '@/constants/theme';
 import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { EMAIL, orNull } from '@/lib/input';
 
 const labelClassName = 'font-inter-medium text-sylla-blue';
 const inputClassName = 'min-h-12 bg-sylla-surface p-3.5 text-[13px]';
 
 export function EditProfileScreen() {
-	const { data: settings } = useLiveQuery(settingsQuery());
+	const { data: settings } = useQuery(settingsQuery());
 	return (
 		<Screen>
 			<PageHeader

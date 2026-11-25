@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -7,11 +6,11 @@ import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import {
 	currentSemesterQuery,
-	eventsBetweenQuery,
 	semesterCoursesQuery,
 	settingsQuery,
 	upcomingDatesQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
 import { ImportantDatesList } from '@/features/courses/important-dates-list';
 import { useNow } from '@/hooks/use-now';
@@ -31,20 +30,21 @@ function greeting(hour: number) {
 export function HomeScreen() {
 	const now = useNow();
 	const today = toIsoDate(now);
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { data: settings } = useQuery(settingsQuery());
+	const { data: semester } = useQuery(currentSemesterQuery());
+	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
 	const progress = semester ? semesterProgress(semester, today) : null;
-	const weekEnd = progress?.week?.end ?? today;
-	const { data: weekEvents } = useLiveQuery(eventsBetweenQuery(today, weekEnd), [today, weekEnd]);
+	const weekEnd = progress?.week?.end;
 	const comingUpEnd = addDays(today, COMING_UP_DAYS);
-	const { data: upcoming } = useLiveQuery(upcomingDatesQuery(today, comingUpEnd), [
+	const { data: upcoming } = useQuery(upcomingDatesQuery(today, comingUpEnd), [
 		today,
 		comingUpEnd,
 	]);
 
-	const dueThisWeek = progress?.week
-		? weekEvents.filter((event) => eventTypeInfo[event.type].deadline).length
+	// The week is part of the 30 days "Coming up" already loads, so it needs no query of its own.
+	const dueThisWeek = weekEnd
+		? upcoming.filter(({ item }) => item.date <= weekEnd && eventTypeInfo[item.type].deadline)
+				.length
 		: 0;
 	const name = (settings?.preferredName || settings?.fullName)?.trim().split(/\s+/)[0];
 

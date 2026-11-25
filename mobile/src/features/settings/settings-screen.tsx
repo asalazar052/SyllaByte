@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
@@ -15,6 +14,7 @@ import {
 	semestersQuery,
 	settingsQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { requestReminderPermission } from '@/features/reminders/reminders';
 import { formatDateRange } from '@/lib/dates';
 import { formatLeadTime, formatTime, joinParts } from '@/lib/format';
@@ -46,9 +46,9 @@ function semesterSummary(semester: Semester, courses: CourseCredits[]) {
 
 // Help, Sign out and the Calendar sync row have no handler yet; each gets one when its feature lands.
 export function SettingsScreen() {
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: semesters } = useLiveQuery(semestersQuery());
-	const { data: courses } = useLiveQuery(courseCreditsQuery());
+	const { data: settings } = useQuery(settingsQuery());
+	const { data: semesters } = useQuery(semestersQuery());
+	const { data: courses } = useQuery(courseCreditsQuery());
 	if (!settings) return null;
 
 	return (

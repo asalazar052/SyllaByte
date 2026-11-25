@@ -1,5 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { DaysField } from '@/components/ui/days-field';
@@ -8,16 +6,17 @@ import { TextField } from '@/components/ui/text-field';
 import { TimeRangeField } from '@/components/ui/time-range-field';
 import { saveOfficeHours, updateCourse, updateProfessor } from '@/db/mutations';
 import { type CourseDetail, officeHoursQuery, professorQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { formatTimeRange, joinParts } from '@/lib/format';
 import { EMAIL, orNull } from '@/lib/input';
 
 const TIME_ORDER = 'The end time must be after the start time.';
 
 export function CourseInformation({ course }: { course: CourseDetail }) {
-	const { data } = useLiveQuery(professorQuery(course.professorId ?? 0), [course.professorId]);
+	const { data } = useQuery(professorQuery(course.professorId ?? 0), [course.professorId]);
 	const professor = data[0];
-	const { data: hoursData } = useLiveQuery(officeHoursQuery(professor?.id ?? 0, course.id), [
-		professor?.id,
+	const { data: hoursData } = useQuery(officeHoursQuery(course.professorId ?? 0, course.id), [
+		course.professorId,
 		course.id,
 	]);
 	const hours = hoursData[0];
