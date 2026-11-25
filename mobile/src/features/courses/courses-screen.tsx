@@ -1,16 +1,19 @@
 import { router } from 'expo-router';
-import { type ComponentRef, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
 
 import { AppButton } from '@/components/ui/app-button';
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { SyllaColors } from '@/constants/theme';
-import { filterCourses, semesterCoursesQuery, semestersQuery } from '@/db/queries';
+import { SearchBar } from '@/components/ui/search-bar';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useSemesterCourses } from '@/db/hooks';
+import { filterCourses, semestersQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
+import { useSearch } from '@/hooks/use-search';
 import { plural } from '@/lib/plural';
 
 import { CourseCard } from './course-card';
@@ -29,83 +32,36 @@ export function CoursesScreen() {
 	const { data: semesters } = useQuery(semestersQuery());
 	const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
 	const semester = semesters.find((item) => item.id === selectedSemesterId) ?? semesters[0];
-	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
-	const [searchOpen, setSearchOpen] = useState(false);
-	const [query, setQuery] = useState('');
+	const courses = useSemesterCourses(semester?.id);
+	const search = useSearch();
 	const [reviewOnly, setReviewOnly] = useState(false);
-	const input = useRef<ComponentRef<typeof TextInput>>(null);
-	const visible = filterCourses(courses, query, reviewOnly);
+	const visible = filterCourses(courses, search.query, reviewOnly);
 	const reviewCourses = courses.filter((course) => course.reviewFields.length > 0);
 	const reviewCount = reviewCourses.reduce(
 		(count, course) => count + course.reviewFields.length,
 		0,
 	);
 	const credits = courses.reduce((total, course) => total + (course.credits ?? 0), 0);
-	const filtered = reviewOnly || query.trim().length > 0;
-
-	function toggleSearch() {
-		if (searchOpen) {
-			setQuery('');
-			setSearchOpen(false);
-		} else {
-			setSearchOpen(true);
-		}
-	}
+	const filtered = reviewOnly || search.query.trim().length > 0;
 
 	return (
 		<Screen>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						{(semester?.name ?? '').toUpperCase()} / COURSES
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel={searchOpen ? 'Close search' : 'Search courses'}
-						aria-expanded={searchOpen}
-						onPress={toggleSearch}
-						hitSlop={12}
-						className="h-5 w-6 items-center justify-center"
-					>
-						<AppIcon name="search" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					Your semester, in focus.
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow={`${(semester?.name ?? '').toUpperCase()} / COURSES`}
+				title="Your semester, in focus."
+				action={{
+					icon: 'search',
+					label: search.open ? 'Close search' : 'Search courses',
+					expanded: search.open,
+					onPress: search.toggle,
+				}}
+			/>
 
-			{searchOpen && (
-				<View className="flex-row items-center rounded-small border border-sylla-border bg-sylla-surface">
-					<TextInput
-						ref={input}
-						autoFocus
-						value={query}
-						onChangeText={setQuery}
-						placeholder="Search by course or title"
-						placeholderTextColor={SyllaColors.muted}
-						accessibilityLabel="Search by course code or title"
-						autoCapitalize="none"
-						autoCorrect={false}
-						returnKeyType="search"
-						className="min-h-12 min-w-0 flex-1 p-3 font-inter text-sm text-sylla-navy"
-					/>
-					{query.length > 0 && (
-						<Pressable
-							accessibilityRole="button"
-							onPress={() => {
-								setQuery('');
-								input.current?.focus();
-							}}
-							className="min-h-11 justify-center px-2"
-						>
-							<AppText variant="action" className="text-sylla-blue">
-								Clear
-							</AppText>
-						</Pressable>
-					)}
-				</View>
-			)}
+			<SearchBar
+				search={search}
+				placeholder="Search by course or title"
+				label="Search by course code or title"
+			/>
 
 			<Pressable
 				accessibilityRole="button"
@@ -166,7 +122,7 @@ export function CoursesScreen() {
 							accessibilityRole="button"
 							onPress={() => {
 								setReviewOnly(false);
-								setQuery('');
+								search.setQuery('');
 							}}
 							className="min-h-11 justify-center px-2"
 						>

@@ -1,7 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
-import { settingsQuery } from '@/db/queries';
-import { useQuery } from '@/db/use-query';
+import { useSettings } from '@/db/hooks';
 import { defaultReminder, isSameReminder, type ItemReminder } from '@/domain/reminders/resolve';
 import { formatLeadTime, formatTime } from '@/lib/format';
 
@@ -19,7 +18,7 @@ const ItemReminderContext = createContext<ItemReminderState | null>(null);
 // The reminder for the item being added. The add screen and its reminder screen sit side by side in the
 // calendar's stack, so this lives above both and is cleared (with `revert`) when the form closes.
 export function ItemReminderProvider({ children }: { children: ReactNode }) {
-	const { data: settings } = useQuery(settingsQuery());
+	const settings = useSettings();
 	const [custom, setCustom] = useState<ItemReminder | null>(null);
 	const defaults = useMemo(() => defaultReminder(settings), [settings]);
 	const revert = useCallback(() => setCustom(null), []);

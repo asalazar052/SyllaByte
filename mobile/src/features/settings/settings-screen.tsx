@@ -5,13 +5,14 @@ import { Pressable, View } from 'react-native';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
+import { TabHeader } from '@/components/ui/tab-header';
 import { SyllaColors } from '@/constants/theme';
+import { useSettings } from '@/db/hooks';
 import {
 	type CourseCredits,
 	courseCreditsQuery,
 	type Semester,
 	semestersQuery,
-	settingsQuery,
 } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { updateSettings } from '@/domain/commands';
@@ -45,26 +46,17 @@ function semesterSummary(semester: Semester, courses: CourseCredits[]) {
 
 // Help, Sign out and the Calendar sync row have no handler yet; each gets one when its feature lands.
 export function SettingsScreen() {
-	const { data: settings } = useQuery(settingsQuery());
+	const settings = useSettings();
 	const { data: semesters } = useQuery(semestersQuery());
 	const { data: courses } = useQuery(courseCreditsQuery());
 	if (!settings) return null;
 
 	return (
 		<Screen>
-			<View className="min-h-5 flex-row items-center justify-between">
-				<AppText variant="eyebrow" accessibilityRole="header" className="text-sylla-blue">
-					SYLLABYTE / SETTINGS
-				</AppText>
-				<Pressable
-					accessibilityRole="button"
-					accessibilityLabel="Help"
-					hitSlop={12}
-					className="h-5 w-6 items-center justify-center active:opacity-70"
-				>
-					<AppIcon name="circleHelp" size={21} />
-				</Pressable>
-			</View>
+			<TabHeader
+				eyebrow="SYLLABYTE / SETTINGS"
+				action={{ icon: 'circleHelp', label: 'Help' }}
+			/>
 
 			<View className="flex-row items-center gap-3">
 				<View className="h-14 w-14 items-center justify-center rounded-full bg-sylla-paleBlue">

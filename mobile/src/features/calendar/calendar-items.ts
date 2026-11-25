@@ -2,7 +2,7 @@ import type { CalendarEvent, OfficeHoursWithProfessor, Settings } from '@/db/que
 import { type EventTypeCategory, eventTypeInfo } from '@/domain/event-types';
 import { reminderFireTime, resolveReminder } from '@/domain/reminders/resolve';
 import { dayOfWeek } from '@/lib/dates';
-import { type DayCode, formatTime, formatTimeRange, parseDays } from '@/lib/format';
+import { type DayCode, parseDays } from '@/lib/format';
 
 import type { SymbolShape } from './event-symbol';
 
@@ -91,16 +91,4 @@ export function officeHoursItems(
 // Earlier items first; an item with no time goes last.
 export function compareByTime(a: CalendarItem, b: CalendarItem) {
 	return (a.startTime ?? 24 * 60) - (b.startTime ?? 24 * 60);
-}
-
-// '11:59 PM' for a due time, '9:00–9:50 AM' for a span, and '' for an item with no time.
-export function formatItemTime({
-	startTime,
-	endTime,
-}: {
-	startTime: number | null;
-	endTime: number | null;
-}) {
-	if (startTime === null) return '';
-	return formatTimeRange(startTime, endTime) || formatTime(startTime);
 }

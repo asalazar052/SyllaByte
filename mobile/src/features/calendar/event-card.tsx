@@ -6,9 +6,9 @@ import { SyllaColors } from '@/constants/theme';
 import type { CalendarEvent, Course } from '@/db/queries';
 import { courseColor } from '@/lib/colors';
 import { formatShortDate } from '@/lib/dates';
-import { formatTime, joinParts } from '@/lib/format';
+import { formatItemTime, formatTime, joinParts } from '@/lib/format';
 
-import { type CalendarItem, categoryInfo, formatItemTime } from './calendar-items';
+import { type CalendarItem, categoryInfo } from './calendar-items';
 import { EventSymbol } from './event-symbol';
 
 // Pass `onPress` to make the card open the item's details.

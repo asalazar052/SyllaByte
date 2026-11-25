@@ -1,8 +1,7 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
-import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { type SavedMaterial } from '@/db/queries';
 
 import { MaterialCard } from './material-card';
@@ -39,12 +38,7 @@ export function MaterialList({
 					}
 				/>
 			))}
-			{materials.length === 0 && (
-				<AppCard>
-					{emptyTitle && <AppText variant="heading">{emptyTitle}</AppText>}
-					<AppText className="text-sylla-muted">{emptyMessage}</AppText>
-				</AppCard>
-			)}
+			{materials.length === 0 && <EmptyCard title={emptyTitle} message={emptyMessage} />}
 		</View>
 	);
 }

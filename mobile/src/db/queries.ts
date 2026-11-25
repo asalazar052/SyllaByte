@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 
 import { importantEventTypes } from '@/domain/event-types';
+import { normalizeSearch } from '@/lib/input';
 
 import { db } from './client';
 import {
@@ -115,7 +116,7 @@ export type OfficeHours = Awaited<ReturnType<typeof officeHoursQuery>>[number];
 export type OfficeHoursWithProfessor = Awaited<ReturnType<typeof allOfficeHoursQuery>>[number];
 
 export function filterCourses(courseList: Course[], query: string, reviewOnly: boolean) {
-	const normalized = query.trim().toLowerCase().replace(/\s+/g, ' ');
+	const normalized = normalizeSearch(query);
 	return courseList.filter(
 		(course) =>
 			(!reviewOnly || course.reviewFields.length > 0) &&

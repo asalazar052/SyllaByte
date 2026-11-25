@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { currentSemesterQuery, eventQuery, settingsQuery } from '@/db/queries';
+import { useCurrentSemester, useSettings } from '@/db/hooks';
+import { eventQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
 import { courseColor } from '@/lib/colors';
@@ -26,8 +27,8 @@ export function EventDetailsScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const eventId = Number.isInteger(Number(id)) ? Number(id) : 0;
 	const { data: event, updatedAt } = useQuery(eventQuery(eventId), [eventId]);
-	const { data: settings } = useQuery(settingsQuery());
-	const { data: semester } = useQuery(currentSemesterQuery());
+	const settings = useSettings();
+	const semester = useCurrentSemester();
 
 	return (
 		<Screen grabber>

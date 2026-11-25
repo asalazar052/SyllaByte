@@ -7,13 +7,13 @@ import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { type Settings, settingsQuery } from '@/db/queries';
-import { useQuery } from '@/db/use-query';
+import { useSettings } from '@/db/hooks';
+import { type Settings } from '@/db/queries';
 import { updateSettings } from '@/domain/commands';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 
 export function RemindersScreen() {
-	const { data: settings } = useQuery(settingsQuery());
+	const settings = useSettings();
 	return (
 		<Screen>
 			<View className="gap-2.5">

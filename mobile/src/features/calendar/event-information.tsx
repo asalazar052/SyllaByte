@@ -9,23 +9,17 @@ import { EditableRow } from '@/components/ui/editable-row';
 import { SelectField } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
-import {
-	type CalendarEventDetail,
-	currentSemesterQuery,
-	semesterCoursesQuery,
-	type Settings,
-} from '@/db/queries';
+import { useCurrentSemesterCourses } from '@/db/hooks';
+import { type CalendarEventDetail, type Settings } from '@/db/queries';
 import { type EventType } from '@/db/schema';
-import { useQuery } from '@/db/use-query';
 import { resetEventReminder, setEventReminder, updateEvent } from '@/domain/commands';
 import { eventTypeInfo, eventTypeOptions } from '@/domain/event-types';
 import { resolveReminder } from '@/domain/reminders/resolve';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 import { formatLongDate, toIsoDate } from '@/lib/dates';
-import { isoToDate, joinParts } from '@/lib/format';
+import { formatItemTime, isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
 
-import { formatItemTime } from './calendar-items';
 import { ItemField } from './item-fields';
 import { describeReminder } from './item-reminder';
 
@@ -124,10 +118,7 @@ export function EventInformation({
 	event: CalendarEventDetail;
 	settings: Settings;
 }) {
-	const { data: semester } = useQuery(currentSemesterQuery());
-	const { data: semesterCourses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [
-		semester?.id,
-	]);
+	const { courses: semesterCourses } = useCurrentSemesterCourses();
 	// An item from an earlier semester keeps its own course in the list.
 	const courses =
 		event.course && !semesterCourses.some((course) => course.id === event.course?.id)

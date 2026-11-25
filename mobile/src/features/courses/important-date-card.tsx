@@ -13,7 +13,7 @@ import {
 	formatMonthShort,
 	formatWeekday,
 } from '@/lib/dates';
-import { formatTime, formatTimeRange, joinParts } from '@/lib/format';
+import { formatItemTime, joinParts } from '@/lib/format';
 
 // The month and day, on a tile in the color of the course.
 function DateTile({ date, color }: { date: string; color: string }) {
@@ -53,12 +53,7 @@ export function ImportantDateCard({
 }) {
 	const { item, course } = date;
 	const type = eventTypeLabel(item.type);
-	const when = joinParts(
-		formatWeekday(item.date),
-		item.startTime === null
-			? 'All day'
-			: formatTimeRange(item.startTime, item.endTime) || formatTime(item.startTime),
-	);
+	const when = joinParts(formatWeekday(item.date), formatItemTime(item) || 'All day');
 	const content = (
 		<>
 			<DateTile date={item.date} color={courseColor(course)} />

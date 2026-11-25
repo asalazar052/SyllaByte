@@ -1,19 +1,17 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
-import { Pressable, type ScrollView, View } from 'react-native';
+import { type ScrollView, View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
-import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { Screen } from '@/components/ui/screen';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useCurrentSemesterCourses, useSettings } from '@/db/hooks';
 import {
 	allOfficeHoursQuery,
 	type CalendarEvent,
-	currentSemesterQuery,
 	eventsBetweenQuery,
 	nextExamQuery,
-	semesterCoursesQuery,
-	settingsQuery,
 } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
@@ -62,14 +60,13 @@ export function CalendarScreen() {
 	const weeks = monthWeeks(month);
 	const gridStart = weeks[0][0];
 	const gridEnd = weeks[weeks.length - 1][6];
-	const { data: semester } = useQuery(currentSemesterQuery());
-	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { semester, courses } = useCurrentSemesterCourses();
 	const { data: monthEvents } = useQuery(eventsBetweenQuery(gridStart, gridEnd), [
 		gridStart,
 		gridEnd,
 	]);
 	const { data: officeHours } = useQuery(allOfficeHoursQuery());
-	const { data: settings } = useQuery(settingsQuery());
+	const settings = useSettings();
 	const { data: nextExam } = useQuery(nextExamQuery(today, courseId), [today, courseId]);
 
 	const courseById = (id: number | null) => courses.find((course) => course.id === id);
@@ -132,27 +129,16 @@ export function CalendarScreen() {
 
 	return (
 		<Screen scrollRef={scrollRef}>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						{(semester?.name ?? '').toUpperCase()} / CALENDAR
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Add an item"
-						onPress={() =>
-							router.push({ pathname: '/calendar/add', params: { date: selected } })
-						}
-						hitSlop={12}
-						className="active:opacity-70"
-					>
-						<AppIcon name="calendarPlus" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					Make room for it all.
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow={`${(semester?.name ?? '').toUpperCase()} / CALENDAR`}
+				title="Make room for it all."
+				action={{
+					icon: 'calendarPlus',
+					label: 'Add an item',
+					onPress: () =>
+						router.push({ pathname: '/calendar/add', params: { date: selected } }),
+				}}
+			/>
 
 			<MonthCalendar
 				month={month}
@@ -200,10 +186,7 @@ export function CalendarScreen() {
 					);
 				})}
 				{agenda.length === 0 && (
-					<AppCard>
-						<AppText variant="heading">Nothing scheduled</AppText>
-						<AppText className="text-sylla-muted">No events on this day.</AppText>
-					</AppCard>
+					<EmptyCard title="Nothing scheduled" message="No events on this day." />
 				)}
 			</View>
 

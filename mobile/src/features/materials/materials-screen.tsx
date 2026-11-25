@@ -1,26 +1,27 @@
-import { type ComponentRef, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { SyllaColors } from '@/constants/theme';
-import { currentSemesterQuery, savedMaterialsQuery } from '@/db/queries';
+import { SearchBar } from '@/components/ui/search-bar';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useCurrentSemester } from '@/db/hooks';
+import { savedMaterialsQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
+import { useSearch } from '@/hooks/use-search';
+import { normalizeSearch } from '@/lib/input';
 import { plural } from '@/lib/plural';
 
 import { MaterialList } from './material-list';
 
 export function MaterialsScreen() {
-	const { data: semester } = useQuery(currentSemesterQuery());
+	const semester = useCurrentSemester();
 	const { data: materials } = useQuery(savedMaterialsQuery(undefined, semester?.id ?? 0), [
 		semester?.id,
 	]);
-	const [searchOpen, setSearchOpen] = useState(false);
-	const [query, setQuery] = useState('');
-	const input = useRef<ComponentRef<typeof TextInput>>(null);
+	const search = useSearch();
 
-	const normalized = query.trim().toLowerCase().replace(/\s+/g, ' ');
+	const normalized = normalizeSearch(search.query);
 	const visible = materials.filter(({ item, course }) =>
 		`${course.code} ${course.title} ${item.title} ${item.details ?? ''}`
 			.toLowerCase()
@@ -28,69 +29,24 @@ export function MaterialsScreen() {
 	);
 	const courseCount = new Set(materials.map(({ course }) => course.id)).size;
 
-	function toggleSearch() {
-		if (searchOpen) {
-			setQuery('');
-			setSearchOpen(false);
-		} else {
-			setSearchOpen(true);
-		}
-	}
-
 	return (
 		<Screen>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						{(semester?.name ?? '').toUpperCase()} / MATERIALS
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel={searchOpen ? 'Close search' : 'Search materials'}
-						aria-expanded={searchOpen}
-						onPress={toggleSearch}
-						hitSlop={12}
-						className="h-5 w-6 items-center justify-center"
-					>
-						<AppIcon name="search" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					Your reading, gathered.
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow={`${(semester?.name ?? '').toUpperCase()} / MATERIALS`}
+				title="Your reading, gathered."
+				action={{
+					icon: 'search',
+					label: search.open ? 'Close search' : 'Search materials',
+					expanded: search.open,
+					onPress: search.toggle,
+				}}
+			/>
 
-			{searchOpen && (
-				<View className="flex-row items-center rounded-small border border-sylla-border bg-sylla-surface">
-					<TextInput
-						ref={input}
-						autoFocus
-						value={query}
-						onChangeText={setQuery}
-						placeholder="Search by title or course"
-						placeholderTextColor={SyllaColors.muted}
-						accessibilityLabel="Search materials by title or course"
-						autoCapitalize="none"
-						autoCorrect={false}
-						returnKeyType="search"
-						className="min-h-12 min-w-0 flex-1 p-3 font-inter text-sm text-sylla-navy"
-					/>
-					{query.length > 0 && (
-						<Pressable
-							accessibilityRole="button"
-							onPress={() => {
-								setQuery('');
-								input.current?.focus();
-							}}
-							className="min-h-11 justify-center px-2"
-						>
-							<AppText variant="action" className="text-sylla-blue">
-								Clear
-							</AppText>
-						</Pressable>
-					)}
-				</View>
-			)}
+			<SearchBar
+				search={search}
+				placeholder="Search by title or course"
+				label="Search materials by title or course"
+			/>
 
 			<View className="flex-row items-center gap-3 rounded-2xl bg-[#E9EFF4] p-[15px]">
 				<AppIcon name="materials" size={24} />

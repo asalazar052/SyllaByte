@@ -9,8 +9,8 @@ import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { SyllaColors } from '@/constants/theme';
-import { type Settings, settingsQuery } from '@/db/queries';
-import { useQuery } from '@/db/use-query';
+import { useSettings } from '@/db/hooks';
+import { type Settings } from '@/db/queries';
 import { updateSettings } from '@/domain/commands';
 import { EMAIL, orNull } from '@/lib/input';
 
@@ -18,7 +18,7 @@ const labelClassName = 'font-inter-medium text-sylla-blue';
 const inputClassName = 'min-h-12 bg-sylla-surface p-3.5 text-[13px]';
 
 export function EditProfileScreen() {
-	const { data: settings } = useQuery(settingsQuery());
+	const settings = useSettings();
 	return (
 		<Screen>
 			<PageHeader

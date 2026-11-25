@@ -12,8 +12,7 @@ import { Screen } from '@/components/ui/screen';
 import { SelectField } from '@/components/ui/select-field';
 import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
-import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
-import { useQuery } from '@/db/use-query';
+import { useCurrentSemesterCourses } from '@/db/hooks';
 import { createEvent } from '@/domain/commands';
 import { type EventType, eventTypeOptions } from '@/domain/event-types';
 import { toIsoDate } from '@/lib/dates';
@@ -28,8 +27,7 @@ const DEFAULT_TIME = 23 * 60 + 59;
 export function AddItemScreen() {
 	const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
 	const { reminder, modified, setReminder, revert } = useItemReminder();
-	const { data: semester } = useQuery(currentSemesterQuery());
-	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { courses } = useCurrentSemesterCourses();
 
 	const [type, setType] = useState<EventType>('assignment');
 	const [title, setTitle] = useState('');

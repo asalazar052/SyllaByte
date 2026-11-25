@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { notificationsQuery } from '@/db/queries';
@@ -43,12 +43,10 @@ export function NotificationsScreen() {
 				title="Notifications"
 			/>
 			{notifications.length === 0 ? (
-				<AppCard>
-					<AppText variant="heading">Nothing yet</AppText>
-					<AppText className="text-sylla-muted">
-						Reminders for your due dates and updates on your syllabi will show up here.
-					</AppText>
-				</AppCard>
+				<EmptyCard
+					title="Nothing yet"
+					message="Reminders for your due dates and updates on your syllabi will show up here."
+				/>
 			) : (
 				<>
 					<View className="flex-row items-center justify-between gap-3">

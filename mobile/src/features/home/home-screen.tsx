@@ -1,15 +1,11 @@
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import {
-	currentSemesterQuery,
-	semesterCoursesQuery,
-	settingsQuery,
-	upcomingDatesQuery,
-} from '@/db/queries';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useCurrentSemesterCourses, useSettings } from '@/db/hooks';
+import { upcomingDatesQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
 import { ImportantDatesList } from '@/features/courses/important-dates-list';
@@ -30,9 +26,8 @@ function greeting(hour: number) {
 export function HomeScreen() {
 	const now = useNow();
 	const today = toIsoDate(now);
-	const { data: settings } = useQuery(settingsQuery());
-	const { data: semester } = useQuery(currentSemesterQuery());
-	const { data: courses } = useQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const settings = useSettings();
+	const { semester, courses } = useCurrentSemesterCourses();
 	const progress = semester ? semesterProgress(semester, today) : null;
 	const weekEnd = progress?.week?.end;
 	const comingUpEnd = addDays(today, COMING_UP_DAYS);
@@ -50,26 +45,15 @@ export function HomeScreen() {
 
 	return (
 		<Screen>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						SYLLABYTE / YOUR SEMESTER
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Notifications"
-						onPress={() => router.push('/home/notifications')}
-						hitSlop={12}
-						className="h-5 w-6 items-center justify-center active:opacity-70"
-					>
-						<AppIcon name="bell" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					{greeting(now.getHours())}
-					{name ? `, ${name}.` : '.'}
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow="SYLLABYTE / YOUR SEMESTER"
+				title={`${greeting(now.getHours())}${name ? `, ${name}.` : '.'}`}
+				action={{
+					icon: 'bell',
+					label: 'Notifications',
+					onPress: () => router.push('/home/notifications'),
+				}}
+			/>
 
 			{semester && progress && (
 				<SemesterOverview
