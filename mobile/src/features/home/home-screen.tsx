@@ -8,7 +8,7 @@ import { useCurrentSemesterCourses, useSettings } from '@/db/hooks';
 import { upcomingDatesQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
-import { ImportantDatesList } from '@/features/courses/important-dates-list';
+import { ImportantDatesList } from '@/features/courses';
 import { useNow } from '@/hooks/use-now';
 import { addDays, toIsoDate } from '@/lib/dates';
 

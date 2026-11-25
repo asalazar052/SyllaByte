@@ -1,3 +1,6 @@
+// What a reviewed course looks like before it is saved: the shape any source of course details produces (the
+// demo, a model on the phone, or a server) and the shape saving takes, so the two never need to know about each
+// other. Everything is text or a plain number, because it is what the review form edits.
 import { EMAIL } from '@/lib/input';
 
 export type ReviewItem = {
@@ -25,72 +28,6 @@ export type CourseDraft = {
 	dates: (ReviewItem & { date: string; time: string })[];
 	materials: (ReviewItem & { details: string })[];
 };
-
-export function createSampleDraft(): CourseDraft {
-	return {
-		code: 'CS 240',
-		title: 'Data Structures',
-		semester: 'Fall 2026',
-		credits: '3',
-		days: 'MWF',
-		startTime: 600,
-		endTime: 650,
-		location: 'Technology Hall 208',
-		professorName: 'Dr. Alex Morgan',
-		professorEmail: 'amorgan@example.edu',
-		officeDays: 'TTh',
-		officeStart: 840,
-		officeEnd: 900,
-		officeLocation: 'Technology Hall 214',
-		dates: [
-			{
-				id: 'project',
-				title: 'Project 1',
-				date: '2026-09-18',
-				time: '23:59',
-				include: true,
-				needsReview: false,
-				confirmed: true,
-			},
-			{
-				id: 'midterm',
-				title: 'Midterm exam',
-				date: '2026-10-16',
-				time: '10:00',
-				include: true,
-				needsReview: false,
-				confirmed: true,
-			},
-			{
-				id: 'final',
-				title: 'Final exam',
-				date: '2026-12-14',
-				time: '',
-				include: true,
-				needsReview: true,
-				confirmed: false,
-			},
-		],
-		materials: [
-			{
-				id: 'textbook',
-				title: 'Data Structures and Algorithms',
-				details: 'Edition unspecified',
-				include: true,
-				needsReview: true,
-				confirmed: false,
-			},
-			{
-				id: 'portal',
-				title: 'Course learning portal',
-				details: 'Online resources',
-				include: true,
-				needsReview: false,
-				confirmed: true,
-			},
-		],
-	};
-}
 
 function validRange(start: number | null, end: number | null) {
 	return (

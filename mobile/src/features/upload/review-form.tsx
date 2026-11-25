@@ -9,9 +9,9 @@ import { DateField } from '@/components/ui/date-field';
 import { DaysField } from '@/components/ui/days-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField, TimeRangeField } from '@/components/ui/time-range-field';
+import type { CourseDraft } from '@/domain/course-draft';
 import { toIsoDate } from '@/lib/dates';
 import { clockToMinutes, isoToDate, minutesToClock } from '@/lib/format';
-import type { CourseDraft } from '@/lib/review-draft';
 
 import { SemesterField } from './semester-field';
 import { useSyllabusPicker } from './syllabus-picker';

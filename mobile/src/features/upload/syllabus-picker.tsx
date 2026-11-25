@@ -11,7 +11,7 @@ import {
 import { Platform } from 'react-native';
 
 import { saveSyllabusCourse } from '@/domain/commands';
-import { type CourseDraft, validateDraft } from '@/lib/review-draft';
+import { type CourseDraft, validateDraft } from '@/domain/course-draft';
 
 import { extractionReducer, type ExtractionState, initialExtraction } from './mock-extraction';
 

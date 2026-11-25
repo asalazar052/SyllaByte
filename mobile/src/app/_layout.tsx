@@ -11,7 +11,7 @@ import { useDatabase } from '@/db/use-database';
 import { configurePorts } from '@/domain/ports';
 import { ReminderSync } from '@/features/reminders/reminder-sync';
 import { requestReminderPermission } from '@/features/reminders/reminders';
-import { SyllabusPickerProvider } from '@/features/upload/syllabus-picker';
+import { SyllabusPickerProvider } from '@/features/upload';
 import { showEventOnCalendar } from '@/lib/show-event';
 
 export { ErrorBoundary } from 'expo-router';

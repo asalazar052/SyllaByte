@@ -13,7 +13,7 @@ import {
 	savedMaterialsQuery,
 } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
-import { MaterialList } from '@/features/materials/material-list';
+import { MaterialList } from '@/features/materials';
 
 import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';

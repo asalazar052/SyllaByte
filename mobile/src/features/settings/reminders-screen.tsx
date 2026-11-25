@@ -5,12 +5,12 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
+import { ReminderWheels } from '@/components/ui/reminder-wheels';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { useSettings } from '@/db/hooks';
 import { type Settings } from '@/db/queries';
 import { updateSettings } from '@/domain/commands';
-import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 
 export function RemindersScreen() {
 	const settings = useSettings();

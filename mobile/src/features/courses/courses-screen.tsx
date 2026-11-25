@@ -12,7 +12,7 @@ import { TabHeader } from '@/components/ui/tab-header';
 import { useSemesterCourses } from '@/db/hooks';
 import { filterCourses, semestersQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
-import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
+import { useSyllabusPicker } from '@/features/upload';
 import { useSearch } from '@/hooks/use-search';
 import { plural } from '@/lib/plural';
 

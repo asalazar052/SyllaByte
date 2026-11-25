@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { courseQuery, savedDatesQuery, savedMaterialsQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
-import { MaterialList } from '@/features/materials/material-list';
+import { MaterialList } from '@/features/materials';
 
 import { ImportantDatesList } from './important-dates-list';
 

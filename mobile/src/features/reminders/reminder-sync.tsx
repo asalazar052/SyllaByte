@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
-import { onTablesChanged } from '@/db/change-bus';
-import { events, settings } from '@/db/schema';
 import { recordFiredReminders } from '@/domain/commands';
 import { plannedReminders } from '@/domain/reminders/upcoming';
+import { onRemindersChanged } from '@/domain/reminders/watch';
 
 import { configureReminders, type OpenEvent, syncReminders, useReminderTaps } from './reminders';
 
@@ -40,7 +39,7 @@ export function ReminderSync({ onOpenEvent }: { onOpenEvent: OpenEvent }) {
 		}
 
 		refresh();
-		const stopWatching = onTablesChanged([events, settings], refresh);
+		const stopWatching = onRemindersChanged(refresh);
 		const appState = AppState.addEventListener('change', (state) => {
 			if (state === 'active') refresh();
 		});

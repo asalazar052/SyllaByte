@@ -12,9 +12,9 @@ import {
 	semesters,
 } from '@/db/schema';
 import { orNull } from '@/lib/input';
-import { type CourseDraft, validateDraft } from '@/lib/review-draft';
 import { removeSyllabus, retainSyllabus } from '@/lib/syllabus-storage';
 
+import { type CourseDraft, validateDraft } from '../course-draft';
 import { inferEventType } from '../event-types';
 import { recordNotification } from '../notifications/record';
 import { syllabusText } from '../notifications/text';

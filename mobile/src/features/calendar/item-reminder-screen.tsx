@@ -5,9 +5,9 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
+import { ReminderWheels } from '@/components/ui/reminder-wheels';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { ReminderWheels } from '@/features/reminders/reminder-wheels';
 
 import { useItemReminder } from './item-reminder';
 

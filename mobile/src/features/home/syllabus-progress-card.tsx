@@ -4,8 +4,7 @@ import { Pressable, View } from 'react-native';
 import { cardClassName } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { processingStages } from '@/features/upload/mock-extraction';
-import { useSyllabusPicker } from '@/features/upload/syllabus-picker';
+import { processingStages, useSyllabusPicker } from '@/features/upload';
 
 // Where a syllabus that is being read, or is waiting for review, stands. It shows nothing when there is no
 // upload under way, and goes once the course has been saved.
