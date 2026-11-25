@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
-import { deleteCourse } from '@/db/delete-course';
+import { deleteCourse } from '@/domain/commands';
 
 export function DeleteCourseAction({
 	id,

@@ -1,9 +1,8 @@
 import { eq } from 'drizzle-orm';
 
+import { db } from '@/db/client';
+import { files } from '@/db/schema';
 import { removeSyllabus } from '@/lib/syllabus-storage';
-
-import { db } from './client';
-import { files } from './schema';
 
 // Removes an uploaded file and its retained copy on the device, leaving all related course data.
 export function deleteFile(id: number) {

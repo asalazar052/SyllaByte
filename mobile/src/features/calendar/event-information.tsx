@@ -9,7 +9,6 @@ import { EditableRow } from '@/components/ui/editable-row';
 import { SelectField } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
-import { updateEvent } from '@/db/mutations';
 import {
 	type CalendarEventDetail,
 	currentSemesterQuery,
@@ -18,15 +17,10 @@ import {
 } from '@/db/queries';
 import { type EventType } from '@/db/schema';
 import { useQuery } from '@/db/use-query';
+import { resetEventReminder, setEventReminder, updateEvent } from '@/domain/commands';
 import { eventTypeInfo, eventTypeOptions } from '@/domain/event-types';
-import {
-	defaultReminder,
-	NO_OWN_REMINDER,
-	reminderToFields,
-	resolveReminder,
-} from '@/domain/reminders/resolve';
+import { resolveReminder } from '@/domain/reminders/resolve';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
-import { requestReminderPermission } from '@/features/reminders/reminders';
 import { formatLongDate, toIsoDate } from '@/lib/dates';
 import { isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
@@ -140,7 +134,6 @@ export function EventInformation({
 			? [...semesterCourses, event.course]
 			: semesterCourses;
 	const reminder = resolveReminder(event, settings);
-	const defaults = defaultReminder(settings);
 	const custom = event.reminderEnabled !== null;
 	const date = isoToDate(event.date);
 
@@ -260,7 +253,7 @@ export function EventInformation({
 						<Pressable
 							accessibilityRole="button"
 							accessibilityLabel="Revert reminder to default"
-							onPress={() => updateEvent(event.id, NO_OWN_REMINDER)}
+							onPress={() => resetEventReminder(event.id)}
 							hitSlop={12}
 							className="h-7 w-7 items-center justify-center"
 						>
@@ -269,10 +262,7 @@ export function EventInformation({
 					) : undefined
 				}
 				values={reminder}
-				onSave={(next) => {
-					if (next.enabled) void requestReminderPermission();
-					updateEvent(event.id, reminderToFields(next, defaults));
-				}}
+				onSave={(next) => setEventReminder(event.id, next)}
 			>
 				{(draft, update) => (
 					<>

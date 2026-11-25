@@ -8,13 +8,17 @@ import { useEffect } from 'react';
 
 import { SyllaColors } from '@/constants/theme';
 import { useDatabase } from '@/db/use-database';
+import { configurePorts } from '@/domain/ports';
 import { ReminderSync } from '@/features/reminders/reminder-sync';
+import { requestReminderPermission } from '@/features/reminders/reminders';
 import { SyllabusPickerProvider } from '@/features/upload/syllabus-picker';
 import { showEventOnCalendar } from '@/lib/show-event';
 
 export { ErrorBoundary } from 'expo-router';
 export const unstable_settings = { anchor: '(tabs)' };
 void SplashScreen.preventAutoHideAsync();
+// The domain asks for notification permission by name; this is how the phone does it.
+configurePorts({ requestNotificationPermission: requestReminderPermission });
 const theme = {
 	...DefaultTheme,
 	colors: {

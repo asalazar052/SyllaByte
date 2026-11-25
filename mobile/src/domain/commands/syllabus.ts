@@ -1,11 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { SyllaColors } from '@/constants/theme';
-import { inferEventType } from '@/domain/event-types';
-import { orNull } from '@/lib/input';
-import { type CourseDraft, validateDraft } from '@/lib/review-draft';
-
-import { db } from './client';
+import { db } from '@/db/client';
 import {
 	courseMaterials,
 	courses,
@@ -14,10 +10,25 @@ import {
 	officeHours,
 	professors,
 	semesters,
-} from './schema';
+} from '@/db/schema';
+import { orNull } from '@/lib/input';
+import { type CourseDraft, validateDraft } from '@/lib/review-draft';
+import { removeSyllabus, retainSyllabus } from '@/lib/syllabus-storage';
 
-// The uploaded PDF, which is recorded in the files table.
-export type SyllabusUpload = {
+import { inferEventType } from '../event-types';
+import { ports } from '../ports';
+
+// The PDF the user picked.
+export type PickedSyllabus = {
+	uri: string;
+	name: string;
+	size?: number;
+	// When the user picked it, in milliseconds since the epoch.
+	uploadedAt: number;
+};
+
+// The retained copy of the PDF, which is recorded in the files table.
+type SyllabusUpload = {
 	filename: string;
 	storagePath: string | null;
 	bytes: number;
@@ -27,9 +38,41 @@ export type SyllabusUpload = {
 	uploadedAt: number;
 };
 
-export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
+// Saves a reviewed course and the PDF it came from. It doesn't matter where the draft came from (the demo,
+// the phone's own AI model or a server): this takes a draft the user has reviewed and keeps it. The PDF is
+// copied into the app first and the copy is removed again if the course can't be saved.
+export async function saveSyllabusCourse(draft: CourseDraft, file: PickedSyllabus) {
 	const error = validateDraft(draft);
 	if (error) throw new Error(error);
+	const copy = await retainSyllabus(
+		file.uri,
+		`import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+	);
+	try {
+		const { courseId, dateCount } = insertCourse(draft, {
+			filename: file.name,
+			storagePath: copy.path,
+			bytes: copy.bytes ?? file.size ?? 0,
+			pageCount: copy.pages,
+			checksum: copy.checksum,
+			uploadedAt: file.uploadedAt,
+		});
+		// The saved dates carry reminders, so this is the moment to ask to send notifications.
+		if (dateCount > 0) void ports.requestNotificationPermission();
+		return courseId;
+	} catch (cause) {
+		if (copy.path) {
+			try {
+				removeSyllabus(copy.path);
+			} catch {
+				/* Keep the save error for the retry. */
+			}
+		}
+		throw cause;
+	}
+}
+
+function insertCourse(draft: CourseDraft, syllabus: SyllabusUpload) {
 	return db.transaction((tx) => {
 		let semester = tx
 			.select()
@@ -119,6 +162,6 @@ export function saveReviewedCourse(draft: CourseDraft, syllabus: SyllabusUpload)
 			tx.insert(courseMaterials)
 				.values({ courseId: id, title: item.title.trim(), details: orNull(item.details) })
 				.run();
-		return id;
+		return { courseId: id, dateCount: draft.dates.filter((item) => item.include).length };
 	});
 }

@@ -9,9 +9,9 @@ import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { SyllaColors } from '@/constants/theme';
-import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
+import { updateSettings } from '@/domain/commands';
 import { EMAIL, orNull } from '@/lib/input';
 
 const labelClassName = 'font-inter-medium text-sylla-blue';

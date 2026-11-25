@@ -7,11 +7,10 @@ import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { updateSettings } from '@/db/mutations';
 import { type Settings, settingsQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
+import { updateSettings } from '@/domain/commands';
 import { ReminderWheels } from '@/features/reminders/reminder-wheels';
-import { requestReminderPermission } from '@/features/reminders/reminders';
 
 export function RemindersScreen() {
 	const { data: settings } = useQuery(settingsQuery());
@@ -48,11 +47,7 @@ function ReminderOptions({ settings }: { settings: Settings }) {
 				<AppSwitch
 					label="Default reminders"
 					value={settings.defaultRemindersEnabled}
-					onValueChange={(value) => {
-						updateSettings({ defaultRemindersEnabled: value });
-						// Asks to send notifications the first time reminders are turned on.
-						if (value) void requestReminderPermission();
-					}}
+					onValueChange={(value) => updateSettings({ defaultRemindersEnabled: value })}
 				/>
 			</AppCard>
 			<ReminderWheels

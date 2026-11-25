@@ -4,9 +4,9 @@ import { DaysField } from '@/components/ui/days-field';
 import { EditableRow } from '@/components/ui/editable-row';
 import { TextField } from '@/components/ui/text-field';
 import { TimeRangeField } from '@/components/ui/time-range-field';
-import { saveOfficeHours, updateCourse, updateProfessor } from '@/db/mutations';
 import { type CourseDetail, officeHoursQuery, professorQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
+import { saveOfficeHours, updateCourse, updateProfessor } from '@/domain/commands';
 import { formatTimeRange, joinParts } from '@/lib/format';
 import { EMAIL, orNull } from '@/lib/input';
 

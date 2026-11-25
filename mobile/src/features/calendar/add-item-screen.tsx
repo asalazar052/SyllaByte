@@ -12,11 +12,10 @@ import { Screen } from '@/components/ui/screen';
 import { SelectField } from '@/components/ui/select-field';
 import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
-import { addEvent } from '@/db/mutations';
 import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
+import { createEvent } from '@/domain/commands';
 import { type EventType, eventTypeOptions } from '@/domain/event-types';
-import { requestReminderPermission } from '@/features/reminders/reminders';
 import { toIsoDate } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
 
@@ -49,22 +48,15 @@ export function AddItemScreen() {
 	const dateValue = isoToDate(date) ?? new Date();
 
 	function add() {
-		addEvent({
+		createEvent({
 			courseId,
 			type,
 			title: title.trim(),
 			date,
 			startTime: time,
 			notes: notes.trim() || null,
-			// An item that keeps the default reminder stores none of its own.
-			...(modified && {
-				reminderEnabled: reminder.enabled,
-				reminderDaysAhead: reminder.daysAhead,
-				reminderTime: reminder.time,
-			}),
+			reminder,
 		});
-		// Asks to send notifications the first time a reminder is set, and schedules it once allowed.
-		if (reminder.enabled) void requestReminderPermission();
 		// Back to the calendar on the new item's day.
 		router.dismissTo({
 			pathname: '/calendar',

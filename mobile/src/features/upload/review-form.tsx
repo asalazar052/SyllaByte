@@ -9,7 +9,6 @@ import { DateField } from '@/components/ui/date-field';
 import { DaysField } from '@/components/ui/days-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField, TimeRangeField } from '@/components/ui/time-range-field';
-import { requestReminderPermission } from '@/features/reminders/reminders';
 import { toIsoDate } from '@/lib/dates';
 import { clockToMinutes, isoToDate, minutesToClock } from '@/lib/format';
 import type { CourseDraft } from '@/lib/review-draft';
@@ -323,8 +322,6 @@ export function ReviewForm() {
 								: {}),
 						})
 					) {
-						// The saved dates carry reminders, so this is the moment to ask to send notifications.
-						void requestReminderPermission();
 						clear();
 						router.replace('/courses');
 					}

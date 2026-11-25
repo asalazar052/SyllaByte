@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
-import { deleteEvent } from '@/db/mutations';
+import { deleteEvent } from '@/domain/commands';
 
 // The button that removes an item from the calendar, and the confirmation it asks for first. `onDeleted` runs
 // once the item is gone, so the screen showing it can close.

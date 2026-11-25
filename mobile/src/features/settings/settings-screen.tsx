@@ -6,7 +6,6 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { updateSettings } from '@/db/mutations';
 import {
 	type CourseCredits,
 	courseCreditsQuery,
@@ -15,7 +14,7 @@ import {
 	settingsQuery,
 } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
-import { requestReminderPermission } from '@/features/reminders/reminders';
+import { updateSettings } from '@/domain/commands';
 import { formatDateRange } from '@/lib/dates';
 import { formatLeadTime, formatTime, joinParts } from '@/lib/format';
 import { plural } from '@/lib/plural';
@@ -145,11 +144,8 @@ export function SettingsScreen() {
 					)}
 					toggle={{
 						value: settings.defaultRemindersEnabled,
-						onValueChange: (value) => {
-							updateSettings({ defaultRemindersEnabled: value });
-							// Asks to send notifications the first time reminders are turned on.
-							if (value) void requestReminderPermission();
-						},
+						onValueChange: (value) =>
+							updateSettings({ defaultRemindersEnabled: value }),
 					}}
 					chevron
 					onPress={() => router.push('/settings/reminders')}
