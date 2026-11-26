@@ -30,7 +30,7 @@ export function CourseAppearanceScreen() {
 				backLabel="Back to course"
 				onBack={back}
 				title="Icon and color."
-				description="Choose how this course looks across the app. Changes save as you tap."
+				description="Choose how this course looks across the app."
 			/>
 			{updatedAt === undefined ? null : !course ? (
 				<AppCard>
