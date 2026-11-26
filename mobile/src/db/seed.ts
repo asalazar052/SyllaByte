@@ -1,7 +1,14 @@
+import { asc, gte } from 'drizzle-orm';
+
 import { SyllaColors } from '@/constants/theme';
+import { recordNotification } from '@/domain/notifications/record';
+import { reminderText, syllabusText } from '@/domain/notifications/text';
+import { daysUntil, toIsoDate } from '@/lib/dates';
 
 import { db } from './client';
 import {
+	APP_STATE_ID,
+	appState,
 	courseReviewFields,
 	courses,
 	events,
@@ -403,5 +410,54 @@ export async function seedIfEmpty() {
 				}),
 			)
 			.run();
+		seedNotifications(tx, courseIds);
 	});
+}
+
+// A few notifications so the Notifications screen has something to show before anything has happened: the two
+// soonest items' reminders, as if they had gone off a little while ago, and the first course's syllabus. They
+// are written the same way real ones are. The app also notes that it has checked for reminders up to now, so
+// reminders from before the first launch aren't recorded afterward.
+function seedNotifications(
+	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+	courseIds: Map<string, number>,
+) {
+	const now = Date.now();
+	const soonest = tx.query.events
+		.findMany({
+			where: gte(events.date, toIsoDate(new Date(now))),
+			orderBy: [asc(events.date), asc(events.startTime)],
+			limit: 2,
+			with: { course: true },
+		})
+		.sync();
+	soonest.forEach((event, index) => {
+		const createdAt = now - [2, 26][index] * 60 * 60 * 1000;
+		const daysAhead = Math.max(0, daysUntil(event.date, toIsoDate(new Date(createdAt))));
+		recordNotification(tx, {
+			kind: 'reminder',
+			dedupeKey: `reminder:${event.id}:seed`,
+			...reminderText(event, daysAhead),
+			eventType: event.type,
+			eventId: event.id,
+			courseId: event.courseId,
+			createdAt,
+		});
+	});
+	const first = seedSemester.courses[0];
+	const courseId = courseIds.get(first.code);
+	if (courseId !== undefined) {
+		const dateCount = seedEvents.filter((event) => event.course === first.code).length;
+		recordNotification(tx, {
+			kind: 'syllabus',
+			dedupeKey: `syllabus:seed:${courseId}`,
+			...syllabusText(first.code, dateCount, first.reviewFields.length),
+			courseId,
+			createdAt: now - 3 * 24 * 60 * 60 * 1000,
+		});
+	}
+	tx.insert(appState)
+		.values({ id: APP_STATE_ID, notificationsCheckedAt: now })
+		.onConflictDoNothing()
+		.run();
 }

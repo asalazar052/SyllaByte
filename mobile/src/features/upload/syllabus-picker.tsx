@@ -10,9 +10,8 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
-import { saveReviewedCourse } from '@/db/save-course';
-import { type CourseDraft, validateDraft } from '@/lib/review-draft';
-import { removeSyllabus, retainSyllabus } from '@/lib/syllabus-storage';
+import { saveSyllabusCourse } from '@/domain/commands';
+import { type CourseDraft, validateDraft } from '@/domain/course-draft';
 
 import { extractionReducer, type ExtractionState, initialExtraction } from './mock-extraction';
 
@@ -86,7 +85,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 			dispatch({ type: 'reset' });
 			return true;
 		} catch {
-			setError('We couldn’t open that file. Please try choosing the PDF again.');
+			setError("We couldn't open that file. Please try choosing the PDF again.");
 			return false;
 		} finally {
 			busy.current = false;
@@ -130,29 +129,16 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 		savingRef.current = true;
 		setSaving(true);
 		setError(null);
-		let path: string | null = null;
 		try {
-			const id = `import-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-			const retained = await retainSyllabus(file.uri, id);
-			path = retained.path;
-			const courseId = saveReviewedCourse(draft, {
-				filename: file.name,
-				storagePath: retained.path,
-				bytes: retained.bytes ?? file.size ?? 0,
-				pageCount: retained.pages,
-				checksum: retained.checksum,
+			const courseId = await saveSyllabusCourse(draft, {
+				uri: file.uri,
+				name: file.name,
+				size: file.size,
 				uploadedAt: selectedAt ?? Date.now(),
 			});
 			setSavedCourseId(courseId);
 			return true;
 		} catch (cause) {
-			if (path) {
-				try {
-					removeSyllabus(path);
-				} catch {
-					/* Preserve the save error for retry. */
-				}
-			}
 			setError(
 				cause instanceof Error
 					? cause.message

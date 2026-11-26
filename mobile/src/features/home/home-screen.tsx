@@ -1,18 +1,15 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import {
-	currentSemesterQuery,
-	eventsBetweenQuery,
-	semesterCoursesQuery,
-	settingsQuery,
-	upcomingDatesQuery,
-} from '@/db/queries';
-import { ImportantDatesList } from '@/features/courses/important-dates-list';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useCurrentSemesterCourses, useHasUnreadNotifications, useSettings } from '@/db/hooks';
+import { upcomingDatesQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
+import { eventTypeInfo } from '@/domain/event-types';
+import { ImportantDatesList } from '@/features/courses';
+import { useNow } from '@/hooks/use-now';
 import { addDays, toIsoDate } from '@/lib/dates';
 
 import { SemesterOverview } from './semester-overview';
@@ -27,48 +24,40 @@ function greeting(hour: number) {
 }
 
 export function HomeScreen() {
-	const now = new Date();
+	const now = useNow();
 	const today = toIsoDate(now);
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const settings = useSettings();
+	const hasUnread = useHasUnreadNotifications();
+	const { semester, courses } = useCurrentSemesterCourses();
 	const progress = semester ? semesterProgress(semester, today) : null;
-	const weekEnd = progress?.week?.end ?? today;
-	const { data: weekEvents } = useLiveQuery(eventsBetweenQuery(today, weekEnd), [today, weekEnd]);
+	const weekEnd = progress?.week?.end;
 	const comingUpEnd = addDays(today, COMING_UP_DAYS);
-	const { data: upcoming } = useLiveQuery(upcomingDatesQuery(today, comingUpEnd), [
+	const { data: upcoming } = useQuery(upcomingDatesQuery(today, comingUpEnd), [
 		today,
 		comingUpEnd,
 	]);
 
-	// A reminder isn't something that is due, so it doesn't count toward the week.
-	const dueThisWeek = progress?.week
-		? weekEvents.filter((event) => event.type !== 'other').length
+	// The week is part of the 30 days "Coming up" already loads, so it needs no query of its own.
+	const dueThisWeek = weekEnd
+		? upcoming.filter(({ item }) => item.date <= weekEnd && eventTypeInfo[item.type].deadline)
+				.length
 		: 0;
 	const name = (settings?.preferredName || settings?.fullName)?.trim().split(/\s+/)[0];
 
 	return (
 		<Screen>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						SYLLABYTE / YOUR SEMESTER
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Notifications"
-						onPress={() => router.push('/home/notifications')}
-						hitSlop={12}
-						className="h-5 w-6 items-center justify-center active:opacity-70"
-					>
-						<AppIcon name="bell" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					{greeting(now.getHours())}
-					{name ? `, ${name}.` : '.'}
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow="SYLLABYTE / YOUR SEMESTER"
+				title={`${greeting(now.getHours())}${name ? `, ${name}.` : '.'}`}
+				action={{
+					icon: 'bell',
+					label: hasUnread
+						? 'Notifications, you have unread notifications'
+						: 'Notifications',
+					badge: hasUnread,
+					onPress: () => router.push('/home/notifications'),
+				}}
+			/>
 
 			{semester && progress && (
 				<SemesterOverview

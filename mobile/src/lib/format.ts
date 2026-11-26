@@ -70,6 +70,18 @@ export function formatTimeRange(start: number | null, end: number | null) {
 	return `${sharesPeriod ? first.slice(0, -3) : first}–${formatTime(end)}`;
 }
 
+// '11:59 PM' for a due time, '9:00–9:50 AM' for a span, and '' for an item with no time.
+export function formatItemTime({
+	startTime,
+	endTime,
+}: {
+	startTime: number | null;
+	endTime: number | null;
+}) {
+	if (startTime === null) return '';
+	return formatTimeRange(startTime, endTime) || formatTime(startTime);
+}
+
 // '860 KB', '1.2 MB'. File sizes count in thousands, as the iOS and Android file apps do.
 export function formatBytes(bytes: number) {
 	const units = ['B', 'KB', 'MB', 'GB'];
@@ -93,12 +105,6 @@ export function isoToDate(value: string) {
 	return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
 		? date
 		: null;
-}
-
-export function dateToIso(date: Date) {
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${date.getFullYear()}-${month}-${day}`;
 }
 
 export function formatDate(date: Date) {

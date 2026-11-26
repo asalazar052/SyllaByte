@@ -37,7 +37,7 @@ export function ExtractionPreview() {
 					</View>
 				))}
 				<AppText variant="caption" className="text-sylla-muted">
-					You can return to Courses and check back here when it’s ready.
+					You can return to Courses and check back here when it's ready.
 				</AppText>
 				<AppButton label="Cancel extraction" onPress={cancelExtraction} />
 			</AppCard>

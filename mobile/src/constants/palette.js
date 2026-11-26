@@ -21,6 +21,12 @@ const SyllaColors = {
 	violet: '#6F5A8F',
 	terracotta: '#B0603A',
 	danger: '#A34F47',
+	mint: '#D6ECE6',
+	butter: '#F5EBC5',
+	blush: '#F3DCD9',
+	teal: '#2F7A74',
+	ochre: '#A47A1E',
+	rose: '#A8505F',
 };
 
 module.exports = { SyllaColors };

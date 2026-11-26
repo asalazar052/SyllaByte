@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,10 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
-import { currentSemesterQuery, eventQuery, settingsQuery } from '@/db/queries';
+import { useCurrentSemester, useSettings } from '@/db/hooks';
+import { eventQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
+import { eventTypeInfo } from '@/domain/event-types';
 import { courseColor } from '@/lib/colors';
 
-import { categoryInfo, eventTypeInfo } from './calendar-items';
+import { categoryInfo } from './calendar-items';
 import { DeleteEventAction } from './delete-event-action';
 import { EventInformation } from './event-information';
 import { EventSymbol } from './event-symbol';
@@ -24,9 +26,9 @@ export function EventDetailsScreen() {
 	const insets = useSafeAreaInsets();
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const eventId = Number.isInteger(Number(id)) ? Number(id) : 0;
-	const { data: event, updatedAt } = useLiveQuery(eventQuery(eventId), [eventId]);
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
+	const { data: event, updatedAt } = useQuery(eventQuery(eventId), [eventId]);
+	const settings = useSettings();
+	const semester = useCurrentSemester();
 
 	return (
 		<Screen grabber>

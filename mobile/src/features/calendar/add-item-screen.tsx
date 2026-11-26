@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -11,17 +10,15 @@ import { DateField } from '@/components/ui/date-field';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SelectField } from '@/components/ui/select-field';
+import { Field, TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
-import { addEvent } from '@/db/mutations';
-import { currentSemesterQuery, semesterCoursesQuery } from '@/db/queries';
-import { type EventType, eventTypes } from '@/db/schema';
-import { requestReminderPermission } from '@/features/reminders/reminders';
+import { useCurrentSemesterCourses } from '@/db/hooks';
+import { createEvent } from '@/domain/commands';
+import { type EventType, eventTypeOptions } from '@/domain/event-types';
 import { toIsoDate } from '@/lib/dates';
-import { dateToIso, isoToDate } from '@/lib/format';
+import { isoToDate } from '@/lib/format';
 
-import { eventTypeInfo } from './calendar-items';
-import { ItemField, ItemInput } from './item-fields';
 import { describeReminder, useItemReminder } from './item-reminder';
 
 // A due time that gives the whole day, which is what most assignments mean.
@@ -30,8 +27,7 @@ const DEFAULT_TIME = 23 * 60 + 59;
 export function AddItemScreen() {
 	const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
 	const { reminder, modified, setReminder, revert } = useItemReminder();
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
+	const { courses } = useCurrentSemesterCourses();
 
 	const [type, setType] = useState<EventType>('assignment');
 	const [title, setTitle] = useState('');
@@ -50,22 +46,15 @@ export function AddItemScreen() {
 	const dateValue = isoToDate(date) ?? new Date();
 
 	function add() {
-		addEvent({
+		createEvent({
 			courseId,
 			type,
 			title: title.trim(),
 			date,
 			startTime: time,
 			notes: notes.trim() || null,
-			// An item that keeps the default reminder stores none of its own.
-			...(modified && {
-				reminderEnabled: reminder.enabled,
-				reminderDaysAhead: reminder.daysAhead,
-				reminderTime: reminder.time,
-			}),
+			reminder,
 		});
-		// Asks to send notifications the first time a reminder is set, and schedules it once allowed.
-		if (reminder.enabled) void requestReminderPermission();
 		// Back to the calendar on the new item's day.
 		router.dismissTo({
 			pathname: '/calendar',
@@ -84,29 +73,25 @@ export function AddItemScreen() {
 			/>
 
 			<View className="gap-4">
-				<ItemField label="Type">
+				<Field label="Type">
 					<SelectField
 						label="Type"
-						options={eventTypes.map((value) => ({
-							value,
-							label: eventTypeInfo[value].label,
-						}))}
+						options={eventTypeOptions}
 						selected={type}
 						onSelect={setType}
 					/>
-				</ItemField>
+				</Field>
 
-				<ItemField label="Title">
-					<ItemInput
-						accessibilityLabel="Title"
-						value={title}
-						onChangeText={setTitle}
-						placeholder="e.g. Midterm practice problems"
-						returnKeyType="done"
-					/>
-				</ItemField>
+				<TextField
+					label="Title"
+					value={title}
+					onChangeText={setTitle}
+					placeholder="e.g. Midterm practice problems"
+					returnKeyType="done"
+					autoCorrect
+				/>
 
-				<ItemField label="Course">
+				<Field label="Course">
 					<SelectField
 						label="Course"
 						options={[
@@ -119,14 +104,14 @@ export function AddItemScreen() {
 						selected={courseId}
 						onSelect={setChosenCourseId}
 					/>
-				</ItemField>
+				</Field>
 
 				{/* The same date and time pickers the other screens use. */}
 				<View className="rounded-small border border-sylla-border bg-sylla-surface px-3.5">
 					<DateField
 						label="Due date"
 						value={dateValue}
-						onChange={(picked) => setDate(dateToIso(picked))}
+						onChange={(picked) => setDate(toIsoDate(picked))}
 					/>
 					<View className="h-px bg-sylla-border" />
 					<TimeField label="Time" minutes={time} onChange={setTime} />
@@ -183,17 +168,17 @@ export function AddItemScreen() {
 					)}
 				</View>
 
-				<ItemField label="Notes (optional)">
-					<ItemInput
-						accessibilityLabel="Notes"
-						value={notes}
-						onChangeText={setNotes}
-						placeholder="Anything worth remembering"
-						multiline
-						textAlignVertical="top"
-						className="h-[84px] text-xs leading-[18px]"
-					/>
-				</ItemField>
+				<TextField
+					label="Notes (optional)"
+					accessibilityLabel="Notes"
+					value={notes}
+					onChangeText={setNotes}
+					placeholder="Anything worth remembering"
+					multiline
+					textAlignVertical="top"
+					autoCorrect
+					className="h-[84px] text-xs leading-[18px]"
+				/>
 			</View>
 
 			<AppButton label="Add to calendar" disabled={!title.trim()} onPress={add} />

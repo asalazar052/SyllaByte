@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Pressable, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -7,26 +6,20 @@ import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { DateField } from '@/components/ui/date-field';
 import { EditableRow } from '@/components/ui/editable-row';
+import { ReminderWheels } from '@/components/ui/reminder-wheels';
 import { SelectField } from '@/components/ui/select-field';
-import { TextField } from '@/components/ui/text-field';
+import { Field, TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
-import { updateEvent } from '@/db/mutations';
-import {
-	type CalendarEventDetail,
-	currentSemesterQuery,
-	semesterCoursesQuery,
-	type Settings,
-} from '@/db/queries';
-import { type EventType, eventTypes } from '@/db/schema';
-import { ReminderWheels } from '@/features/reminders/reminder-wheels';
-import { requestReminderPermission } from '@/features/reminders/reminders';
-import { formatLongDate } from '@/lib/dates';
-import { dateToIso, isoToDate, joinParts } from '@/lib/format';
+import { useCurrentSemesterCourses } from '@/db/hooks';
+import { type CalendarEventDetail, type Settings } from '@/db/queries';
+import { resetEventReminder, setEventReminder, updateEvent } from '@/domain/commands';
+import { type EventType, eventTypeInfo, eventTypeOptions } from '@/domain/event-types';
+import { resolveReminder } from '@/domain/reminders/resolve';
+import { formatLongDate, toIsoDate } from '@/lib/dates';
+import { formatItemTime, isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
 
-import { eventTypeInfo, formatItemTime } from './calendar-items';
-import { ItemField } from './item-fields';
-import { describeReminder, type ItemReminder, itemReminder } from './item-reminder';
+import { describeReminder } from './item-reminder';
 
 const DEFAULT_START = 9 * 60;
 const DEFAULT_LENGTH = 60;
@@ -123,21 +116,13 @@ export function EventInformation({
 	event: CalendarEventDetail;
 	settings: Settings;
 }) {
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: semesterCourses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [
-		semester?.id,
-	]);
+	const { courses: semesterCourses } = useCurrentSemesterCourses();
 	// An item from an earlier semester keeps its own course in the list.
 	const courses =
 		event.course && !semesterCourses.some((course) => course.id === event.course?.id)
 			? [...semesterCourses, event.course]
 			: semesterCourses;
-	const reminder = itemReminder(event, settings);
-	const defaults: ItemReminder = {
-		enabled: settings.defaultRemindersEnabled,
-		daysAhead: settings.reminderDaysAhead,
-		time: settings.reminderTime,
-	};
+	const reminder = resolveReminder(event, settings);
 	const custom = event.reminderEnabled !== null;
 	const date = isoToDate(event.date);
 
@@ -163,17 +148,14 @@ export function EventInformation({
 							value={draft.title}
 							onChangeText={(text) => update('title', text)}
 						/>
-						<ItemField label="Type">
+						<Field label="Type">
 							<SelectField
 								label="Type"
-								options={eventTypes.map((value) => ({
-									value,
-									label: eventTypeInfo[value].label,
-								}))}
+								options={eventTypeOptions}
 								selected={draft.type}
 								onSelect={(value) => update('type', value)}
 							/>
-						</ItemField>
+						</Field>
 					</>
 				)}
 			</EditableRow>
@@ -186,7 +168,7 @@ export function EventInformation({
 				onSave={({ courseId }) => updateEvent(event.id, { courseId })}
 			>
 				{(draft, update) => (
-					<ItemField label="Course">
+					<Field label="Course">
 						<SelectField
 							label="Course"
 							options={[
@@ -199,7 +181,7 @@ export function EventInformation({
 							selected={draft.courseId}
 							onSelect={(courseId) => update('courseId', courseId)}
 						/>
-					</ItemField>
+					</Field>
 				)}
 			</EditableRow>
 			<EditableRow
@@ -230,7 +212,7 @@ export function EventInformation({
 						<DateField
 							label="Date"
 							value={isoToDate(draft.date) ?? date}
-							onChange={(picked) => update('date', dateToIso(picked))}
+							onChange={(picked) => update('date', toIsoDate(picked))}
 						/>
 						<EventTimeFields
 							start={draft.startTime}
@@ -260,13 +242,7 @@ export function EventInformation({
 						<Pressable
 							accessibilityRole="button"
 							accessibilityLabel="Revert reminder to default"
-							onPress={() =>
-								updateEvent(event.id, {
-									reminderEnabled: null,
-									reminderDaysAhead: null,
-									reminderTime: null,
-								})
-							}
+							onPress={() => resetEventReminder(event.id)}
 							hitSlop={12}
 							className="h-7 w-7 items-center justify-center"
 						>
@@ -275,23 +251,7 @@ export function EventInformation({
 					) : undefined
 				}
 				values={reminder}
-				onSave={(next) => {
-					const isDefault =
-						next.enabled === defaults.enabled &&
-						next.daysAhead === defaults.daysAhead &&
-						next.time === defaults.time;
-					if (next.enabled) void requestReminderPermission();
-					updateEvent(
-						event.id,
-						isDefault
-							? { reminderEnabled: null, reminderDaysAhead: null, reminderTime: null }
-							: {
-									reminderEnabled: next.enabled,
-									reminderDaysAhead: next.daysAhead,
-									reminderTime: next.time,
-								},
-					);
-				}}
+				onSave={(next) => setEventReminder(event.id, next)}
 			>
 				{(draft, update) => (
 					<>

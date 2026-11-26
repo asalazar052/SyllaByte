@@ -207,6 +207,48 @@ export const files = sqliteTable(
 	],
 );
 
+export const notificationKinds = ['reminder', 'syllabus'] as const;
+export type NotificationKind = (typeof notificationKinds)[number];
+
+// What the app has told the user, kept as it was said. A notification is written once, when it happens, so it
+// stays the same if the item behind it is later changed, and opening the list never has to work it out again.
+export const notifications = sqliteTable(
+	'notifications',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		kind: text('kind', { enum: notificationKinds }).notNull(),
+		// Says what the notification is about ('reminder:12:2026-09-20:540'), so recording it twice keeps one.
+		dedupeKey: text('dedupe_key').notNull().unique(),
+		title: text('title').notNull(),
+		body: text('body').notNull(),
+		// For a reminder, the kind of item it was for, which sets its icon and color.
+		eventType: text('event_type', { enum: eventTypes }),
+		// The item it opens. A notification outlives a deleted item, and then opens nothing.
+		eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }),
+		// The course it belongs to. Deleting a course deletes its notifications.
+		courseId: integer('course_id').references(() => courses.id, { onDelete: 'cascade' }),
+		// When it happened, in milliseconds since the epoch.
+		createdAt: integer('created_at').notNull(),
+		// When the user read it, or null while it is unread.
+		readAt: integer('read_at'),
+	},
+	(table) => [index('notifications_created_at_idx').on(table.createdAt)],
+);
+
+// The app's own bookkeeping, as opposed to settings the user chooses. It is a table of its own, so keeping it
+// up to date never counts as a change to settings.
+export const APP_STATE_ID = 1;
+
+export const appState = sqliteTable(
+	'app_state',
+	{
+		id: integer('id').primaryKey(),
+		// When the app last looked for reminders that had gone off, in milliseconds since the epoch.
+		notificationsCheckedAt: integer('notifications_checked_at'),
+	},
+	(table) => [check('app_state_single_row', sql`${table.id} = ${sql.raw(String(APP_STATE_ID))}`)],
+);
+
 export const courseReviewFields = sqliteTable('course_review_fields', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	courseId: integer('course_id')
@@ -256,6 +298,11 @@ export const filesRelations = relations(files, ({ one }) => ({
 
 export const eventsRelations = relations(events, ({ one }) => ({
 	course: one(courses, { fields: [events.courseId], references: [courses.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+	event: one(events, { fields: [notifications.eventId], references: [events.id] }),
+	course: one(courses, { fields: [notifications.courseId], references: [courses.id] }),
 }));
 
 export const courseReviewFieldsRelations = relations(courseReviewFields, ({ one }) => ({

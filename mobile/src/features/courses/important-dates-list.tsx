@@ -1,9 +1,8 @@
 import { View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
-import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { type SavedDate, type UpcomingDate } from '@/db/queries';
-import { toIsoDate } from '@/lib/dates';
+import { useToday } from '@/hooks/use-now';
 import { showEventOnCalendar } from '@/lib/show-event';
 
 import { ImportantDateCard } from './important-date-card';
@@ -19,14 +18,10 @@ export function ImportantDatesList({
 	linkToCalendar?: boolean;
 	emptyMessage?: string;
 }) {
-	const today = toIsoDate(new Date());
+	const today = useToday();
 	return (
 		<View className="gap-2.5">
-			{dates.length === 0 && (
-				<AppCard>
-					<AppText className="text-sylla-muted">{emptyMessage}</AppText>
-				</AppCard>
-			)}
+			{dates.length === 0 && <EmptyCard message={emptyMessage} />}
 			{dates.map((date) => (
 				<ImportantDateCard
 					key={date.item.id}

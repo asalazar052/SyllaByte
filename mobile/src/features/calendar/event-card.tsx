@@ -6,9 +6,9 @@ import { SyllaColors } from '@/constants/theme';
 import type { CalendarEvent, Course } from '@/db/queries';
 import { courseColor } from '@/lib/colors';
 import { formatShortDate } from '@/lib/dates';
-import { formatTime, joinParts } from '@/lib/format';
+import { formatItemTime, formatTime, joinParts } from '@/lib/format';
 
-import { type CalendarItem, categoryInfo, formatItemTime } from './calendar-items';
+import { type CalendarItem, categoryInfo } from './calendar-items';
 import { EventSymbol } from './event-symbol';
 
 // Pass `onPress` to make the card open the item's details.
@@ -25,7 +25,7 @@ export function EventCard({
 	return (
 		<Pressable
 			accessibilityRole={onPress ? 'button' : undefined}
-			accessibilityHint={onPress ? 'Shows this item’s details' : undefined}
+			accessibilityHint={onPress ? "Shows this item's details" : undefined}
 			disabled={!onPress}
 			onPress={onPress}
 			className="flex-row gap-3 rounded-2xl bg-sylla-surface p-3.5 active:opacity-75"
@@ -36,7 +36,6 @@ export function EventCard({
 			/>
 			<View className="min-w-0 flex-1 gap-1.5">
 				<View className="flex-row items-start justify-between gap-3">
-					{/* The reminder sits beside the course and title, so its second line doesn't push the title down. */}
 					<View className="min-w-0 flex-1 gap-1.5">
 						{course && (
 							<AppText variant="micro" className="text-sylla-muted">

@@ -1,13 +1,13 @@
 import type { CalendarEvent, OfficeHoursWithProfessor, Settings } from '@/db/queries';
-import type { EventType } from '@/db/schema';
-import { addDays, dayOfWeek } from '@/lib/dates';
-import { eventTypeLabels } from '@/lib/event-types';
-import { type DayCode, formatTime, formatTimeRange, parseDays } from '@/lib/format';
+import { type EventTypeCategory, eventTypeInfo } from '@/domain/event-types';
+import { reminderFireTime, resolveReminder } from '@/domain/reminders/resolve';
+import { dayOfWeek } from '@/lib/dates';
+import { type DayCode, parseDays } from '@/lib/format';
 
 import type { SymbolShape } from './event-symbol';
-import { itemReminder } from './item-reminder';
 
-export type EventCategory = 'due' | 'exam' | 'officeHours' | 'reminder';
+// An event's category, or office hours, which the calendar adds itself.
+export type EventCategory = EventTypeCategory | 'officeHours';
 
 // A marker's shape says which category it is; its color says which course it belongs to.
 export const categoryInfo: Record<EventCategory, { label: string; shape: SymbolShape }> = {
@@ -16,21 +16,6 @@ export const categoryInfo: Record<EventCategory, { label: string; shape: SymbolS
 	officeHours: { label: 'Office hours', shape: 'square' },
 	reminder: { label: 'Reminders', shape: 'diamond' },
 };
-
-const eventTypeCategories: Record<EventType, EventCategory> = {
-	assignment: 'due',
-	lab_report: 'due',
-	quiz: 'exam',
-	exam: 'exam',
-	other: 'reminder',
-};
-
-export const eventTypeInfo = Object.fromEntries(
-	Object.entries(eventTypeCategories).map(([type, category]) => [
-		type,
-		{ label: eventTypeLabels[type as EventType], category },
-	]),
-) as Record<EventType, { label: string; category: EventCategory }>;
 
 export const eventCategories = Object.keys(categoryInfo) as EventCategory[];
 
@@ -60,7 +45,7 @@ export type CalendarItem = {
 
 // `settings` supplies the default reminder for an item that has none of its own.
 export function eventItem(event: CalendarEvent, settings: Settings | undefined): CalendarItem {
-	const reminder = settings ? itemReminder(event, settings) : null;
+	const reminder = settings ? resolveReminder(event, settings) : null;
 	const { label, category } = eventTypeInfo[event.type];
 	return {
 		key: `event-${event.id}`,
@@ -72,9 +57,7 @@ export function eventItem(event: CalendarEvent, settings: Settings | undefined):
 		typeLabel: label,
 		startTime: event.startTime,
 		endTime: event.endTime,
-		reminder: reminder?.enabled
-			? { date: addDays(event.date, -reminder.daysAhead), time: reminder.time }
-			: null,
+		reminder: reminder?.enabled ? reminderFireTime(event.date, reminder) : null,
 	};
 }
 
@@ -108,16 +91,4 @@ export function officeHoursItems(
 // Earlier items first; an item with no time goes last.
 export function compareByTime(a: CalendarItem, b: CalendarItem) {
 	return (a.startTime ?? 24 * 60) - (b.startTime ?? 24 * 60);
-}
-
-// '11:59 PM' for a due time, '9:00–9:50 AM' for a span, and '' for an item with no time.
-export function formatItemTime({
-	startTime,
-	endTime,
-}: {
-	startTime: number | null;
-	endTime: number | null;
-}) {
-	if (startTime === null) return '';
-	return formatTimeRange(startTime, endTime) || formatTime(startTime);
 }

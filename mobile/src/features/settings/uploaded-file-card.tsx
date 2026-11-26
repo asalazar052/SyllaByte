@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
 import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
-import { deleteFile } from '@/db/delete-file';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { UploadedFile } from '@/db/queries';
+import { deleteFile } from '@/domain/commands';
 import { formatBytes, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 import { shareSyllabus } from '@/lib/syllabus-storage';
 
 type UploadedFileCardProps = {
@@ -33,7 +35,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 		try {
 			await shareSyllabus(file.storagePath, file.filename);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : 'Couldn’t export this file.');
+			setError(cause instanceof Error ? cause.message : "Couldn't export this file.");
 		} finally {
 			setWorking(false);
 		}
@@ -47,7 +49,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 			deleteFile(file.id);
 			// The card goes away with its row, so there is nothing more to reset.
 		} catch {
-			setError('Couldn’t delete this file. Please try again.');
+			setError("Couldn't delete this file. Please try again.");
 			setConfirming(false);
 			setWorking(false);
 		}
@@ -94,8 +96,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 					</AppText>
 					<AppText variant="micro" className="shrink-0 text-sylla-muted">
 						{joinParts(
-							file.pageCount !== null &&
-								`${file.pageCount} ${file.pageCount === 1 ? 'page' : 'pages'}`,
+							file.pageCount !== null && plural(file.pageCount, 'page'),
 							formatBytes(file.bytes),
 						)}
 					</AppText>
@@ -138,50 +139,17 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 			)}
 			{processing !== undefined && <ProcessingProgress value={processing} />}
 
-			<Modal
+			<ConfirmDialog
 				visible={confirming}
-				transparent
-				animationType="fade"
-				onRequestClose={() => {
+				title="Delete this file?"
+				message={`This removes ${file.filename} from this device. Your courses, dates and calendar items stay as they are. This can't be undone.`}
+				confirmLabel="Delete file"
+				busy={working}
+				onCancel={() => {
 					if (!working) setConfirming(false);
 				}}
-			>
-				<View className="flex-1 items-center justify-center bg-black/50 p-6">
-					<View
-						accessibilityViewIsModal
-						className="w-full max-w-xl gap-4 rounded-2xl bg-sylla-surface p-6"
-					>
-						<AppText variant="section" accessibilityRole="header">
-							Delete this file?
-						</AppText>
-						<AppText>
-							This removes {file.filename} from this device. Your courses, dates and
-							calendar items stay as they are. This can’t be undone.
-						</AppText>
-						<View className="flex-row flex-wrap justify-end gap-3">
-							<Pressable
-								accessibilityRole="button"
-								disabled={working}
-								onPress={() => setConfirming(false)}
-								className="min-h-12 items-center justify-center rounded-small border border-sylla-border px-4"
-							>
-								<AppText variant="label">Cancel</AppText>
-							</Pressable>
-							<Pressable
-								accessibilityRole="button"
-								accessibilityState={{ disabled: working, busy: working }}
-								disabled={working}
-								onPress={confirmDelete}
-								className="min-h-12 items-center justify-center rounded-small bg-red-700 px-4"
-							>
-								<AppText variant="label" className="text-white">
-									{working ? 'Deleting…' : 'Delete file'}
-								</AppText>
-							</Pressable>
-						</View>
-					</View>
-				</View>
-			</Modal>
+				onConfirm={confirmDelete}
+			/>
 		</AppCard>
 	);
 }

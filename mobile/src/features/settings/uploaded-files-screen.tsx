@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -8,7 +7,9 @@ import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
 import { filesQuery, type UploadedFile } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
 import { formatBytes, joinParts } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 import { UploadedFileCard } from './uploaded-file-card';
 
@@ -26,7 +27,7 @@ function groupBySemester(files: UploadedFile[]) {
 }
 
 export function UploadedFilesScreen() {
-	const { data: files, updatedAt } = useLiveQuery(filesQuery());
+	const { data: files, updatedAt } = useQuery(filesQuery());
 	const processingId = files.at(-1)?.id;
 
 	return (
@@ -48,7 +49,7 @@ export function UploadedFilesScreen() {
 							</AppText>
 							<AppText variant="micro" className="text-sylla-muted">
 								{joinParts(
-									`${group.length} ${group.length === 1 ? 'file' : 'files'}`,
+									plural(group.length, 'file'),
 									formatBytes(
 										group.reduce((total, file) => total + file.bytes, 0),
 									),

@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { View } from 'react-native';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -6,15 +5,15 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppSwitch } from '@/components/ui/app-switch';
 import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
+import { ReminderWheels } from '@/components/ui/reminder-wheels';
 import { Screen } from '@/components/ui/screen';
 import { SyllaColors } from '@/constants/theme';
-import { updateSettings } from '@/db/mutations';
-import { type Settings, settingsQuery } from '@/db/queries';
-import { ReminderWheels } from '@/features/reminders/reminder-wheels';
-import { requestReminderPermission } from '@/features/reminders/reminders';
+import { useSettings } from '@/db/hooks';
+import { type Settings } from '@/db/queries';
+import { updateSettings } from '@/domain/commands';
 
 export function RemindersScreen() {
-	const { data: settings } = useLiveQuery(settingsQuery());
+	const settings = useSettings();
 	return (
 		<Screen>
 			<View className="gap-2.5">
@@ -48,11 +47,7 @@ function ReminderOptions({ settings }: { settings: Settings }) {
 				<AppSwitch
 					label="Default reminders"
 					value={settings.defaultRemindersEnabled}
-					onValueChange={(value) => {
-						updateSettings({ defaultRemindersEnabled: value });
-						// Asks to send notifications the first time reminders are turned on.
-						if (value) void requestReminderPermission();
-					}}
+					onValueChange={(value) => updateSettings({ defaultRemindersEnabled: value })}
 				/>
 			</AppCard>
 			<ReminderWheels

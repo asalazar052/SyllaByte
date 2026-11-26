@@ -1,63 +1,37 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
 import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
-import {
-	eventsWithCoursesQuery,
-	filesQuery,
-	reviewFieldCoursesQuery,
-	settingsQuery,
-} from '@/db/queries';
-import { useStoredState } from '@/hooks/use-stored-state';
-import { toIsoDate } from '@/lib/dates';
+import { notificationsQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
+import { markAllNotificationsRead, markNotificationRead } from '@/domain/commands';
+import { useToday } from '@/hooks/use-now';
 import { showEventOnCalendar } from '@/lib/show-event';
 
-import { type AppNotification, buildNotifications, dayHeading } from './build-notifications';
 import { NotificationCard } from './notification-card';
-
-// The notifications the user has opened or marked as read, remembered on the device.
-function parseReadIds(stored: unknown) {
-	return Array.isArray(stored) ? stored.filter((id) => typeof id === 'string') : [];
-}
+import {
+	type AppNotification,
+	dayHeading,
+	groupByDay,
+	toAppNotification,
+} from './notification-display';
 
 export function NotificationsScreen() {
-	const now = new Date();
-	const today = toIsoDate(now);
-	const { data: events } = useLiveQuery(eventsWithCoursesQuery());
-	const { data: files } = useLiveQuery(filesQuery());
-	const { data: reviewFields } = useLiveQuery(reviewFieldCoursesQuery());
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const [readIds, setReadIds] = useStoredState<string[]>(
-		'notifications.readIds',
-		[],
-		parseReadIds,
-	);
-
-	const reviewCounts = new Map<number, number>();
-	for (const { courseId } of reviewFields) {
-		reviewCounts.set(courseId, (reviewCounts.get(courseId) ?? 0) + 1);
-	}
-	const notifications = buildNotifications({ events, files, reviewCounts, settings, now });
-	const isUnread = (notification: AppNotification) => !readIds.includes(notification.id);
-	const unreadCount = notifications.filter(isUnread).length;
-
-	const groups: { day: string; items: AppNotification[] }[] = [];
-	for (const notification of notifications) {
-		const day = toIsoDate(notification.at);
-		const group = groups.find((item) => item.day === day);
-		if (group) group.items.push(notification);
-		else groups.push({ day, items: [notification] });
-	}
+	const today = useToday();
+	const { data: rows } = useQuery(notificationsQuery());
+	const notifications = rows.map(toAppNotification);
+	const unreadCount = notifications.filter((notification) => notification.unread).length;
+	const groups = groupByDay(notifications);
 
 	function open(notification: AppNotification) {
-		if (isUnread(notification)) setReadIds([...readIds, notification.id]);
+		if (notification.unread) markNotificationRead(notification.id);
 		const { target } = notification;
-		if (target.kind === 'event') showEventOnCalendar(target.event);
-		else router.push({ pathname: '/courses/[id]', params: { id: target.id } });
+		if (target?.kind === 'event') showEventOnCalendar(target.event);
+		else if (target?.kind === 'course')
+			router.push({ pathname: '/courses/[id]', params: { id: target.id } });
 	}
 
 	return (
@@ -69,12 +43,10 @@ export function NotificationsScreen() {
 				title="Notifications"
 			/>
 			{notifications.length === 0 ? (
-				<AppCard>
-					<AppText variant="heading">Nothing yet</AppText>
-					<AppText className="text-sylla-muted">
-						Reminders for your due dates and updates on your syllabi will show up here.
-					</AppText>
-				</AppCard>
+				<EmptyCard
+					title="Nothing yet"
+					message="Reminders for your due dates and updates on your syllabi will show up here."
+				/>
 			) : (
 				<>
 					<View className="flex-row items-center justify-between gap-3">
@@ -89,7 +61,7 @@ export function NotificationsScreen() {
 						{unreadCount > 0 && (
 							<Pressable
 								accessibilityRole="button"
-								onPress={() => setReadIds(notifications.map((item) => item.id))}
+								onPress={markAllNotificationsRead}
 								hitSlop={12}
 								className="active:opacity-70"
 							>
@@ -112,7 +84,6 @@ export function NotificationsScreen() {
 								<NotificationCard
 									key={notification.id}
 									notification={notification}
-									unread={isUnread(notification)}
 									today={today}
 									onPress={() => open(notification)}
 								/>

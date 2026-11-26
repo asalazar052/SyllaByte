@@ -41,6 +41,17 @@ const icons = {
 	fileText: require('@/assets/icons/file-text.svg'),
 	share: require('@/assets/icons/share.svg'),
 	trash: require('@/assets/icons/trash-2.svg'),
+	heartPulse: require('@/assets/icons/heart-pulse.svg'),
+	flask: require('@/assets/icons/flask-conical.svg'),
+	atom: require('@/assets/icons/atom.svg'),
+	globe: require('@/assets/icons/globe.svg'),
+	code: require('@/assets/icons/code.svg'),
+	palette: require('@/assets/icons/palette.svg'),
+	music: require('@/assets/icons/music.svg'),
+	landmark: require('@/assets/icons/landmark.svg'),
+	lightbulb: require('@/assets/icons/lightbulb.svg'),
+	compass: require('@/assets/icons/compass.svg'),
+	chartLine: require('@/assets/icons/chart-line.svg'),
 };
 export type AppIconName = keyof typeof icons;
 

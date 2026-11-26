@@ -13,6 +13,7 @@ import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
 import { SyllaColors } from '@/constants/theme';
 import { ImpactFeedbackStyle, tapHaptic } from '@/lib/haptics';
+import { plural } from '@/lib/plural';
 
 import { semesterQuip } from './quips';
 import { SlotNumber } from './slot-number';
@@ -97,7 +98,7 @@ export function SemesterOverview({
 		startBlank: intro,
 		paused: introWaiting,
 	});
-	const courses = `${courseCount} ${courseCount === 1 ? 'course' : 'courses'}`;
+	const courses = plural(courseCount, 'course');
 
 	// After a beat, the intro starts and the line types out.
 	useEffect(() => {

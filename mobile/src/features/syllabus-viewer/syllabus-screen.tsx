@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, View } from 'react-native';
@@ -10,6 +9,8 @@ import { AppText } from '@/components/ui/app-text';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { SyllaColors } from '@/constants/theme';
 import { courseQuery, type CourseSyllabus, courseSyllabusQuery } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
+import { plural } from '@/lib/plural';
 import { resolveSyllabus, shareSyllabus } from '@/lib/syllabus-storage';
 
 import { PdfDocument } from './pdf-document';
@@ -20,9 +21,9 @@ import { ViewerControls } from './viewer-controls';
 export function SyllabusScreen({ origin = 'course' }: { origin?: 'course' | 'files' }) {
 	const { id: routeId } = useLocalSearchParams<{ id: string }>();
 	const id = Number.isSafeInteger(Number(routeId)) && Number(routeId) > 0 ? Number(routeId) : 0;
-	const { data: course, updatedAt } = useLiveQuery(courseQuery(id), [id]);
+	const { data: course, updatedAt } = useQuery(courseQuery(id), [id]);
 	const currentCourse = course?.id === id ? course : undefined;
-	const { data: syllabus, updatedAt: syllabusUpdatedAt } = useLiveQuery(courseSyllabusQuery(id), [
+	const { data: syllabus, updatedAt: syllabusUpdatedAt } = useQuery(courseSyllabusQuery(id), [
 		id,
 	]);
 	const currentSyllabus = syllabus?.courseId === id ? syllabus : undefined;
@@ -135,7 +136,7 @@ function SyllabusViewer({
 								{syllabus.filename}
 							</AppText>
 							<AppText variant="caption" className="text-sylla-muted">
-								{pages ? `${pages} ${pages === 1 ? 'page' : 'pages'}` : 'PDF'}
+								{pages ? plural(pages, 'page') : 'PDF'}
 								{syllabus.uploadedAt != null
 									? ` · Uploaded ${new Date(syllabus.uploadedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
 									: ''}
@@ -227,7 +228,7 @@ function SyllabusViewer({
 								}}
 								onError={() =>
 									setError(
-										'This PDF couldn’t be opened. It may be damaged or password-protected.',
+										"This PDF couldn't be opened. It may be damaged or password-protected.",
 									)
 								}
 							/>

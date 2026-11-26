@@ -1,12 +1,15 @@
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, sql } from 'drizzle-orm';
+
+import { importantEventTypes } from '@/domain/event-types';
+import { normalizeSearch } from '@/lib/input';
 
 import { db } from './client';
 import {
 	courseMaterials,
-	courseReviewFields,
 	courses,
 	events,
 	files,
+	notifications,
 	officeHours,
 	professors,
 	semesters,
@@ -29,7 +32,6 @@ export const semestersQuery = () => db.query.semesters.findMany({ orderBy: desc(
 export const courseCreditsQuery = () =>
 	db.query.courses.findMany({ columns: { semesterId: true, credits: true } });
 
-// useLiveQuery only watches the root table, so each table a screen shows gets its own query.
 export const semesterCoursesQuery = (semesterId: number) =>
 	db.query.courses.findMany({
 		where: eq(courses.semesterId, semesterId),
@@ -69,6 +71,10 @@ export const eventsBetweenQuery = (from: string, to: string) =>
 		where: and(gte(events.date, from), lte(events.date, to)),
 		orderBy: [asc(events.date), asc(sql`${events.startTime} is null`), asc(events.startTime)],
 	});
+
+// Items dated `from` ('YYYY-MM-DD') or later, with their course: the ones that can still have a reminder to come.
+export const remindableEventsQuery = (from: string) =>
+	db.query.events.findMany({ where: gte(events.date, from), with: { course: true } });
 
 // One dated item with the course it belongs to, if any.
 export const eventQuery = (id: number) =>
@@ -110,7 +116,7 @@ export type OfficeHours = Awaited<ReturnType<typeof officeHoursQuery>>[number];
 export type OfficeHoursWithProfessor = Awaited<ReturnType<typeof allOfficeHoursQuery>>[number];
 
 export function filterCourses(courseList: Course[], query: string, reviewOnly: boolean) {
-	const normalized = query.trim().toLowerCase().replace(/\s+/g, ' ');
+	const normalized = normalizeSearch(query);
 	return courseList.filter(
 		(course) =>
 			(!reviewOnly || course.reviewFields.length > 0) &&
@@ -118,9 +124,6 @@ export function filterCourses(courseList: Course[], query: string, reviewOnly: b
 	);
 }
 
-export const allSemestersQuery = semestersQuery;
-export const reviewFieldsQuery = (courseId: number) =>
-	db.select().from(courseReviewFields).where(eq(courseReviewFields.courseId, courseId));
 // A course's important dates: its exams and quizzes.
 export const savedDatesQuery = (courseId?: number) =>
 	db
@@ -140,7 +143,7 @@ export const savedDatesQuery = (courseId?: number) =>
 		.innerJoin(courses, eq(events.courseId, courses.id))
 		.where(
 			and(
-				inArray(events.type, ['exam', 'quiz']),
+				inArray(events.type, importantEventTypes),
 				courseId !== undefined ? eq(events.courseId, courseId) : undefined,
 			),
 		)
@@ -167,17 +170,34 @@ export const upcomingDatesQuery = (from: string, to: string) =>
 		.where(and(gte(events.date, from), lte(events.date, to)))
 		.orderBy(events.date, sql`${events.startTime} is null`, events.startTime);
 export type UpcomingDate = Awaited<ReturnType<typeof upcomingDatesQuery>>[number];
-// Every dated item with its course, for what is worked out from all of them (such as which reminders have gone off).
-export const eventsWithCoursesQuery = () => db.query.events.findMany({ with: { course: true } });
-// The course each review field belongs to, for counting how many details a course has flagged.
-export const reviewFieldCoursesQuery = () =>
-	db.select({ courseId: courseReviewFields.courseId }).from(courseReviewFields);
-export type EventWithCourse = Awaited<ReturnType<typeof eventsWithCoursesQuery>>[number];
-export const savedMaterialsQuery = (courseId?: number) =>
+// A course's materials, or those of every course in a semester, or all of them.
+export const savedMaterialsQuery = (courseId?: number, semesterId?: number) =>
 	db
 		.select({ item: courseMaterials, course: courses })
 		.from(courseMaterials)
 		.innerJoin(courses, eq(courseMaterials.courseId, courses.id))
-		.where(courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined)
+		.where(
+			and(
+				courseId !== undefined ? eq(courseMaterials.courseId, courseId) : undefined,
+				semesterId !== undefined ? eq(courses.semesterId, semesterId) : undefined,
+			),
+		)
 		.orderBy(courses.code, courseMaterials.title);
 export type SavedMaterial = Awaited<ReturnType<typeof savedMaterialsQuery>>[number];
+
+// What the Notifications screen lists, newest first, each with the item it opens if that still exists.
+const NOTIFICATIONS_SHOWN = 100;
+export const notificationsQuery = () =>
+	db.query.notifications.findMany({
+		with: { event: true },
+		orderBy: [desc(notifications.createdAt), desc(notifications.id)],
+		limit: NOTIFICATIONS_SHOWN,
+	});
+// Just enough to tell whether any notification is unread, without loading them all.
+export const unreadNotificationsQuery = () =>
+	db
+		.select({ id: notifications.id })
+		.from(notifications)
+		.where(isNull(notifications.readAt))
+		.limit(1);
+export type NotificationRow = Awaited<ReturnType<typeof notificationsQuery>>[number];

@@ -9,9 +9,9 @@ import { DateField } from '@/components/ui/date-field';
 import { DaysField } from '@/components/ui/days-field';
 import { TextField } from '@/components/ui/text-field';
 import { TimeField, TimeRangeField } from '@/components/ui/time-range-field';
-import { requestReminderPermission } from '@/features/reminders/reminders';
-import { clockToMinutes, dateToIso, isoToDate, minutesToClock } from '@/lib/format';
-import type { CourseDraft } from '@/lib/review-draft';
+import type { CourseDraft } from '@/domain/course-draft';
+import { toIsoDate } from '@/lib/dates';
+import { clockToMinutes, isoToDate, minutesToClock } from '@/lib/format';
 
 import { SemesterField } from './semester-field';
 import { useSyllabusPicker } from './syllabus-picker';
@@ -195,7 +195,7 @@ export function ReviewForm() {
 										<DateField
 											label="Date"
 											value={isoToDate(item.date)}
-											onChange={(date) => change({ date: dateToIso(date) })}
+											onChange={(date) => change({ date: toIsoDate(date) })}
 										/>
 										{timeMinutes === null ? (
 											<Pressable
@@ -322,8 +322,6 @@ export function ReviewForm() {
 								: {}),
 						})
 					) {
-						// The saved dates carry reminders, so this is the moment to ask to send notifications.
-						void requestReminderPermission();
 						clear();
 						router.replace('/courses');
 					}

@@ -1,25 +1,26 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ComponentRef, useRef, useState } from 'react';
-import { Pressable, type ScrollView, View } from 'react-native';
+import { type ScrollView, View } from 'react-native';
 
-import { AppCard } from '@/components/ui/app-card';
-import { AppIcon } from '@/components/ui/app-icon';
 import { AppText } from '@/components/ui/app-text';
+import { EmptyCard } from '@/components/ui/empty-card';
 import { Screen } from '@/components/ui/screen';
+import { TabHeader } from '@/components/ui/tab-header';
+import { useCurrentSemesterCourses, useSettings } from '@/db/hooks';
 import {
 	allOfficeHoursQuery,
 	type CalendarEvent,
-	currentSemesterQuery,
 	eventsBetweenQuery,
 	nextExamQuery,
-	semesterCoursesQuery,
-	settingsQuery,
 } from '@/db/queries';
+import { useQuery } from '@/db/use-query';
+import { eventTypeInfo } from '@/domain/event-types';
+import { useToday } from '@/hooks/use-now';
 import { useStoredState } from '@/hooks/use-stored-state';
 import { courseColor } from '@/lib/colors';
-import { addMonths, formatLongDate, monthWeeks, startOfMonth, toIsoDate } from '@/lib/dates';
+import { addMonths, formatLongDate, monthWeeks, startOfMonth } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
+import { plural } from '@/lib/plural';
 
 import {
 	type CalendarItem,
@@ -27,7 +28,6 @@ import {
 	eventCategories,
 	type EventCategory,
 	eventItem,
-	eventTypeInfo,
 	officeHoursItems,
 	parseHiddenCategories,
 } from './calendar-items';
@@ -36,7 +36,7 @@ import { EventCard, NextExamCard } from './event-card';
 import { MonthCalendar } from './month-calendar';
 
 export function CalendarScreen() {
-	const today = toIsoDate(new Date());
+	const today = useToday();
 	const [month, setMonth] = useState(() => startOfMonth(today));
 	const [selected, setSelected] = useState(today);
 	const [courseId, setCourseId] = useState<number | null>(null);
@@ -60,15 +60,14 @@ export function CalendarScreen() {
 	const weeks = monthWeeks(month);
 	const gridStart = weeks[0][0];
 	const gridEnd = weeks[weeks.length - 1][6];
-	const { data: semester } = useLiveQuery(currentSemesterQuery());
-	const { data: courses } = useLiveQuery(semesterCoursesQuery(semester?.id ?? 0), [semester?.id]);
-	const { data: monthEvents } = useLiveQuery(eventsBetweenQuery(gridStart, gridEnd), [
+	const { semester, courses } = useCurrentSemesterCourses();
+	const { data: monthEvents } = useQuery(eventsBetweenQuery(gridStart, gridEnd), [
 		gridStart,
 		gridEnd,
 	]);
-	const { data: officeHours } = useLiveQuery(allOfficeHoursQuery());
-	const { data: settings } = useLiveQuery(settingsQuery());
-	const { data: nextExam } = useLiveQuery(nextExamQuery(today, courseId), [today, courseId]);
+	const { data: officeHours } = useQuery(allOfficeHoursQuery());
+	const settings = useSettings();
+	const { data: nextExam } = useQuery(nextExamQuery(today, courseId), [today, courseId]);
 
 	const courseById = (id: number | null) => courses.find((course) => course.id === id);
 	const items = [
@@ -130,27 +129,16 @@ export function CalendarScreen() {
 
 	return (
 		<Screen scrollRef={scrollRef}>
-			<View className="gap-4">
-				<View className="min-h-5 flex-row items-center justify-between">
-					<AppText variant="eyebrow" className="text-sylla-blue">
-						{(semester?.name ?? '').toUpperCase()} / CALENDAR
-					</AppText>
-					<Pressable
-						accessibilityRole="button"
-						accessibilityLabel="Add an item"
-						onPress={() =>
-							router.push({ pathname: '/calendar/add', params: { date: selected } })
-						}
-						hitSlop={12}
-						className="active:opacity-70"
-					>
-						<AppIcon name="calendarPlus" size={21} />
-					</Pressable>
-				</View>
-				<AppText variant="title" accessibilityRole="header">
-					Make room for it all.
-				</AppText>
-			</View>
+			<TabHeader
+				eyebrow={`${(semester?.name ?? '').toUpperCase()} / CALENDAR`}
+				title="Make room for it all."
+				action={{
+					icon: 'calendarPlus',
+					label: 'Add an item',
+					onPress: () =>
+						router.push({ pathname: '/calendar/add', params: { date: selected } }),
+				}}
+			/>
 
 			<MonthCalendar
 				month={month}
@@ -175,7 +163,7 @@ export function CalendarScreen() {
 						{formatLongDate(selected)}
 					</AppText>
 					<AppText variant="action" className="text-sylla-blue">
-						{agenda.length} {agenda.length === 1 ? 'item' : 'items'}
+						{plural(agenda.length, 'item')}
 					</AppText>
 				</View>
 				{agenda.map((item) => {
@@ -198,10 +186,7 @@ export function CalendarScreen() {
 					);
 				})}
 				{agenda.length === 0 && (
-					<AppCard>
-						<AppText variant="heading">Nothing scheduled</AppText>
-						<AppText className="text-sylla-muted">No events on this day.</AppText>
-					</AppCard>
+					<EmptyCard title="Nothing scheduled" message="No events on this day." />
 				)}
 			</View>
 

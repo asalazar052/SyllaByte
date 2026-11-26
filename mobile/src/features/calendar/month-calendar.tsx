@@ -6,6 +6,7 @@ import { AppText } from '@/components/ui/app-text';
 import { SyllaColors } from '@/constants/theme';
 import { lighten } from '@/lib/colors';
 import { dayOfMonth, formatLongDate, formatMonth } from '@/lib/dates';
+import { plural } from '@/lib/plural';
 
 import {
 	type CalendarItem,
@@ -53,7 +54,7 @@ function DayCell({
 	return (
 		<Pressable
 			accessibilityRole="button"
-			accessibilityLabel={`${formatLongDate(date)}, ${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+			accessibilityLabel={`${formatLongDate(date)}, ${plural(items.length, 'item')}`}
 			aria-selected={isSelected}
 			onPress={onPress}
 			className={`min-h-8 flex-1 items-center justify-center gap-1 rounded-small ${background}`}
