@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { AppIcon } from '@/components/ui/app-icon';
+import { SyllaColors } from '@/constants/theme';
 import { type Course } from '@/db/queries';
 
 // `width` and `height` are set as styles rather than as `w-${width}` classes. A class is only generated
@@ -22,7 +23,7 @@ export function CourseIcon({
 			className="items-center justify-center rounded-small"
 			style={{ width: width, height: height, backgroundColor: background }}
 		>
-			<AppIcon name={icon} size={Math.min(width, height) / 2} />
+			<AppIcon name={icon} size={Math.min(width, height) / 2} tintColor={SyllaColors.navy} />
 		</View>
 	);
 }

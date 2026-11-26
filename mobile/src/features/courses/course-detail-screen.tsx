@@ -15,9 +15,9 @@ import {
 import { useQuery } from '@/db/use-query';
 import { MaterialList } from '@/features/materials';
 
-import { CourseIcon } from './course-icon';
 import { CourseInformation } from './course-information';
 import { DeleteCourseAction } from './delete-course-action';
+import { EditableCourseIcon } from './editable-course-icon';
 import { ImportantDatesList } from './important-dates-list';
 import { SyllabusAttachment } from './syllabus-attachment';
 
@@ -39,11 +39,10 @@ export function CourseDetailScreen() {
 				title={course?.title}
 				accessory={
 					course && (
-						<CourseIcon
+						<EditableCourseIcon
+							courseId={course.id}
 							icon={course.icon}
 							background={course.iconBackground}
-							width={80}
-							height={80}
 						/>
 					)
 				}

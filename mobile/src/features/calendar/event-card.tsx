@@ -36,7 +36,6 @@ export function EventCard({
 			/>
 			<View className="min-w-0 flex-1 gap-1.5">
 				<View className="flex-row items-start justify-between gap-3">
-					{/* The reminder sits beside the course and title, so its second line doesn't push the title down. */}
 					<View className="min-w-0 flex-1 gap-1.5">
 						{course && (
 							<AppText variant="micro" className="text-sylla-muted">

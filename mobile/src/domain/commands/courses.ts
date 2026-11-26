@@ -26,6 +26,14 @@ export function updateCourse(id: number, values: CourseEdit) {
 	db.update(courses).set(values).where(eq(courses.id, id)).run();
 }
 
+// Changes how a course looks: its icon, the color behind it, and its color on the calendar.
+export function updateCourseAppearance(
+	id: number,
+	values: Partial<Pick<typeof courses.$inferInsert, 'icon' | 'iconBackground' | 'accentColor'>>,
+) {
+	db.update(courses).set(values).where(eq(courses.id, id)).run();
+}
+
 export function updateProfessor(id: number, values: ProfessorEdit) {
 	db.update(professors).set(values).where(eq(professors.id, id)).run();
 }
