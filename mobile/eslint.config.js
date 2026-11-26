@@ -14,6 +14,12 @@ module.exports = defineConfig([
 			'simple-import-sort/exports': 'error',
 		},
 	},
+	{
+		// An apostrophe in on-screen text is written as a plain ' . The rule's other characters stay forbidden.
+		rules: {
+			'react/no-unescaped-entities': ['error', { forbid: ['>', '"', '}'] }],
+		},
+	},
 	// Where code may import from. The layers, lowest first: lib, then db, then domain, then components and hooks,
 	// then features, then app (the routes). Each rule below keeps a layer from reaching up or sideways, and
 	// the message says what to do instead. A type-only import is always fine, because it can't cause a

@@ -8,7 +8,7 @@ import { DateField } from '@/components/ui/date-field';
 import { EditableRow } from '@/components/ui/editable-row';
 import { ReminderWheels } from '@/components/ui/reminder-wheels';
 import { SelectField } from '@/components/ui/select-field';
-import { TextField } from '@/components/ui/text-field';
+import { Field, TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
 import { useCurrentSemesterCourses } from '@/db/hooks';
 import { type CalendarEventDetail, type Settings } from '@/db/queries';
@@ -19,7 +19,6 @@ import { formatLongDate, toIsoDate } from '@/lib/dates';
 import { formatItemTime, isoToDate, joinParts } from '@/lib/format';
 import { orNull } from '@/lib/input';
 
-import { ItemField } from './item-fields';
 import { describeReminder } from './item-reminder';
 
 const DEFAULT_START = 9 * 60;
@@ -149,14 +148,14 @@ export function EventInformation({
 							value={draft.title}
 							onChangeText={(text) => update('title', text)}
 						/>
-						<ItemField label="Type">
+						<Field label="Type">
 							<SelectField
 								label="Type"
 								options={eventTypeOptions}
 								selected={draft.type}
 								onSelect={(value) => update('type', value)}
 							/>
-						</ItemField>
+						</Field>
 					</>
 				)}
 			</EditableRow>
@@ -169,7 +168,7 @@ export function EventInformation({
 				onSave={({ courseId }) => updateEvent(event.id, { courseId })}
 			>
 				{(draft, update) => (
-					<ItemField label="Course">
+					<Field label="Course">
 						<SelectField
 							label="Course"
 							options={[
@@ -182,7 +181,7 @@ export function EventInformation({
 							selected={draft.courseId}
 							onSelect={(courseId) => update('courseId', courseId)}
 						/>
-					</ItemField>
+					</Field>
 				)}
 			</EditableRow>
 			<EditableRow

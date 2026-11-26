@@ -228,7 +228,7 @@ function SyllabusViewer({
 								}}
 								onError={() =>
 									setError(
-										'This PDF couldn’t be opened. It may be damaged or password-protected.',
+										"This PDF couldn't be opened. It may be damaged or password-protected.",
 									)
 								}
 							/>

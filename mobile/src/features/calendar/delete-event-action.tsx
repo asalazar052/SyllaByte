@@ -16,8 +16,8 @@ export function DeleteEventAction({
 		<ConfirmDeleteAction
 			label="Delete item"
 			title={`Delete “${title}”?`}
-			message="This removes it from your calendar, along with its reminder. This can’t be undone."
-			failureMessage="Couldn’t delete this item. Please try again."
+			message="This removes it from your calendar, along with its reminder. This can't be undone."
+			failureMessage="Couldn't delete this item. Please try again."
 			onDelete={() => deleteEvent(id)}
 			onDeleted={onDeleted}
 		/>

@@ -10,6 +10,7 @@ import { DateField } from '@/components/ui/date-field';
 import { goBackOr, PageHeader } from '@/components/ui/page-header';
 import { Screen } from '@/components/ui/screen';
 import { SelectField } from '@/components/ui/select-field';
+import { Field, TextField } from '@/components/ui/text-field';
 import { TimeField } from '@/components/ui/time-range-field';
 import { SyllaColors } from '@/constants/theme';
 import { useCurrentSemesterCourses } from '@/db/hooks';
@@ -18,7 +19,6 @@ import { type EventType, eventTypeOptions } from '@/domain/event-types';
 import { toIsoDate } from '@/lib/dates';
 import { isoToDate } from '@/lib/format';
 
-import { ItemField, ItemInput } from './item-fields';
 import { describeReminder, useItemReminder } from './item-reminder';
 
 // A due time that gives the whole day, which is what most assignments mean.
@@ -73,26 +73,25 @@ export function AddItemScreen() {
 			/>
 
 			<View className="gap-4">
-				<ItemField label="Type">
+				<Field label="Type">
 					<SelectField
 						label="Type"
 						options={eventTypeOptions}
 						selected={type}
 						onSelect={setType}
 					/>
-				</ItemField>
+				</Field>
 
-				<ItemField label="Title">
-					<ItemInput
-						accessibilityLabel="Title"
-						value={title}
-						onChangeText={setTitle}
-						placeholder="e.g. Midterm practice problems"
-						returnKeyType="done"
-					/>
-				</ItemField>
+				<TextField
+					label="Title"
+					value={title}
+					onChangeText={setTitle}
+					placeholder="e.g. Midterm practice problems"
+					returnKeyType="done"
+					autoCorrect
+				/>
 
-				<ItemField label="Course">
+				<Field label="Course">
 					<SelectField
 						label="Course"
 						options={[
@@ -105,7 +104,7 @@ export function AddItemScreen() {
 						selected={courseId}
 						onSelect={setChosenCourseId}
 					/>
-				</ItemField>
+				</Field>
 
 				{/* The same date and time pickers the other screens use. */}
 				<View className="rounded-small border border-sylla-border bg-sylla-surface px-3.5">
@@ -169,17 +168,17 @@ export function AddItemScreen() {
 					)}
 				</View>
 
-				<ItemField label="Notes (optional)">
-					<ItemInput
-						accessibilityLabel="Notes"
-						value={notes}
-						onChangeText={setNotes}
-						placeholder="Anything worth remembering"
-						multiline
-						textAlignVertical="top"
-						className="h-[84px] text-xs leading-[18px]"
-					/>
-				</ItemField>
+				<TextField
+					label="Notes (optional)"
+					accessibilityLabel="Notes"
+					value={notes}
+					onChangeText={setNotes}
+					placeholder="Anything worth remembering"
+					multiline
+					textAlignVertical="top"
+					autoCorrect
+					className="h-[84px] text-xs leading-[18px]"
+				/>
 			</View>
 
 			<AppButton label="Add to calendar" disabled={!title.trim()} onPress={add} />

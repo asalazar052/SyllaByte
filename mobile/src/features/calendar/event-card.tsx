@@ -25,7 +25,7 @@ export function EventCard({
 	return (
 		<Pressable
 			accessibilityRole={onPress ? 'button' : undefined}
-			accessibilityHint={onPress ? 'Shows this item’s details' : undefined}
+			accessibilityHint={onPress ? "Shows this item's details" : undefined}
 			disabled={!onPress}
 			onPress={onPress}
 			className="flex-row gap-3 rounded-2xl bg-sylla-surface p-3.5 active:opacity-75"

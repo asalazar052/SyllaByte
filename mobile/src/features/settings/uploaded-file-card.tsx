@@ -35,7 +35,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 		try {
 			await shareSyllabus(file.storagePath, file.filename);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : 'Couldn’t export this file.');
+			setError(cause instanceof Error ? cause.message : "Couldn't export this file.");
 		} finally {
 			setWorking(false);
 		}
@@ -49,7 +49,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 			deleteFile(file.id);
 			// The card goes away with its row, so there is nothing more to reset.
 		} catch {
-			setError('Couldn’t delete this file. Please try again.');
+			setError("Couldn't delete this file. Please try again.");
 			setConfirming(false);
 			setWorking(false);
 		}
@@ -142,7 +142,7 @@ export function UploadedFileCard({ file, processing }: UploadedFileCardProps) {
 			<ConfirmDialog
 				visible={confirming}
 				title="Delete this file?"
-				message={`This removes ${file.filename} from this device. Your courses, dates and calendar items stay as they are. This can’t be undone.`}
+				message={`This removes ${file.filename} from this device. Your courses, dates and calendar items stay as they are. This can't be undone.`}
 				confirmLabel="Delete file"
 				busy={working}
 				onCancel={() => {

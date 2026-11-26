@@ -39,7 +39,7 @@ export function PdfDocument({
 			<View className="flex-1 justify-center gap-3 p-4">
 				<AppText variant="heading">PDF viewer needs an app update</AppText>
 				<AppText>
-					This installed app doesn’t include the PDF viewer yet. Install a new development
+					This installed app doesn't include the PDF viewer yet. Install a new development
 					build to view this syllabus.
 				</AppText>
 			</View>

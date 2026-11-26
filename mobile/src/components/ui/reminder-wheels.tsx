@@ -11,18 +11,17 @@ const MAX_AMOUNT: Record<LeadUnit, number> = { days: 30, weeks: 8 };
 const numbers = (count: number) => Array.from({ length: count }, (_, index) => String(index + 1));
 const AMOUNTS = { days: numbers(MAX_AMOUNT.days), weeks: numbers(MAX_AMOUNT.weeks) };
 const HOURS = numbers(12);
-// Every five minutes: '00', '05', ... '55'.
-const MINUTES = Array.from({ length: 12 }, (_, index) => String(index * 5).padStart(2, '0'));
+const MINUTES = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, '0'));
 const PERIODS = ['AM', 'PM'];
 
 type Time = { hour: number; minute: number; pm: boolean };
 
-// A stored time (minutes after midnight) as the wheels show it: 1–12, a multiple of five, and AM or PM.
+// A stored time (minutes after midnight) as the wheels show it: 1–12, 0–59, and AM or PM.
 function toTime(minutes: number): Time {
 	const hour24 = Math.floor(minutes / 60);
 	return {
 		hour: hour24 % 12 || 12,
-		minute: (Math.round((minutes % 60) / 5) * 5) % 60,
+		minute: minutes % 60,
 		pm: hour24 >= 12,
 	};
 }
@@ -111,8 +110,8 @@ export function ReminderWheels({
 					<WheelPicker
 						label="Minute"
 						items={MINUTES}
-						initialIndex={time.minute / 5}
-						onChange={(index) => changeTime({ minute: index * 5 })}
+						initialIndex={time.minute}
+						onChange={(index) => changeTime({ minute: index })}
 						rows={5}
 						loop
 					/>
@@ -127,7 +126,7 @@ export function ReminderWheels({
 				</WheelPickerGroup>
 			</AppCard>
 			<AppText variant="micro" className="text-sylla-muted">
-				Uses your device’s time zone
+				Uses your device's time zone
 			</AppText>
 		</>
 	);

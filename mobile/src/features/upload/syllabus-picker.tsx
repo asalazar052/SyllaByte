@@ -85,7 +85,7 @@ export function SyllabusPickerProvider({ children }: { children: ReactNode }) {
 			dispatch({ type: 'reset' });
 			return true;
 		} catch {
-			setError('We couldn’t open that file. Please try choosing the PDF again.');
+			setError("We couldn't open that file. Please try choosing the PDF again.");
 			return false;
 		} finally {
 			busy.current = false;

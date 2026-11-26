@@ -14,9 +14,6 @@ import { type Settings } from '@/db/queries';
 import { updateSettings } from '@/domain/commands';
 import { EMAIL, orNull } from '@/lib/input';
 
-const labelClassName = 'font-inter-medium text-sylla-blue';
-const inputClassName = 'min-h-12 bg-sylla-surface p-3.5 text-[13px]';
-
 export function EditProfileScreen() {
 	const settings = useSettings();
 	return (
@@ -69,34 +66,26 @@ function ProfileForm({ settings }: { settings: Settings }) {
 				</AppText>
 				<TextField
 					label="Full name"
-					labelClassName={labelClassName}
-					className={inputClassName}
 					value={draft.fullName}
 					onChangeText={(text) => update('fullName', text)}
 					autoCapitalize="words"
 				/>
 				<TextField
 					label="Preferred name"
-					labelClassName={labelClassName}
-					className={inputClassName}
 					value={draft.preferredName}
 					onChangeText={(text) => update('preferredName', text)}
 					autoCapitalize="words"
 				/>
 				<AppText variant="micro" className="text-sylla-muted">
-					This is how we’ll greet you on Home.
+					This is how we'll greet you on Home.
 				</AppText>
 				<TextField
 					label="Institution"
-					labelClassName={labelClassName}
-					className={inputClassName}
 					value={draft.institution}
 					onChangeText={(text) => update('institution', text)}
 				/>
 				<TextField
 					label="Email address"
-					labelClassName={labelClassName}
-					className={inputClassName}
 					value={draft.email}
 					onChangeText={(text) => update('email', text)}
 					keyboardType="email-address"
@@ -115,7 +104,7 @@ function ProfileForm({ settings }: { settings: Settings }) {
 			<AppCard className="flex-row items-center border-sylla-paleBlue bg-sylla-paleBlue">
 				<AppIcon name="shieldCheck" size={18} tintColor={SyllaColors.blue} />
 				<AppText variant="caption" className="min-w-0 flex-1 text-sylla-blue">
-					Your profile is just for you. Updating it won’t change your syllabi, courses, or
+					Your profile is just for you. Updating it won't change your syllabi, courses, or
 					calendar.
 				</AppText>
 			</AppCard>
