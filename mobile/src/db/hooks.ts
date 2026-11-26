@@ -1,4 +1,9 @@
-import { currentSemesterQuery, semesterCoursesQuery, settingsQuery } from './queries';
+import {
+	currentSemesterQuery,
+	semesterCoursesQuery,
+	settingsQuery,
+	unreadNotificationsQuery,
+} from './queries';
 import { useQuery } from './use-query';
 
 // The settings, or undefined until they have loaded.
@@ -21,4 +26,9 @@ export function useCurrentSemesterCourses() {
 	const semester = useCurrentSemester();
 	const courses = useSemesterCourses(semester?.id);
 	return { semester, courses };
+}
+
+// Whether any notification has not been read yet.
+export function useHasUnreadNotifications() {
+	return useQuery(unreadNotificationsQuery()).data.length > 0;
 }

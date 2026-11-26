@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, sql } from 'drizzle-orm';
 
 import { importantEventTypes } from '@/domain/event-types';
 import { normalizeSearch } from '@/lib/input';
@@ -193,4 +193,11 @@ export const notificationsQuery = () =>
 		orderBy: [desc(notifications.createdAt), desc(notifications.id)],
 		limit: NOTIFICATIONS_SHOWN,
 	});
+// Just enough to tell whether any notification is unread, without loading them all.
+export const unreadNotificationsQuery = () =>
+	db
+		.select({ id: notifications.id })
+		.from(notifications)
+		.where(isNull(notifications.readAt))
+		.limit(1);
 export type NotificationRow = Awaited<ReturnType<typeof notificationsQuery>>[number];

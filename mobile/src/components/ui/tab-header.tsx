@@ -9,6 +9,8 @@ type HeaderAction = {
 	onPress?: () => void;
 	// For a button that opens something, such as search, whether it is open.
 	expanded?: boolean;
+	// Shows a small dot on the icon, for something waiting that hasn't been looked at.
+	badge?: boolean;
 };
 
 // The top of a tab's screen: a small label with one icon button at its right, and usually a large title under it.
@@ -40,6 +42,9 @@ export function TabHeader({
 					className="h-5 w-6 items-center justify-center active:opacity-70"
 				>
 					<AppIcon name={action.icon} size={21} />
+					{action.badge && (
+						<View className="absolute right-0 top-0 size-2 rounded-full border border-sylla-background bg-sylla-blue" />
+					)}
 				</Pressable>
 			)}
 		</View>

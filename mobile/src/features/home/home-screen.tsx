@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { Screen } from '@/components/ui/screen';
 import { TabHeader } from '@/components/ui/tab-header';
-import { useCurrentSemesterCourses, useSettings } from '@/db/hooks';
+import { useCurrentSemesterCourses, useHasUnreadNotifications, useSettings } from '@/db/hooks';
 import { upcomingDatesQuery } from '@/db/queries';
 import { useQuery } from '@/db/use-query';
 import { eventTypeInfo } from '@/domain/event-types';
@@ -27,6 +27,7 @@ export function HomeScreen() {
 	const now = useNow();
 	const today = toIsoDate(now);
 	const settings = useSettings();
+	const hasUnread = useHasUnreadNotifications();
 	const { semester, courses } = useCurrentSemesterCourses();
 	const progress = semester ? semesterProgress(semester, today) : null;
 	const weekEnd = progress?.week?.end;
@@ -50,7 +51,10 @@ export function HomeScreen() {
 				title={`${greeting(now.getHours())}${name ? `, ${name}.` : '.'}`}
 				action={{
 					icon: 'bell',
-					label: 'Notifications',
+					label: hasUnread
+						? 'Notifications, you have unread notifications'
+						: 'Notifications',
+					badge: hasUnread,
 					onPress: () => router.push('/home/notifications'),
 				}}
 			/>
